@@ -2,12 +2,16 @@ Shader "Hidden/pbr1"
 {
     Properties
     {
+        [Header(Main)]
         _MainTex ("Texture", 2D) = "white" {}
         _NormalMap("_NormalMap",2d) = "bump"{}
         _NormalScale("_NormalScale",float) = 1
 
+        [Header(PBR Mask)]
+        _PBRMask("_PBRMask(Metallic:R,Smoothness:G,Occlusion:B)",2d)="white"{}
         _Metallic("_Metallic",range(0,1)) = 0.5
         _Smoothness("_Smoothness",range(0,1)) = 0.5
+        _Occlusion("_Occlusion",range(0,1)) = 0
     }
     SubShader
     {
@@ -55,14 +59,20 @@ Shader "Hidden/pbr1"
             }
 
             sampler2D _MainTex;
+            samplerCUBE unity_SpecCube0;
+            sampler2D _NormalMap;
+            sampler2D _PBRMask;
+
+            CBUFFER_START(UntiyPerMaterial)
             half _Smoothness;
             half _Metallic;
+            half _Occlusion;
 
-            samplerCUBE unity_SpecCube0;
             half4 unity_SpecCube0_HDR;
 
-            sampler2D _NormalMap;
             half _NormalScale;
+
+            CBUFFER_END
 
             half4 frag (v2f i) : SV_Target
             {
@@ -86,12 +96,15 @@ Shader "Hidden/pbr1"
                 half nh = saturate(dot(n,h));
                 half lh = saturate(dot(l,h));
 
-                half smoothness = _Smoothness;
+                half4 pbrMask = tex2D(_PBRMask,i.uv);
+
+                half smoothness = _Smoothness * pbrMask.y;
                 half roughness = 1 - smoothness;
                 half a = max(roughness * roughness, HALF_MIN_SQRT);
                 half a2 = max(a * a ,HALF_MIN);
 
-                half metallic = _Metallic;
+                half metallic = _Metallic * pbrMask.x;
+                half occlusion = lerp(1, pbrMask.z,_Occlusion);
 
                 half4 mainTex = tex2D(_MainTex, i.uv);
                 half3 albedo = mainTex.xyz;
@@ -115,7 +128,7 @@ Shader "Hidden/pbr1"
                 half3 giSpec = surfaceReduction * envColor.xyz * lerp(specColor,grazingTerm,fresnelTerm);
 
                 half4 col = 0;
-                col.xyz = giDiff + giSpec;
+                col.xyz = (giDiff + giSpec) * occlusion;
 
                 half3 radiance = nl * _MainLightColor.xyz;
                 half specTerm = MinimalistCookTorrance(nh,lh,a,a2);
