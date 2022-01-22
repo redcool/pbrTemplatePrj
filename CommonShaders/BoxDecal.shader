@@ -25,9 +25,9 @@ Shader "Unlit/BoxDecal"
     {
         Tags { "RenderType"="Opaque" "Queue"="Transparent"}
         LOD 100
-        cull front
-        zwrite off
-        ztest always
+        // cull front
+        // zwrite off
+        // ztest always
         blend srcAlpha oneMinusSrcAlpha
 
         Pass
@@ -56,9 +56,12 @@ Shader "Unlit/BoxDecal"
             };
 
             sampler2D _MainTex;
-            float4 _MainTex_ST;
-
             sampler2D _CameraDepthTexture;
+
+            CBUFFER_START(UnityPerMaterial)
+            float4 _MainTex_ST;
+            CBUFFER_END
+
 
             v2f vert (appdata v)
             {
