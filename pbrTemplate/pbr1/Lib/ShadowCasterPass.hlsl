@@ -29,7 +29,12 @@ half4 GetShadowPositionHClip(appdata_full input){
 v2f vert(appdata_full input){
     v2f output;
 
+    #if defined(SHADOW_PASS) 
     output.pos = GetShadowPositionHClip(input);
+    #else
+    output.pos = UnityObjectToClipPos(input.vertex);
+    #endif
+
     output.uv = TRANSFORM_TEX(input.texcoord,_MainTex);
     return output;
 }

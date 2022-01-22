@@ -63,6 +63,22 @@ Shader "Lit/pbr1_"
             HLSLPROGRAM
             #pragma vertex vert
             #pragma fragment frag 
+            
+            #define SHADOW_PASS 
+            #include "Lib/ShadowCasterPass.hlsl"
+
+            ENDHLSL
+        }
+        Pass{
+            Tags{"LightMode" = "DepthOnly"}
+
+            ZWrite On
+            ZTest LEqual
+            ColorMask 0
+            HLSLPROGRAM
+            #pragma vertex vert
+            #pragma fragment frag 
+
             #include "Lib/ShadowCasterPass.hlsl"
 
             ENDHLSL
