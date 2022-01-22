@@ -7,7 +7,13 @@ Shader "Unlit/BoxDecal"
     CGINCLUDE
 
             /**
-                decal in Box bounds is [-.5,.5]
+                Decal in Box
+                
+                cube bounds is [-.5,.5]
+                depth : [0, far]
+                camPos : world space camera pos
+                ray : camera's direction point to vertex
+                return : xyz : cube space pos, w : is in box
             */
             float4 GetObjectPosFromDepth(float depth,float3 camPos,float3 ray){
                 ray /= dot(ray,-UNITY_MATRIX_V[2].xyz);
