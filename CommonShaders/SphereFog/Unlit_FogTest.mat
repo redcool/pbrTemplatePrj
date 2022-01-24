@@ -7,9 +7,9 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: Unlit_BoxDecal
-  m_Shader: {fileID: 4800000, guid: c40981d807de22647883e1492a723316, type: 3}
-  m_ShaderKeywords: 
+  m_Name: Unlit_FogTest
+  m_Shader: {fileID: 4800000, guid: cdca4b8ea721a3b4393b3901800aa53c, type: 3}
+  m_ShaderKeywords: _HEIGHTFOG_ON
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
@@ -20,14 +20,10 @@ Material:
     serializedVersion: 3
     m_TexEnvs:
     - _MainTex:
-        m_Texture: {fileID: 2800000, guid: 7801804018a7dcf42abb827444e18660, type: 3}
-        m_Scale: {x: 1, y: 1}
-        m_Offset: {x: 0, y: 0}
-    - _Tex3D:
-        m_Texture: {fileID: 11700000, guid: ad9005ab78823294e904ea661ebe0bb7, type: 2}
+        m_Texture: {fileID: 2800000, guid: 1421ba829826021489475ce07a343812, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     m_Floats:
-    - _StepSize: 0.0001
+    - _HeightFog: 1
     m_Colors: []
   m_BuildTextureStacks: []
