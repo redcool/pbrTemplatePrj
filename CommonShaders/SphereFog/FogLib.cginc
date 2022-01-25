@@ -35,7 +35,7 @@ void BlendFogSphere(float2 fog,bool hasHeightFog,inout float3 mainColor){
     if(hasHeightFog){
         float3 heightFogColor = lerp(_HeightFogMinColor,_HeightFogMaxColor,fog.y);
         float depthFactor = smoothstep(0.5,1, 1-fog.x);
-        mainColor = lerp(heightFogColor,mainColor,saturate(depthFactor - fog.y));
+        mainColor = lerp(heightFogColor,mainColor,saturate(max(depthFactor,fog.y)));
         // mainColor = fog.y;
         // return ;
     }
