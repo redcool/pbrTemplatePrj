@@ -95,7 +95,7 @@ Shader "Unlit/BoxDecal"
 
                 // sample the texture
                 fixed4 col = tex2D(_MainTex, objPos.xz);
-                col.w = smoothstep(0,0.1,objPos.w);
+                col.w *= smoothstep(0,0.1,objPos.w);
                 // apply fog
                 UNITY_APPLY_FOG(i.fogCoord, col);
                 return col;
