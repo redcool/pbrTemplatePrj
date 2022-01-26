@@ -34,6 +34,7 @@ Shader "Lit/pbr1_"
         [Header(Aniso)]
         [Toggle]_CalcTangent("_CalcTangent",int) = 0
         _AnisoRough("_AnisoRough",range(-0.5,0.5)) = 0
+        _AnisoShift("_AnisoShift",float) = 0
     }
 
     SubShader
