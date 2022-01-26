@@ -94,6 +94,8 @@ float4 frag (v2f i) : SV_Target
                 t = cross(n,float3(0,1,0));
                 b = cross(t,n);
             }
+            b += n * _AnisoShift;
+            
             float th = dot(t,h);
             float bh = dot(b,h);
             float anisoRough = _AnisoRough + 0.5;

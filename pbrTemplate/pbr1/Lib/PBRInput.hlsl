@@ -15,6 +15,7 @@ half _NormalScale;
 
 bool _SpecularOn;
 half _AnisoRough;
+half _AnisoShift;
 
 int _PbrMode;
 bool _CalcTangent;
