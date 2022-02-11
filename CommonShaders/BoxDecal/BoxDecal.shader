@@ -16,7 +16,7 @@ Shader "Unlit/BoxDecal"
                 ray : camera's direction point to vertex
                 return : xyz : cube space pos, w : is in box
             */
-            float4 GetObjectPosFromDepth(float depth,float3 ray,bool boxUpClip){
+            float4 GetObjectPosFromDepth(float depth,float3 ray,bool boxUpClip,float3 boxWorldUp){
                 float3 camForward = -UNITY_MATRIX_V[2].xyz;
                 ray /= dot(ray,camForward);
 
@@ -29,12 +29,10 @@ Shader "Unlit/BoxDecal"
 
                 if(boxUpClip){
                     // box up filter clip
-                    float3 boxUp = unity_ObjectToWorld[1].xyz;
-
                     float3 up = ddy(worldPos);
                     float3 right = ddx(worldPos);
                     float3 n = normalize(cross(up,right));
-                    a *= saturate(dot(n,boxUp)+0.5);
+                    a *= saturate(dot(n,boxWorldUp)+0.2);
                 }
 
                 return float4(objPos+0.5,a);
@@ -73,6 +71,7 @@ Shader "Unlit/BoxDecal"
                 float4 vertex : SV_POSITION;
                 float3 ray:TEXCOORD02;
                 float4 screenPos:TEXCOORD3;
+                float3 boxWorldUp:TEXCOORD4;
             };
 
             sampler2D _MainTex;
@@ -94,6 +93,7 @@ Shader "Unlit/BoxDecal"
                 float3 worldPos = mul(unity_ObjectToWorld,v.vertex);
                 o.ray = worldPos - _WorldSpaceCameraPos;
                 o.screenPos = ComputeScreenPos(o.vertex);
+                o.boxWorldUp = mul(unity_ObjectToWorld,float3(0,1,0));
                 return o;
             }
 
@@ -106,7 +106,7 @@ Shader "Unlit/BoxDecal"
                 float depth = tex2D(_CameraDepthTexture,screenUV).x;
                 depth = LinearEyeDepth(depth);
 
-                float4 objPos = GetObjectPosFromDepth(depth,ray,_BoxUpClip);
+                float4 objPos = GetObjectPosFromDepth(depth,ray,_BoxUpClip,i.boxWorldUp);
                 // clip(objPos.w);
 
                 // sample the texture
