@@ -15,12 +15,17 @@ Shader "Unlit/BoxDecal"
                 ray : camera's direction point to vertex
                 return : xyz : cube space pos, w : is in box
             */
-            float4 GetObjectPosFromDepth(float depth,float3 camPos,float3 ray){
-                ray /= dot(ray,-UNITY_MATRIX_V[2].xyz);
+            float4 GetObjectPosFromDepth(float depth,float3 ray){
+                float3 camForward = -UNITY_MATRIX_V[2].xyz;
+                ray /= dot(ray,camForward);
 
-                float3 worldPos = camPos + ray * depth;
+                float3 worldPos = _WorldSpaceCameraPos + ray * depth;
                 float3 objPos = mul(unity_WorldToObject,float4(worldPos,1));
-                float3 inBox = .5 - abs(objPos);
+                
+                // box clip
+                float3 inBox = .5 - abs(objPos); 
+                // box up filter
+                // float3 boxUp = unity_ObjectToWorld[1].xyz;
                 float a = min(min(inBox.x,inBox.y),inBox.z);
 
                 return float4(objPos+0.5,a);
@@ -31,8 +36,8 @@ Shader "Unlit/BoxDecal"
     {
         Tags { "RenderType"="Opaque" "Queue"="Transparent"}
         LOD 100
-        // cull front
         // zwrite off
+        // cull front
         // ztest always
         blend srcAlpha oneMinusSrcAlpha
 
@@ -90,7 +95,7 @@ Shader "Unlit/BoxDecal"
                 float depth = tex2D(_CameraDepthTexture,screenUV).x;
                 depth = LinearEyeDepth(depth);
 
-                float4 objPos = GetObjectPosFromDepth(depth,_WorldSpaceCameraPos,ray);
+                float4 objPos = GetObjectPosFromDepth(depth,ray);
                 // clip(objPos.w);
 
                 // sample the texture
