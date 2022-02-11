@@ -3,6 +3,7 @@ Shader "Unlit/BoxDecal"
     Properties
     {
         _MainTex ("Texture", 2D) = "white" {}
+        [Toggle]_BoxUpClip("_BoxUpClip",int) = 0
     }
     CGINCLUDE
 
@@ -15,7 +16,7 @@ Shader "Unlit/BoxDecal"
                 ray : camera's direction point to vertex
                 return : xyz : cube space pos, w : is in box
             */
-            float4 GetObjectPosFromDepth(float depth,float3 ray){
+            float4 GetObjectPosFromDepth(float depth,float3 ray,bool boxUpClip){
                 float3 camForward = -UNITY_MATRIX_V[2].xyz;
                 ray /= dot(ray,camForward);
 
@@ -24,9 +25,17 @@ Shader "Unlit/BoxDecal"
                 
                 // box clip
                 float3 inBox = .5 - abs(objPos); 
-                // box up filter
-                // float3 boxUp = unity_ObjectToWorld[1].xyz;
                 float a = min(min(inBox.x,inBox.y),inBox.z);
+
+                if(boxUpClip){
+                    // box up filter clip
+                    float3 boxUp = unity_ObjectToWorld[1].xyz;
+
+                    float3 up = ddy(worldPos);
+                    float3 right = ddx(worldPos);
+                    float3 n = normalize(cross(up,right));
+                    a *= saturate(dot(n,boxUp)+0.5);
+                }
 
                 return float4(objPos+0.5,a);
             }
@@ -36,9 +45,9 @@ Shader "Unlit/BoxDecal"
     {
         Tags { "RenderType"="Opaque" "Queue"="Transparent"}
         LOD 100
-        // zwrite off
-        // cull front
-        // ztest always
+        zwrite off
+        cull front
+        ztest always
         blend srcAlpha oneMinusSrcAlpha
 
         Pass
@@ -71,6 +80,8 @@ Shader "Unlit/BoxDecal"
 
             CBUFFER_START(UnityPerMaterial)
             float4 _MainTex_ST;
+            float4 _CameraDepthTexture_TexelSize;
+            int _BoxUpClip;
             CBUFFER_END
 
 
@@ -95,7 +106,7 @@ Shader "Unlit/BoxDecal"
                 float depth = tex2D(_CameraDepthTexture,screenUV).x;
                 depth = LinearEyeDepth(depth);
 
-                float4 objPos = GetObjectPosFromDepth(depth,ray);
+                float4 objPos = GetObjectPosFromDepth(depth,ray,_BoxUpClip);
                 // clip(objPos.w);
 
                 // sample the texture
