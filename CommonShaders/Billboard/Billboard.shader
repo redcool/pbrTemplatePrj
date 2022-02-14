@@ -4,7 +4,7 @@ Shader "Unlit/Bill"
     {
         _MainTex ("Texture", 2D) = "white" {}
         _Color("_Color",color) = (1,1,1,1)
-        [Toggle]_FaceCamera("_FaceCamera",int) = 0
+        [Toggle]_FullFaceCamera("_FullFaceCamera",int) = 0
 
         [Enum(UnityEngine.Rendering.BlendMode)]_SrcMode("_SrcMode",int) = 1
         [Enum(UnityEngine.Rendering.BlendMode)]_DstMode("_DstMode",int) = 0
@@ -44,7 +44,7 @@ Shader "Unlit/Bill"
             CBUFFER_START(UnityPerMaterial)
             float4 _MainTex_ST;
             float4 _Color;
-            int _FaceCamera;
+            int _FullFaceCamera;
             CBUFFER_END
 
 
@@ -77,7 +77,7 @@ Shader "Unlit/Bill"
             {
                 v2f o;
                 
-                o.vertex = BillboardVertex(v.vertex ,_FaceCamera);
+                o.vertex = BillboardVertex(v.vertex ,_FullFaceCamera);
 
 
                 o.uv = TRANSFORM_TEX(v.uv, _MainTex);
