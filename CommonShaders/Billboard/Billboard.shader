@@ -3,6 +3,7 @@ Shader "Unlit/Bill"
     Properties
     {
         _MainTex ("Texture", 2D) = "white" {}
+        _Color("_Color",color) = (1,1,1,1)
         [Toggle]_FaceCamera("_FaceCamera",int) = 0
 
         [Enum(UnityEngine.Rendering.BlendMode)]_SrcMode("_SrcMode",int) = 1
@@ -42,11 +43,12 @@ Shader "Unlit/Bill"
             sampler2D _MainTex;
             CBUFFER_START(UnityPerMaterial)
             float4 _MainTex_ST;
+            float4 _Color;
             int _FaceCamera;
             CBUFFER_END
 
 
-            float4 BillboardVertex(float3 vertex){
+            float4 BillboardVertex(float3 vertex,bool fullFaceCamera){
                 float3x3 camRotMat = float3x3(
                     UNITY_MATRIX_V[0].xyz,
                     UNITY_MATRIX_V[1].xyz,
@@ -59,7 +61,7 @@ Shader "Unlit/Bill"
                 float3 vertexOffset = float3(sx,sy,0) * vertex.xyz;
                 float3 vertexRotate = mul(camRotMat,float3(0,vertex.y * sy,0));
 
-                if(_FaceCamera){
+                if(!fullFaceCamera){
                     vertexOffset.y = 0;
                     vertexOffset += vertexRotate;
                 }
@@ -75,7 +77,7 @@ Shader "Unlit/Bill"
             {
                 v2f o;
                 
-                o.vertex = BillboardVertex(v.vertex);
+                o.vertex = BillboardVertex(v.vertex ,_FaceCamera);
 
 
                 o.uv = TRANSFORM_TEX(v.uv, _MainTex);
@@ -86,7 +88,7 @@ Shader "Unlit/Bill"
             fixed4 frag (v2f i) : SV_Target
             {
                 // sample the texture
-                fixed4 col = tex2D(_MainTex, i.uv) * float4(0,1,0,1);
+                fixed4 col = tex2D(_MainTex, i.uv) * _Color;
                 // clip(col.a-0.5);
                 // apply fog
                 UNITY_APPLY_FOG(i.fogCoord, col);
