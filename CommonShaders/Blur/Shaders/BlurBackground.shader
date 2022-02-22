@@ -6,7 +6,8 @@ Shader "Unlit/BlurBackground"
         _Fade("_Fade",range(0,1)) = 0.5
 
         [Header(Blur Mode)]
-        [Toggle(_GAUSSIAN_BLUR)] _GaussianBlur("_GaussianBlur",int) = 1
+        [KeywordEnum(None,X3,X7)]_BlurMode("_BlurMode",int) = 0
+        // [Toggle(_GAUSSIAN_BLUR)] _GaussianBlur("_GaussianBlur",int) = 1
 
         [Header(Blur Options)]
         _BlurScale("_BlurScale",range(0.5,5)) = 1
@@ -23,7 +24,7 @@ Shader "Unlit/BlurBackground"
             CGPROGRAM
             #pragma vertex vert
             #pragma fragment frag
-            #pragma shader_feature _GAUSSIAN_BLUR
+            #pragma multi_compile _ _BLURMODE_X3 _BLURMODE_X7
 
             #include "UnityCG.cginc"
             #include "BlurLib.hlsl"
@@ -74,19 +75,24 @@ Shader "Unlit/BlurBackground"
 
             half4 frag (v2f i) : SV_Target
             {
-                float2 bump = UnpackNormal(tex2D(_NormalMap,i.uv.zw)).xy * _NormalScale;
+                #if defined(_BLURMODE_X7) | defined(_BLURMODE_X3)
+                    float2 bump = UnpackNormal(tex2D(_NormalMap,i.uv.zw)).xy * _NormalScale;
+                #endif
 
                 half2 screenUV = i.screenPos.xy/i.screenPos.w;
 
                 half4 col = 0;
-                #if defined(_GAUSSIAN_BLUR)
+                #if defined(_BLURMODE_X7)
                     col.xyz += Gaussian7(_CameraOpaqueTexture,screenUV, _CameraOpaqueTexture_TexelSize.xy * (_BlurScale * half2(0,1) + bump));
                     col.xyz += Gaussian7(_CameraOpaqueTexture,screenUV, _CameraOpaqueTexture_TexelSize.xy * (_BlurScale * half2(1,0) + bump));
-                #else
+                    col *= 0.5;
+                #elif defined(_BLURMODE_X3)
                     col.xyz += BoxBlur(_CameraOpaqueTexture,screenUV, _CameraOpaqueTexture_TexelSize.xy * (_BlurScale * half2(0,1) + bump));
                     col.xyz += BoxBlur(_CameraOpaqueTexture,screenUV, _CameraOpaqueTexture_TexelSize.xy * (_BlurScale * half2(1,0) + bump));
+                    col *= 0.5;
+                #else
+                    col = tex2D(_CameraOpaqueTexture,screenUV);
                 #endif
-                col *= 0.5;
 
                 // sample the texture
                 half4 mainTex = tex2D(_MainTex,i.uv);
