@@ -19,6 +19,9 @@ Shader "Unlit/BlurBackground"
     {
         LOD 100
 
+        // GrabPass{"_CameraOpaqueTexture"}
+        Tags {"RenderPipeline" = "UniversalPipeline" }
+
         Pass
         {
             CGPROGRAM
@@ -62,14 +65,15 @@ Shader "Unlit/BlurBackground"
                 o.uv.xy = TRANSFORM_TEX(v.uv, _MainTex);
                 o.uv.zw = TRANSFORM_TEX(v.uv,_NormalMap);
                 
-                #if UNITY_UV_STARTS_AT_TOP
-                    half sign = 1;
-                #else
-                    half sign = -1;
-                #endif
+                // #if UNITY_UV_STARTS_AT_TOP // urp dont use this.
+                //     half sign = -1;
+                // #else
+                //     half sign = 1;
+                // #endif
 
-                o.screenPos.xy = (half2(o.vertex.x,o.vertex.y * sign) + o.vertex.w) * 0.5;
+                o.screenPos.xy = (half2(o.vertex.x,o.vertex.y * 1) + o.vertex.w) * 0.5;
                 o.screenPos.zw = o.vertex.zw;
+
                 return o;
             }
 
