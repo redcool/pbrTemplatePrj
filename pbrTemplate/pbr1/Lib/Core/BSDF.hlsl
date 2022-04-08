@@ -1,5 +1,6 @@
 #if !defined(BSDF_HLSL)
 #define BSDF_HLSL
+#include "Colors.hlsl"
 
 #define PI 3.1415
 #define PI2 6.28
@@ -48,4 +49,10 @@ half D_GGX(half nh,half a2){
     return D_GGXNoPI(nh,a2) * INV_PI;
 }
 
+half3 ThinFilm(half invertNV,half scale,half offset,half saturate,half brightness){
+    half h = invertNV * scale + offset;
+    half s = saturate;
+    half v = brightness;
+    return HSVToRGB(half3(h,s,v));
+}
 #endif //BSDF_HLSL
