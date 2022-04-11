@@ -23,7 +23,7 @@ Shader "Hidden/Test"
 
             #include "UnityLib.hlsl"
 
-            
+
 
             struct appdata
             {

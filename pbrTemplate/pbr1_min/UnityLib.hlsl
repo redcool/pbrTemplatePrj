@@ -170,10 +170,10 @@ float3 DecodeHDREnvironment(float4 encodedIrradiance, float4 decodeInstructions)
 //==============================
 //  lighting
 //==============================
-float D_GGXNoPI(float NdotH, float a2)
+float D_GGXNoPI(float NdotH, float rough)
 {
-    float s = (NdotH * a2 - NdotH) * NdotH + 1.0;
-    return a2/ (s * s);
+    float s = (NdotH * rough - NdotH) * NdotH + 1.0;
+    return rough/ (s * s);
 }
 
 float MinimalistCookTorrance(float nh,float lh,float rough,float rough2){
