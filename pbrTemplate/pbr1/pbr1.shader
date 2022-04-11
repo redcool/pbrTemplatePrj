@@ -30,6 +30,14 @@ Shader "Lit/pbr1"
         [LiteToggle]_SpecularOn("_SpecularOn",int) = 1
         // [Enum(PBR,0,Aniso,1,Charlie,2)]_PbrMode("_PbrMode",int) = 0
         [KeywordEnum(PBR,Aniso,Charlie)]_PbrMode("_PbrMode",int) = 0
+        
+
+        [LineHeader(Shadows)]
+        [LiteToggle]_ReceiveShadow("_ReceiveShadow",int) = 1
+        _MainLightShadowSoftScale("_MainLightShadowSoftScale",range(0,1)) = 0.1
+        [LineHeader(Shadow Bias)]
+        _CustomShadowDepthBias("_CustomShadowDepthBias",range(0,1)) = 0.5
+        _CustomShadowNormalBias("_CustomShadowNormalBias",range(0,1)) = 0.5
 
         [LineHeader(Aniso)]
         [LiteToggle]_CalcTangent("_CalcTangent",int) = 0
@@ -57,6 +65,7 @@ Shader "Lit/pbr1"
             #pragma target 3.0
             // #pragma multi_compile_fog
             #pragma multi_compile _PBRMODE_PBR _PBRMODE_ANISO _PBRMODE_CHARLIE
+            #pragma multi_compile _ _MAIN_LIGHT_SHADOWS
             #include "Lib/PBRForwardPass.hlsl"
             
             ENDHLSL

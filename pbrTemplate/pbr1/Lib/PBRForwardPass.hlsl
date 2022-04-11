@@ -1,11 +1,11 @@
 #if !defined(PBR_FORWARD_PASS_HLSL)
 #define PBR_FORWARD_PASS_HLSL
-#include "Lib/Core/CommonUtils.hlsl"
-#include "Lib/Core/TangentLib.hlsl"
-#include "Lib/Core/BSDF.hlsl"
-#include "Lib/Core/Fog.hlsl"
-#include "Lib/PBRInput.hlsl"
-#include "Lib/URP_MainLightShadows.hlsl"
+#include "Core/CommonUtils.hlsl"
+#include "Core/TangentLib.hlsl"
+#include "Core/BSDF.hlsl"
+#include "Core/Fog.hlsl"
+#include "PBRInput.hlsl"
+#include "Core/URPLib/URP_MainLightShadows.hlsl"
 
 
 struct appdata

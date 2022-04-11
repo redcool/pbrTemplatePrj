@@ -13,19 +13,27 @@ half _Metallic,_Smoothness,_Occlusion;
 
 half _NormalScale;
 
-bool _SpecularOn;
+half _SpecularOn;
 half _AnisoRough;
 half _AnisoShift;
 
 int _PbrMode;
-bool _CalcTangent;
+half _CalcTangent;
 
 // custom shadow 
 half _MainLightShadowSoftScale;
-half2 _CustomShadowBias;
+half _CustomShadowDepthBias,_CustomShadowNormalBias;
 
 //thin film
 half _TFOn,_TFScale,_TFOffset,_TFSaturate,_TFBrightness;
+half _ReceiveShadow;
 
 CBUFFER_END
+
+half CustomShadowDepthBias(){
+    return lerp(-1,1,_CustomShadowDepthBias);
+}
+half CustomShadowNormalBias(){
+    return lerp(-1,1,_CustomShadowNormalBias);
+}
 #endif //PBR_INPUT_HLSL

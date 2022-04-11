@@ -3,7 +3,7 @@
 
 #include "Core/CommonUtils.hlsl"
 #include "PBRInput.hlsl"
-#include "URP_MainLightShadows.hlsl"
+#include "Core/URPLib/URP_MainLightShadows.hlsl"
 
 
 struct v2f{
