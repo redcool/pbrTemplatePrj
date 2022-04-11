@@ -24,5 +24,8 @@ bool _CalcTangent;
 half _MainLightShadowSoftScale;
 half2 _CustomShadowBias;
 
+//thin film
+half _TFOn,_TFScale,_TFOffset,_TFSaturate,_TFBrightness;
+
 CBUFFER_END
 #endif //PBR_INPUT_HLSL

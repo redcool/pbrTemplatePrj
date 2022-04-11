@@ -7,20 +7,40 @@
 #define HALF_MIN 6.103515625e-5  // 2^-14, the same value for 10, 11 and 16-bit: https://www.khronos.org/opengl/wiki/Small_Float_Formats
 #define HALF_MIN_SQRT 0.0078125  // 2^-7 == sqrt(HALF_MIN), useful for ensuring HALF_MIN after x^2
 
-#define CBUFFER_START(name) cbuffer name{
+#define CBUFFER_START(name) cbuffer name {
 #define CBUFFER_END };
 
-float4 _MainLightPosition;
-half4 _MainLightColor;
+float4 _MainLightPosition,_WorldSpaceLightPos0;
+half4 _MainLightColor,_LightColor0;
+
+#if defined(DRP)
+#define _MainLightPosition _WorldSpaceLightPos0
+#define _MainLightColor _LightColor0
+#endif
 
 float3 _WorldSpaceCameraPos;
 
 
+
+CBUFFER_START(UnityPerDraw)
+// transform
+float4x4 unity_ObjectToWorld;
+float4x4 unity_WorldToObject;
+// sh
+float4 unity_SHAr;
+float4 unity_SHAg;
+float4 unity_SHAb;
+float4 unity_SHBr;
+float4 unity_SHBg;
+float4 unity_SHBb;
+float4 unity_SHC;
+
+
+CBUFFER_END
 //==============================
 //  Transform
 //==============================
-float4x4 unity_ObjectToWorld;
-float4x4 unity_WorldToObject;
+
 #if !defined(USING_STEREO_MATRICES)
 float4x4 glstate_matrix_projection;
 float4x4 unity_MatrixV;
@@ -45,6 +65,7 @@ int unity_StereoEyeIndex;
 #define UNITY_MATRIX_IT_MV transpose(mul(UNITY_MATRIX_I_M, UNITY_MATRIX_I_V))
 #define UNITY_MATRIX_MVP   mul(UNITY_MATRIX_VP, UNITY_MATRIX_M)
 
+
 float3 TransformObjectToWorld(float3 objectPos){
     return mul(unity_ObjectToWorld,float4(objectPos,1)).xyz;
 }
@@ -65,6 +86,9 @@ float3 TransformObjectToWorldNormal(float3 normal){
     return mul(float4(normal,1),UNITY_MATRIX_I_M).xyz;
 }
 
+float3 TransformViewToProjection(float3 viewPos){
+    return mul((float3x3)UNITY_MATRIX_P,viewPos);
+}
 float3 GetWorldSpaceViewDir(float3 worldPos){
     return _WorldSpaceCameraPos - worldPos;
 }
@@ -78,13 +102,7 @@ float3 GetWorldSpaceLightDir(float3 worldPos){
 //==============================
 //  sh
 //==============================
-float4 unity_SHAr;
-float4 unity_SHAg;
-float4 unity_SHAb;
-float4 unity_SHBr;
-float4 unity_SHBg;
-float4 unity_SHBb;
-float4 unity_SHC;
+
 
 // Ref: "Efficient Evaluation of Irradiance Environment Maps" from ShaderX 2
 float3 SHEvalLinearL0L1(float3 N, float4 shAr, float4 shAg, float4 shAb)
