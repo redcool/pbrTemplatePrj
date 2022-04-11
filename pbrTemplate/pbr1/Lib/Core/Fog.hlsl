@@ -34,14 +34,14 @@ int _FogMode;
     half ComputeFogFactor(half z)
     {
         half clipZ_01 = UNITY_Z_0_FAR_FROM_CLIPSPACE(z);
+        half fogFactor = 0;
         if(_FogMode == FOG_MODE_LINEAR)
         {
-            half fogFactor = saturate(clipZ_01 * unity_FogParams.z + unity_FogParams.w);
-            return half(fogFactor); 
+            fogFactor = saturate(clipZ_01 * unity_FogParams.z + unity_FogParams.w);
         }else if(_FogMode == FOG_MODE_EXP || _FogMode == FOG_MODE_EXP2){
-            return half(unity_FogParams.x * clipZ_01);
+            fogFactor = half(unity_FogParams.x * clipZ_01);
         }
-        return 0;
+        return fogFactor;
     }
 
     half ComputeFogIntensity(half fogFactor)

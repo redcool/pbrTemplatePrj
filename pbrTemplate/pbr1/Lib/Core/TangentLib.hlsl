@@ -12,8 +12,8 @@
 /**
     combine tangent,binormal,normal,worldPos to putput.tSpace[0..2]
 */
-#define TANGENT_SPACE_COMBINE(vertex/*half3*/,normal/*half3*/,tangent/*half4*/,output/*{half4 tSpace[0..2]}*/)\
-    half3 p = mul(unity_ObjectToWorld,vertex);\
+#define TANGENT_SPACE_COMBINE(vertex/*half3*/,normal/*half3*/,tangent/*half4*/,output/*out {half4 tSpace[0..2]}*/)\
+    half3 p = mul(unity_ObjectToWorld,vertex).xyz;\
     half3 n = normalize(UnityObjectToWorldNormal(normal));\
     half3 t = normalize(UnityObjectToWorldDir(tangent.xyz));\
     half3 b = normalize(cross(n,t)) * tangent.w;\
@@ -31,7 +31,7 @@
     half3 VertexNormal = normalize(half3(input.tSpace0.z,input.tSpace1.z,input.tSpace2.z));\
     half3 worldPos = (half3(input.tSpace0.w,input.tSpace1.w,input.tSpace2.w))
 
-half3 TangentToWorld(half3 tSpace0,half3 tSpace1,half3 tSpace2,half3 tn){
-    return normalize(half3(dot(tSpace0,tn),dot(tSpace1,tn),dot(tSpace2,tn)));
+half3 TangentToWorld(half4 tSpace0,half4 tSpace1,half4 tSpace2,half3 tn){
+    return half3(dot(tSpace0.xyz,tn),dot(tSpace1.xyz,tn),dot(tSpace2.xyz.xyz,tn));
 }
 #endif //TANGENT_LIB_CGINC

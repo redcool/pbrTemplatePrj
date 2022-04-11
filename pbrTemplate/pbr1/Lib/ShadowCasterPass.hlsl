@@ -15,7 +15,7 @@ half3 _LightDirection;
 
 //--------- shadow helpers
 half4 GetShadowPositionHClip(appdata_full input){
-    half3 worldPos = mul(unity_ObjectToWorld,input.vertex);
+    half3 worldPos = mul(unity_ObjectToWorld,input.vertex).xyz;
     half3 worldNormal = UnityObjectToWorldNormal(input.normal);
     half4 positionCS = UnityWorldToClipPos(ApplyShadowBias(worldPos,worldNormal,_LightDirection));
     #if UNITY_REVERSED_Z
@@ -29,12 +29,12 @@ half4 GetShadowPositionHClip(appdata_full input){
 v2f vert(appdata_full input){
     v2f output;
 
-    #if defined(SHADOW_PASS) 
-    output.pos = GetShadowPositionHClip(input);
-    #else
-    output.pos = UnityObjectToClipPos(input.vertex);
-    #endif
-
+    // #if defined(URP_SHADOW)
+        output.pos = GetShadowPositionHClip(input);
+    // #else 
+    //     output.pos = UnityClipSpaceShadowCasterPos(input.vertex, input.normal);
+    //     output.pos = UnityApplyLinearShadowBias(output.pos);
+    // #endif
     output.uv = TRANSFORM_TEX(input.texcoord,_MainTex);
     return output;
 }

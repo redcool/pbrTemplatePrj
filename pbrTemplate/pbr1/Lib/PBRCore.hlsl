@@ -1,5 +1,5 @@
-#if !defined(LIGHTING_HLSL)
-#define LIGHTING_HLSL
+#if !defined(PBR_CORE_HLSL)
+#define PBR_CORE_HLSL
 
 #include "Lib/Core/CommonUtils.hlsl"
 
@@ -44,4 +44,4 @@ half3 CalcPBS(BRDFData brdfData,half3 lightColor,half3 lightDir,half3 normal,hal
     return (diff + spec) * radiance;
 }
 
-#endif //LIGHTING_HLSL
+#endif //PBR_CORE_HLSL

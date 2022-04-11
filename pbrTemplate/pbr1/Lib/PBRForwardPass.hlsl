@@ -29,7 +29,7 @@ struct v2f
 
 v2f vert (appdata v)
 {
-    v2f o;
+    v2f o = (v2f)0;
     UNITY_SETUP_INSTANCE_ID(v);
     UNITY_TRANSFER_INSTANCE_ID(v,o);
 
@@ -80,7 +80,7 @@ half4 frag (v2f i) : SV_Target
     half3 albedo = mainTex.xyz;
     half alpha = mainTex.w;
 
-    half radiance = _MainLightColor * nl * shadowAtten;
+    half3 radiance = _MainLightColor.xyz * nl * shadowAtten;
     
     half specTerm = 0;
 

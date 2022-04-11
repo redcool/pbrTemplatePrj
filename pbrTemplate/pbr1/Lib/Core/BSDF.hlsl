@@ -2,10 +2,6 @@
 #define BSDF_HLSL
 #include "Colors.hlsl"
 
-#define PI 3.1415
-#define PI2 6.28
-#define INV_PI 0.318
-
 half MinimalistCookTorrance(half nh,half lh,half a,half a2){
     half d = nh * nh * (a2 - 1)+1;
     half vf = max(lh * lh,0.1);
@@ -53,6 +49,6 @@ half3 ThinFilm(half invertNV,half scale,half offset,half saturate,half brightnes
     half h = invertNV * scale + offset;
     half s = saturate;
     half v = brightness;
-    return HSVToRGB(half3(h,s,v));
+    return HsvToRgb(half3(h,s,v));
 }
 #endif //BSDF_HLSL
