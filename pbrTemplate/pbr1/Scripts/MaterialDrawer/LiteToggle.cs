@@ -4,8 +4,7 @@ using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 
-namespace PowerUtilities.pbrTemplate
-{
+namespace PowerUtilities{
     /// <summary>
     /// Toggle, no Keyword
     /// </summary>
