@@ -28,7 +28,7 @@ Shader "Lit/pbr1"
         [Group(LightModeGroup)]   
         [GroupToggle(LightModeGroup)]_SpecularOn("_SpecularOn",int) = 1
         // [Enum(PBR,0,Aniso,1,Charlie,2)]_PbrMode("_PbrMode",int) = 0
-        [GroupEnum(PBR,Aniso,Charlie)]_PbrMode("_PbrMode",int) = 0
+        [GroupEnum(LightModeGroup,PBR Aniso Charlie,true)]_PbrMode("_PbrMode",int) = 0
         
         [Group(ShadowGroup)]
         //[LineHeader(Shadows)]
