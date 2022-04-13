@@ -110,7 +110,7 @@ Material:
     - _MainGroup: 1
     - _MainLightShadowSoftScale: 0.983
     - _Metallic: 0.47
-    - _NormalScale: -0.23
+    - _NormalScale: 1
     - _Occlusion: 0
     - _OcclusionStrength: 1
     - _PBRMaskGroup: 0

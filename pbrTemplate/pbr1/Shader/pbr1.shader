@@ -64,7 +64,7 @@ Shader "Lit/pbr1"
             #pragma target 3.0
             // #pragma multi_compile_fog
             #pragma multi_compile _PBRMODE_PBR _PBRMODE_ANISO _PBRMODE_CHARLIE
-            #pragma multi_compile _ _MAIN_LIGHT_SHADOWS
+            #pragma multi_compile _ _MAIN_LIGHT_SHADOWS _MAIN_LIGHT_SHADOWS_CASCADE _MAIN_LIGHT_SHADOWS_SCREEN
             #include "Lib/PBRForwardPass.hlsl"
             
             ENDHLSL

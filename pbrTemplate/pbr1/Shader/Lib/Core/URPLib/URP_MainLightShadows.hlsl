@@ -106,16 +106,16 @@ half4 TransformWorldToShadowCoord(half3 positionWS)
     }
 
     bool MainLightEnabled(){
-        return 1;
+        #if defined(_MAIN_LIGHT_SHADOWS) || defined(_MAIN_LIGHT_SHADOWS_CASCADE)
+            return 1;
+        #else
+            return 0;
+        #endif
         // return _MainLightShadowOn;
     }
 
     half CalcShadow (half4 shadowCoord,half3 worldPos)
     {
-        #if !defined(_MAIN_LIGHT_SHADOWS)
-            return 1;
-        #endif
-        
         half shadow = 1;
 
         if(MainLightEnabled() && _ReceiveShadow){
