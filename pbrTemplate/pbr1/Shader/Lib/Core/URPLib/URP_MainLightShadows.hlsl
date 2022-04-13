@@ -73,7 +73,7 @@ half4 TransformWorldToShadowCoord(half3 positionWS)
         half scale = invNdotL * (_ShadowBias.y + CustomShadowNormalBias());
 
         // normal bias is negative since we want to apply an inset normal offset
-        positionWS = lightDirection * (_ShadowBias + CustomShadowDepthBias()) + positionWS;
+        positionWS = lightDirection * (_ShadowBias.xxx + CustomShadowDepthBias()) + positionWS;
         positionWS = normalWS * scale.xxx + positionWS;
         return positionWS;
     }
@@ -112,10 +112,11 @@ half4 TransformWorldToShadowCoord(half3 positionWS)
 
     half CalcShadow (half4 shadowCoord,half3 worldPos)
     {
-        half shadow = 1;
         #if !defined(_MAIN_LIGHT_SHADOWS)
             return 1;
         #endif
+        
+        half shadow = 1;
 
         if(MainLightEnabled() && _ReceiveShadow){
             //shadow = SAMPLE_TEXTURE2D_SHADOW(_MainLightShadowmapTexture,sampler_MainLightShadowmapTexture, shadowCoord.xyz);
