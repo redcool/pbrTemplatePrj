@@ -5,6 +5,7 @@ using UnityEngine;
 using UnityEditor;
 using System.Linq;
 using System;
+using System.Reflection;
 
 namespace PowerUtilities {
     /// <summary>
@@ -22,24 +23,46 @@ namespace PowerUtilities {
         Dictionary<string, int> keywordValueDict = new Dictionary<string, int>();
         public GroupEnumDrawer() : this(MaterialGroupTools.DEFAULT_GROUP_NAME, "","") { }
         public GroupEnumDrawer(string groupName,string enumName):this(groupName,enumName,""){}
-        public GroupEnumDrawer(string groupName, string keywordString,string keyword)
+        public GroupEnumDrawer(string groupName, string enumName,string keyword)
         {
             this.groupName = groupName;
             isKeyword = !string.IsNullOrEmpty(keyword);
 
-            if (!string.IsNullOrEmpty(keywordString))
+            if (!string.IsNullOrEmpty(enumName))
             {
-                if (keywordString.Contains(KEY_VALUE_SPLITTER))
-                    ParseKeyValuePairs(keywordString);
+                if (enumName.Contains(KEY_VALUE_SPLITTER))
+                    ParseKeyValuePairs(enumName);
                 else
-                    ParseEnum(keywordString);
+                    ParseEnum(enumName);
 
             }
         }
 
-        private void ParseEnum(string keywordString)
+        private void ParseEnum(string enumName)
         {
-             
+            var dlls = AppDomain.CurrentDomain.GetAssemblies();
+            string[] names = null;
+
+            //foreach (var d in dlls)
+            //{
+            //    if (d.FullName.StartsWith("UnityEngine,"))
+            //    {
+            //        var t = d.GetType(enumName);
+            //        names = Enum.GetNames(t);
+            //        break;
+            //    }
+            //}
+
+            var enumType = TypeCache.GetTypesDerivedFrom(typeof(Enum)).Where(t => t.FullName == enumName).FirstOrDefault();
+            if(enumType != null)
+            {
+                names = Enum.GetNames(enumType);
+            }
+
+            foreach (var name in names)
+            {
+                keywordValueDict.Add(name, 0);
+            }
         }
 
         private void ParseKeyValuePairs(string keywordString)
@@ -61,8 +84,8 @@ namespace PowerUtilities {
         public override float GetPropertyHeight(MaterialProperty prop, string label, MaterialEditor editor)
         {
             if (MaterialGroupTools.IsGroupOn(groupName))
-                return base.GetPropertyHeight(prop, label, editor);
-            return 0;
+                return MaterialGroupTools.BASE_LINE_HEIGHT;
+            return -1;
         }
 
         public override void OnGUI(Rect position, MaterialProperty prop, GUIContent label, MaterialEditor editor)
