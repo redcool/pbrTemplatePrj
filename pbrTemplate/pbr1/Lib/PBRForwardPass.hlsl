@@ -5,7 +5,7 @@
 #include "Core/BSDF.hlsl"
 #include "Core/Fog.hlsl"
 #include "PBRInput.hlsl"
-#include "Core/URPLib/URP_MainLightShadows.hlsl"
+#include "PBRCore.hlsl"
 
 
 struct appdata
@@ -36,7 +36,7 @@ v2f vert (appdata v)
     o.vertex = UnityObjectToClipPos(v.vertex);
     o.uv = TRANSFORM_TEX(v.uv, _MainTex);
     TANGENT_SPACE_COMBINE(v.vertex,v.normal,v.tangent,o/**/);
-    o.shadowCoord = TransformWorldToShadowCoord(p);
+    o.shadowCoord = TransformWorldToShadowCoord(worldPos);
     o.fogFactor.x = ComputeFogFactor(o.vertex.z);
 
 
@@ -76,7 +76,7 @@ half4 frag (v2f i) : SV_Target
     half shadowAtten = CalcShadow(i.shadowCoord,worldPos);
     // return shadowAtten;
 //--------- lighting
-    half4 mainTex = tex2D(_MainTex, mainUV);
+    half4 mainTex = tex2D(_MainTex, mainUV) * _Color;
     half3 albedo = mainTex.xyz;
     half alpha = mainTex.w;
 
@@ -139,6 +139,9 @@ half4 frag (v2f i) : SV_Target
 
     half4 col = 1;
     col.rgb = directColor + giColor;
+    #if defined(_ADDITIONAL_LIGHTS_ON)
+    col.xyz += CalcAdditionalLights(worldPos,v,n,diffColor,specColor,a,a2);
+    #endif
 //------ fog
     col.rgb = MixFog(col.xyz,i.fogFactor.x);
     col.a = alpha;

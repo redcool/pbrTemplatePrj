@@ -8,6 +8,7 @@ sampler2D _NormalMap;
 sampler2D _PbrMask;
 
 CBUFFER_START(UnityPerMaterial)
+half4 _Color;
 half4 _MainTex_ST;
 half _Metallic,_Smoothness,_Occlusion;
 
@@ -23,6 +24,8 @@ half _CalcTangent;
 // custom shadow 
 half _MainLightShadowSoftScale;
 half _CustomShadowDepthBias,_CustomShadowNormalBias;
+
+half _CalcAdditionalLights,_ReceiveAdditionalLightShadow,_AdditionalIghtSoftShadow;
 
 //thin film
 half _TFOn,_TFScale,_TFOffset,_TFSaturate,_TFBrightness;

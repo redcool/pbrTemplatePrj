@@ -12,7 +12,6 @@
 
 //---------- custom symbols
 #define if UNITY_BRANCH if
-#define half half
 
 // Include language header
 #if defined (SHADER_API_GAMECORE)

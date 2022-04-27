@@ -15,8 +15,9 @@ Shader "Lit/pbr1"
     {
         [Group(Main)]
         [GroupItem(Main)]_MainTex ("Texture", 2D) = "white" {}
+        [GroupItem(Main)]_Color ("_Color", color) = (1,1,1,1)
         [GroupItem(Main)]_NormalMap("_NormalMap",2d)="bump"{}
-        [GroupItem(Main)]_NormalScale("_NormalScale",float) = 1
+        [GroupSlider(Main)]_NormalScale("_NormalScale",range(0,5)) = 1
 
         [Group(PBR Mask)]
         [GroupItem(PBR Mask)]_PbrMask("_PbrMask",2d)="white"{}
@@ -37,6 +38,11 @@ Shader "Lit/pbr1"
         //[LineHeader(Shadow Bias)]
         [GroupItem(ShadowGroup)]_CustomShadowDepthBias("_CustomShadowDepthBias",range(0,1)) = 0.5
         [GroupItem(ShadowGroup)]_CustomShadowNormalBias("_CustomShadowNormalBias",range(0,1)) = 0.5
+
+        [Group(AdditionalLights)]
+        [GroupToggle(AdditionalLights,_ADDITIONAL_LIGHTS_ON)]_CalcAdditionalLights("_CalcAdditionalLights",int) = 0
+        [GroupToggle(AdditionalLights)]_ReceiveAdditionalLightShadow("_ReceiveAdditionalLightShadow",int) = 1
+        [GroupToggle(AdditionalLights)]_AdditionalIghtSoftShadow("_AdditionalIghtSoftShadow",int) = 0
 
         [Group(Aniso)]
         [GroupToggle(Aniso)]_CalcTangent("_CalcTangent",int) = 0
@@ -65,6 +71,7 @@ Shader "Lit/pbr1"
             // #pragma multi_compile_fog
             #pragma multi_compile _PBRMODE_PBR _PBRMODE_ANISO _PBRMODE_CHARLIE
             #pragma multi_compile _ _MAIN_LIGHT_SHADOWS _MAIN_LIGHT_SHADOWS_CASCADE _MAIN_LIGHT_SHADOWS_SCREEN
+            #pragma multi_compile_fragment _ _ADDITIONAL_LIGHTS_ON
             #include "Lib/PBRForwardPass.hlsl"
             
             ENDHLSL

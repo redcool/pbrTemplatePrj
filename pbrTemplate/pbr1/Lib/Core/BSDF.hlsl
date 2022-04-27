@@ -9,12 +9,6 @@ half MinimalistCookTorrance(half nh,half lh,half a,half a2){
     return s;
 }
 
-//http://web.engr.oregonstate.edu/~mjb/cs519/Projects/Papers/HairRendering.pdf
-half3 ShiftTangent(half3 T, half3 N, half shift)
-{
-    return normalize(T + N * shift);
-}
-
 half D_GGXAnisoNoPI(half TdotH, half BdotH, half NdotH, half roughnessT, half roughnessB)
 {
     half a2 = roughnessT * roughnessB;
