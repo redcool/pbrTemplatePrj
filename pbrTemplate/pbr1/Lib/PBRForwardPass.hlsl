@@ -126,7 +126,13 @@ half4 frag (v2f i) : SV_Target
 // return directColor.xyzx;
 //------- gi
     half3 giColor = 0;
-    half3 giDiff = ShadeSH9(half4(n,1)) * diffColor;
+    half3 giDiff = 0;
+
+    #if defined(_LIGHTMAP_ON)
+        giDiff = SampleLightmap(i.uv.zw) * diffColor;
+    #else
+        giDiff = ShadeSH9(half4(n,1)) * diffColor;
+    #endif
 
     half mip = roughness * (1.7 - roughness * 0.7) * 6;
     half3 reflectDir = reflect(-v,n);

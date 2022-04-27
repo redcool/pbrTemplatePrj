@@ -281,25 +281,20 @@ CBUFFER_END
 // ----------------------------------------------------------------------------
 // Lightmaps
 
-/*
+
 
 // Main lightmap
-UNITY_DECLARE_TEX2D_HALF(unity_Lightmap);
+TEXTURE2D(unity_Lightmap);SAMPLER(samplerunity_Lightmap);
 // Directional lightmap (always used with unity_Lightmap, so can share sampler)
-UNITY_DECLARE_TEX2D_NOSAMPLER_HALF(unity_LightmapInd);
+TEXTURE2D(unity_LightmapInd);
 // Shadowmasks
-UNITY_DECLARE_TEX2D(unity_ShadowMask);
+TEXTURE2D(unity_ShadowMask);
 
 // Dynamic GI lightmap
-UNITY_DECLARE_TEX2D(unity_DynamicLightmap);
-UNITY_DECLARE_TEX2D_NOSAMPLER(unity_DynamicDirectionality);
-UNITY_DECLARE_TEX2D_NOSAMPLER(unity_DynamicNormal);
+// TEXTURE2D(unity_DynamicLightmap);
+// TEXTURE2D(unity_DynamicDirectionality);
+// TEXTURE2D(unity_DynamicNormal);
 
-CBUFFER_START(UnityLightmaps)
-    half4 unity_LightmapST;
-    half4 unity_DynamicLightmapST;
-CBUFFER_END
-*/
 
 // ----------------------------------------------------------------------------
 // Reflection Probes

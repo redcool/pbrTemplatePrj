@@ -9,7 +9,7 @@ Material:
   m_PrefabAsset: {fileID: 0}
   m_Name: Lit_pbr1_
   m_Shader: {fileID: 4800000, guid: eef8dd0a96d0a5b4eb9c9594e8ca5288, type: 3}
-  m_ShaderKeywords: _ADDITIONAL_LIGHTS_ON _PBRMODE_PBR
+  m_ShaderKeywords: _ADDITIONAL_LIGHTS_ON _LIGHTMAP_ON _PBRMODE_PBR
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
@@ -109,7 +109,7 @@ Material:
     - _Glossiness: 0
     - _GlossyReflections: 0
     - _LightModeGroup: 0
-    - _LightmapOn: 0
+    - _LightmapOn: 1
     - _MainGroup: 1
     - _MainLightShadowSoftScale: 0.983
     - _Metallic: 0
