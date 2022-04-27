@@ -85,7 +85,7 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
-    - _AdditionalIghtSoftShadow: 0
+    - _AdditionalIghtSoftShadow: 1
     - _AlphaClip: 0
     - _AnisoArgs: 0
     - _AnisoGroup: 0
@@ -109,21 +109,22 @@ Material:
     - _Glossiness: 0
     - _GlossyReflections: 0
     - _LightModeGroup: 0
+    - _LightmapOn: 0
     - _MainGroup: 1
     - _MainLightShadowSoftScale: 0.983
     - _Metallic: 0
-    - _NormalScale: 1
+    - _NormalScale: 0
     - _Occlusion: 1
     - _OcclusionStrength: 1
     - _PBRMaskGroup: 0
     - _Parallax: 0.005
-    - _PbrMode: 1
+    - _PbrMode: 0
     - _QueueOffset: 0
-    - _ReceiveAdditionalLightShadow: 0
+    - _ReceiveAdditionalLightShadow: 1
     - _ReceiveShadow: 1
     - _ReceiveShadows: 1
     - _ShadowGroup: 1
-    - _Smoothness: 1
+    - _Smoothness: 0
     - _SmoothnessTextureChannel: 0
     - _SpecularHighlights: 1
     - _SpecularOn: 1
@@ -139,7 +140,7 @@ Material:
     - _ZWrite: 1
     m_Colors:
     - _BaseColor: {r: 1, g: 1, b: 1, a: 1}
-    - _Color: {r: 0, g: 0, b: 0, a: 1}
+    - _Color: {r: 0.5019608, g: 0.5019608, b: 0.5019608, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
     - _SpecColor: {r: 0.19999996, g: 0.19999996, b: 0.19999996, a: 1}
   m_BuildTextureStacks: []
