@@ -12,6 +12,7 @@ struct appdata
 {
     half4 vertex : POSITION;
     half2 uv : TEXCOORD0;
+    half2 uv1:TEXCOORD1;
     half3 normal:NORMAL;
     half4 tangent:TANGENT;
     UNITY_VERTEX_INPUT_INSTANCE_ID
@@ -19,11 +20,12 @@ struct appdata
 
 struct v2f
 {
-    half2 uv : TEXCOORD0;
+    half4 uv : TEXCOORD0; // mainUV,lightmapUV
     half4 vertex : SV_POSITION;
     TANGENT_SPACE_DECLARE(1,2,3);
     half4 shadowCoord:TEXCOORD4;
     half4 fogFactor:TEXCOORD5;
+    
     UNITY_VERTEX_INPUT_INSTANCE_ID
 };
 
@@ -34,7 +36,9 @@ v2f vert (appdata v)
     UNITY_TRANSFER_INSTANCE_ID(v,o);
 
     o.vertex = UnityObjectToClipPos(v.vertex);
-    o.uv = TRANSFORM_TEX(v.uv, _MainTex);
+    o.uv.xy = TRANSFORM_TEX(v.uv, _MainTex);
+    o.uv.zw = v.uv1 * unity_LightmapST.xy + unity_LightmapST.zw;
+
     TANGENT_SPACE_COMBINE(v.vertex,v.normal,v.tangent,o/**/);
     o.shadowCoord = TransformWorldToShadowCoord(worldPos);
     o.fogFactor.x = ComputeFogFactor(o.vertex.z);
