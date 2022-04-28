@@ -69,4 +69,8 @@ half3 SampleLightmap(half2 uv){
     half4 illum = SAMPLE_TEXTURE2D(unity_Lightmap,samplerunity_Lightmap,uv);
     return DecodeLightmap(illum,decodeInstructions);
 }
+
+half4 SampleShadowMask(half2 uv){
+    return SAMPLE_TEXTURE2D(unity_ShadowMask,samplerunity_ShadowMask,uv);
+}
 #endif //URP_GI_HLSL

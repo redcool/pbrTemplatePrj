@@ -4,6 +4,11 @@
 #if !defined(MAIN_LIGHT_SHADOW_HLSL)
 #define MAIN_LIGHT_SHADOW_HLSL
 
+#if defined(LIGHTMAP_ON) || defined(LIGHTMAP_SHADOW_MIXING) || defined(SHADOWS_SHADOWMASK)
+#define CALCULATE_BAKED_SHADOWS
+#endif
+
+
 TEXTURE2D_SHADOW(_MainLightShadowmapTexture);SAMPLER_CMP(sampler_MainLightShadowmapTexture);
 
 #if defined(SHADER_API_MOBILE)
@@ -84,7 +89,7 @@ half4 TransformWorldToShadowCoord(half3 positionWS)
         half distanceCamToPixel2 = dot(camToPixel, camToPixel);
 
         half fade = saturate(distanceCamToPixel2 * _MainLightShadowParams.z + _MainLightShadowParams.w);
-        return fade * fade;
+        return fade;
     }
 
     half SampleShadowmap(TEXTURE2D_SHADOW_PARAM(shadowMap,sampler_ShadowMap),half4 shadowCoord,half shadowSoftScale){
@@ -114,7 +119,26 @@ half4 TransformWorldToShadowCoord(half3 positionWS)
         // return _MainLightShadowOn;
     }
 
-    half CalcShadow (half4 shadowCoord,half3 worldPos)
+    half MixRealtimeAndBakedShadows(half realtimeShadow, half bakedShadow, half shadowFade)
+    {
+    #if defined(LIGHTMAP_SHADOW_MIXING)
+        return min(lerp(realtimeShadow, 1, shadowFade), bakedShadow);
+    #else
+        return lerp(realtimeShadow, bakedShadow, shadowFade);
+    #endif
+    }
+
+    half BakedShadow(half4 shadowMask, half4 occlusionProbeChannels)
+    {
+        // Here occlusionProbeChannels used as mask selector to select shadows in shadowMask
+        // If occlusionProbeChannels all components are zero we use default baked shadow value 1.0
+        // This code is optimized for mobile platforms:
+        // half bakedShadow = any(occlusionProbeChannels) ? dot(shadowMask, occlusionProbeChannels) : 1.0h;
+        half bakedShadow = half(1.0) + dot(shadowMask - half(1.0), occlusionProbeChannels);
+        return bakedShadow;
+    }
+
+    half CalcShadow (half4 shadowCoord,half3 worldPos,half4 shadowMask)
     {
         half shadow = 1;
 
@@ -124,10 +148,18 @@ half4 TransformWorldToShadowCoord(half3 positionWS)
             shadow = lerp(1,shadow,_MainLightShadowParams.x); // shadow intensity
             shadow = BEYOND_SHADOW_FAR(shadowCoord) ? 1 : shadow; // shadow range
 
+            // baked shadow
+            #if defined(CALCULATE_BAKED_SHADOWS)
+                half bakedShadow = BakedShadow(shadowMask,_MainLightOcclusionProbes);
+            #else
+                half bakedShadow = 1;
+            #endif
+
+            // shadow fade
             half shadowFade = GetShadowFade(worldPos); 
-            shadowFade = shadowCoord.w == 4 ? 1.0 : shadowFade;
-            
-            shadow = lerp(shadow,1,shadowFade);
+            // shadowFade = shadowCoord.w == 4 ? 1.0 : shadowFade;
+            // mix 
+            shadow = MixRealtimeAndBakedShadows(shadow,bakedShadow,shadowFade);
         }
         return shadow;
     }

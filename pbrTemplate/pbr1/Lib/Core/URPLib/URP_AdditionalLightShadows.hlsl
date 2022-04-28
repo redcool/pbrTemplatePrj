@@ -1,6 +1,6 @@
 #if !defined(URP_ADDITIONAL_LIGHT_SHADOWS_HLSL)
 #define URP_ADDITIONAL_LIGHT_SHADOWS_HLSL
-
+#include "URP_MainLightShadows.hlsl"
 #define MAX_SHADOW_CASCADES 4
 
 TEXTURE2D_SHADOW(_AdditionalLightsShadowmapTexture);SAMPLER_CMP(sampler_AdditionalLightsShadowmapTexture);
@@ -14,8 +14,8 @@ half4       _AdditionalShadowOffset0;
 half4       _AdditionalShadowOffset1;
 half4       _AdditionalShadowOffset2;
 half4       _AdditionalShadowOffset3;
+half4       _AdditionalShadowFadeParams; // x: additional light fade scale, y: additional light fade bias, z: 0.0, w: 0.0)
 half4      _AdditionalShadowmapSize; // (xy: 1/width and 1/height, zw: width and height)
-
 #else
 
 
@@ -42,6 +42,7 @@ half4       _AdditionalShadowOffset0;
 half4       _AdditionalShadowOffset1;
 half4       _AdditionalShadowOffset2;
 half4       _AdditionalShadowOffset3;
+half4       _AdditionalShadowFadeParams; // x: additional light fade scale, y: additional light fade bias, z: 0.0, w: 0.0)
 half4      _AdditionalShadowmapSize; // (xy: 1/width and 1/height, zw: width and height)
 
 #ifndef SHADER_API_GLES3
@@ -120,10 +121,32 @@ half AdditionalLightRealtimeShadow(int lightIndex, half3 positionWS,bool isSoftS
     return BEYOND_SHADOW_FAR(shadowCoord) ? 1.0 : attenuation;
 }
 
-half AdditionalLightShadow(int lightIndex, half3 positionWS, bool isSoftShadow)
+half GetAdditionalLightShadowFade(float3 positionWS)
+{
+    float3 camToPixel = positionWS - _WorldSpaceCameraPos;
+    float distanceCamToPixel2 = dot(camToPixel, camToPixel);
+
+    float fade = saturate(distanceCamToPixel2 * float(_AdditionalShadowFadeParams.x) + float(_AdditionalShadowFadeParams.y));
+    return half(fade);
+}
+
+half AdditionalLightShadow(int lightIndex, half3 positionWS, bool isSoftShadow,half4 shadowMask,half4 occlusionProbeChannels)
 {
     half realtimeShadow = AdditionalLightRealtimeShadow(lightIndex, positionWS, isSoftShadow);
-    return realtimeShadow;
+    
+    #ifdef CALCULATE_BAKED_SHADOWS
+        half bakedShadow = BakedShadow(shadowMask, occlusionProbeChannels);
+    #else
+        half bakedShadow = half(1.0);
+    #endif
+
+    #ifdef ADDITIONAL_LIGHT_CALCULATE_SHADOWS
+        half shadowFade = GetAdditionalLightShadowFade(positionWS);
+    #else
+        half shadowFade = half(1.0);
+    #endif
+
+    return MixRealtimeAndBakedShadows(realtimeShadow, bakedShadow, shadowFade);
 }
 
 #endif //URP_ADDITIONAL_LIGHT_SHADOWS_HLSL

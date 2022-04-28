@@ -17,11 +17,11 @@ half3 CalcAdditionalLight(Light light,half3 viewDir,half3 normal,half3 diffColor
     return color;
 }
 
- half3 CalcAdditionalLights(half3 worldPos,half3 viewDir,half3 worldNormal,half3 diffColor,half3 specColor,half a,half a2){
+ half3 CalcAdditionalLights(half3 worldPos,half3 viewDir,half3 worldNormal,half3 diffColor,half3 specColor,half a,half a2,half4 shadowMask){
      half3 color = 0;
      uint lightCount = GetAdditionalLightsCount();
      for(int i=0;i<lightCount;i++){
-        Light light1 = GetAdditionalLight(i,worldPos,_ReceiveAdditionalLightShadow,_AdditionalIghtSoftShadow);
+        Light light1 = GetAdditionalLight(i,worldPos,_ReceiveAdditionalLightShadow,_AdditionalIghtSoftShadow,shadowMask);
         color += CalcAdditionalLight(light1,viewDir,worldNormal,diffColor,specColor,a,a2);
      }
      return color;

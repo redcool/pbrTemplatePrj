@@ -76,8 +76,9 @@ half4 frag (v2f i) : SV_Target
     half nv = saturate(dot(n,v));
 // return v.xyzx;
 
-
-    half shadowAtten = CalcShadow(i.shadowCoord,worldPos);
+    half4 shadowMask = SampleShadowMask(i.uv.zw);
+    // return shadowMask;
+    half shadowAtten = CalcShadow(i.shadowCoord,worldPos,shadowMask);
     // return shadowAtten;
 //--------- lighting
     half4 mainTex = tex2D(_MainTex, mainUV) * _Color;
@@ -150,7 +151,7 @@ half4 frag (v2f i) : SV_Target
     half4 col = 1;
     col.rgb = directColor + giColor;
     #if defined(_ADDITIONAL_LIGHTS_ON)
-    col.xyz += CalcAdditionalLights(worldPos,v,n,diffColor,specColor,a,a2);
+    col.xyz += CalcAdditionalLights(worldPos,v,n,diffColor,specColor,a,a2,shadowMask);
     #endif
 //------ fog
     col.rgb = MixFog(col.xyz,i.fogFactor.x);

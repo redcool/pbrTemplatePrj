@@ -184,7 +184,7 @@ int GetPerObjectLightIndex(uint index)
 
 // Fills a light struct given a loop i index. This will convert the i
 // index to a perObjectLightIndex
-Light GetAdditionalLight(uint i, half3 positionWS,half receiveShadow,half softShadow)
+Light GetAdditionalLight(uint i, half3 positionWS,half receiveShadow,half softShadow,half4 shadowMask)
 {
     int perObjectLightIndex = GetPerObjectLightIndex(i);
     Light light = GetAdditionalPerObjectLight(perObjectLightIndex, positionWS);
@@ -197,7 +197,7 @@ Light GetAdditionalLight(uint i, half3 positionWS,half receiveShadow,half softSh
 
     light.shadowAttenuation = 1;
     if(receiveShadow)
-        light.shadowAttenuation = AdditionalLightShadow(perObjectLightIndex, positionWS,softShadow);
+        light.shadowAttenuation = AdditionalLightShadow(perObjectLightIndex, positionWS,softShadow,shadowMask,occlusionProbeChannels);
 
     return light;
 }
