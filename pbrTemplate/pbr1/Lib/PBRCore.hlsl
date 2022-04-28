@@ -4,7 +4,7 @@
 #include "Lib/Core/CommonUtils.hlsl"
 #include "Core/URPLib/URP_MainLightShadows.hlsl"
 #include "Core/URPLib/URP_Lighting.hlsl"
-#include "Core/URPLib/URP_Lightmap.hlsl"
+#include "Core/URPLib/URP_GI.hlsl"
 
 half3 CalcAdditionalLight(Light light,half3 viewDir,half3 normal,half3 diffColor,half3 specColor,half a,half a2){
     half3 h = SafeNormalize(light.direction + viewDir);

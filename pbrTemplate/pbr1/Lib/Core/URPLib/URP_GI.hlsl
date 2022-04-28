@@ -1,5 +1,5 @@
-#if !defined(URP_LIGHTMAP_HLSL)
-#define URP_LIGHTMAP_HLSL
+#if !defined(URP_GI_HLSL)
+#define URP_GI_HLSL
 //-----------------------------------------------------------EntityLight
 #define LIGHTMAP_RGBM_MAX_GAMMA     half(5.0)       // NB: Must match value in RGBMRanges.h
 #define LIGHTMAP_RGBM_MAX_LINEAR    half(34.493242) // LIGHTMAP_RGBM_MAX_GAMMA ^ 2.2
@@ -29,7 +29,14 @@
 #ifdef UNITY_COLORSPACE_GAMMA
     return rgbmInput.rgb * (rgbmInput.a * decodeInstructions.x);
 #else
-    return rgbmInput.rgb * (pow(rgbmInput.a, decodeInstructions.y) * decodeInstructions.x);
+    // return rgbmInput.rgb * (pow(rgbmInput.a, decodeInstructions.y) * decodeInstructions.x);
+    // optimise 
+    half scale = rgbmInput.w;
+    #if defined(UNITY_LIGHTMAP_RGBM_ENCODING)
+        scale = scale * scale;
+    #endif
+
+    return rgbmInput.rgb * ( scale * decodeInstructions.x);
 #endif
 }
 
@@ -62,4 +69,4 @@ half3 SampleLightmap(half2 uv){
     half4 illum = SAMPLE_TEXTURE2D(unity_Lightmap,samplerunity_Lightmap,uv);
     return DecodeLightmap(illum,decodeInstructions);
 }
-#endif //URP_LIGHTMAP_HLSL
+#endif //URP_GI_HLSL

@@ -56,8 +56,8 @@ Shader "Lit/pbr1"
         [GroupItem(Thin Film)]_TFSaturate("_TFSaturate",range(0,1)) = 1
         [GroupItem(Thin Film)]_TFBrightness("_TFBrightness",range(0,1)) = 1
 
-        [Group(Lightmap)]
-        [GroupToggle(Lightmap,_LIGHTMAP_ON)]_LightmapOn("_LightmapOn",int) = 0
+        // [Group(Lightmap)]
+        // [GroupToggle(Lightmap,LIGHTMAP_ON)]_LightmapOn("_LightmapOn",int) = 0
         
     }
 
@@ -76,7 +76,7 @@ Shader "Lit/pbr1"
             #pragma multi_compile _PBRMODE_PBR _PBRMODE_ANISO _PBRMODE_CHARLIE
             #pragma multi_compile _ _MAIN_LIGHT_SHADOWS _MAIN_LIGHT_SHADOWS_CASCADE _MAIN_LIGHT_SHADOWS_SCREEN
             #pragma multi_compile_fragment _ _ADDITIONAL_LIGHTS_ON
-            #pragma multi_compile_fragment _ _LIGHTMAP_ON
+            #pragma multi_compile_fragment _ LIGHTMAP_ON
             #include "Lib/PBRForwardPass.hlsl"
             
             ENDHLSL

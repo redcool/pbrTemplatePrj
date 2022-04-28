@@ -128,7 +128,7 @@ half4 frag (v2f i) : SV_Target
     half3 giColor = 0;
     half3 giDiff = 0;
 
-    #if defined(_LIGHTMAP_ON)
+    #if defined(LIGHTMAP_ON)
         giDiff = SampleLightmap(i.uv.zw) * diffColor;
     #else
         giDiff = ShadeSH9(half4(n,1)) * diffColor;
