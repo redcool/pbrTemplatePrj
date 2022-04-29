@@ -76,6 +76,9 @@ Shader "Lit/pbr1"
             #pragma multi_compile _PBRMODE_PBR _PBRMODE_ANISO _PBRMODE_CHARLIE
             #pragma multi_compile _ _MAIN_LIGHT_SHADOWS _MAIN_LIGHT_SHADOWS_CASCADE _MAIN_LIGHT_SHADOWS_SCREEN
             #pragma multi_compile_fragment _ _ADDITIONAL_LIGHTS_ON
+
+            #pragma multi_compile _ LIGHTMAP_SHADOW_MIXING
+            #pragma multi_compile _ SHADOWS_SHADOWMASK
             #pragma multi_compile_fragment _ LIGHTMAP_ON
             #include "Lib/PBRForwardPass.hlsl"
             
