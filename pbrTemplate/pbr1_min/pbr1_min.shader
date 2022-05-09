@@ -12,6 +12,9 @@ Shader "Hidden/pbr1_min"
         _Metallic("_Metallic",range(0,1)) = 0.5
         _Smoothness("_Smoothness",range(0,1)) = 0.5
         _Occlusion("_Occlusion",range(0,1)) = 0
+
+        [Header(Test)]
+        _Depth("_Depth",float) = 1
     }
     SubShader
     {
@@ -23,6 +26,7 @@ Shader "Hidden/pbr1_min"
             #pragma fragment frag
 
             #include "UnityLib.hlsl"
+            #include "PowerLib/PowerUtils.hlsl"
 
             struct appdata
             {
@@ -62,24 +66,39 @@ Shader "Hidden/pbr1_min"
             samplerCUBE unity_SpecCube0;
             sampler2D _NormalMap;
             sampler2D _PBRMask;
+            sampler2D _CameraOpaqueTexture;
+            sampler2D _CameraDepthTexture;
 
             CBUFFER_START(UntiyPerMaterial)
             half _Smoothness;
             half _Metallic;
             half _Occlusion;
 
-            half4 unity_SpecCube0_HDR;
-
             half _NormalScale;
+            half _Depth;
 
             CBUFFER_END
 
+            half3 CalcWorldPos(half4 hclipCoord ){
+                half2 suv =  hclipCoord.xy /_ScreenParams.xy;
+                half depth = tex2D(_CameraDepthTexture,suv);
+                half3 wpos = ScreenToWorldPos(suv,depth,unity_MatrixInvVP);
+                return wpos;
+            }
+
             half4 frag (v2f i) : SV_Target
             {
+                half3 worldPos = half3(i.tSpace0.w,i.tSpace1.w,i.tSpace2.w);
+
+
+                half3 wpos = CalcWorldPos(i.vertex);
+half seaDepth = wpos.y - worldPos.y - _Depth;
+// return seaDepth;
+
                 half3 vertexTangent = (half3(i.tSpace0.x,i.tSpace1.x,i.tSpace2.x));
                 half3 vertexBinormal = normalize(half3(i.tSpace0.y,i.tSpace1.y,i.tSpace2.y));
                 half3 vertexNormal = normalize(half3(i.tSpace0.z,i.tSpace1.z,i.tSpace2.z));
-                half3 tn = UnpackScaleNormal(tex2D(_NormalMap,i.uv),_NormalScale);
+                half3 tn = UnpackNormalScale(tex2D(_NormalMap,i.uv),_NormalScale);
  
                 half3 n = normalize(half3(
                     dot(i.tSpace0.xyz,tn),
@@ -87,7 +106,6 @@ Shader "Hidden/pbr1_min"
                     dot(i.tSpace2.xyz,tn)
                 ));
 
-                half3 worldPos = half3(i.tSpace0.w,i.tSpace1.w,i.tSpace2.w);
                 half3 l = GetWorldSpaceLightDir(worldPos);
                 half3 v = normalize(GetWorldSpaceViewDir(worldPos));
                 half3 h = normalize(l+v);
