@@ -1,6 +1,6 @@
 #if !defined(PBR_FORWARD_PASS_HLSL)
 #define PBR_FORWARD_PASS_HLSL
-#include "Core/CommonUtils.hlsl"
+#include "Core/Common.hlsl"
 #include "Core/TangentLib.hlsl"
 #include "Core/BSDF.hlsl"
 #include "Core/Fog.hlsl"

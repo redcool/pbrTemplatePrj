@@ -1,6 +1,6 @@
 #if !defined(PBR_INPUT_HLSL)
 #define PBR_INPUT_HLSL
-#include "Lib/Core/CommonUtils.hlsl"
+#include "Lib/Core/Common.hlsl"
 
 
 sampler2D _MainTex;

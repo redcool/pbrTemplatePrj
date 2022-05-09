@@ -1,7 +1,7 @@
 #if !defined(PBR_CORE_HLSL)
 #define PBR_CORE_HLSL
 
-#include "Lib/Core/CommonUtils.hlsl"
+#include "Lib/Core/Common.hlsl"
 #include "Core/URPLib/URP_MainLightShadows.hlsl"
 #include "Core/URPLib/URP_Lighting.hlsl"
 #include "Core/URPLib/URP_GI.hlsl"

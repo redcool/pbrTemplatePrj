@@ -1,7 +1,7 @@
 #if !defined(SHADOW_CASTER_PASS_HLSL)
 #define SHADOW_CASTER_PASS_HLSL
 
-#include "Core/CommonUtils.hlsl"
+#include "Core/Common.hlsl"
 #include "PBRInput.hlsl"
 #include "Core/URPLib/URP_MainLightShadows.hlsl"
 

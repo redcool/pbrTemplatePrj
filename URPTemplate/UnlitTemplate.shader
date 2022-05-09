@@ -1,4 +1,4 @@
-Shader "Unlit/URPShader"
+Shader "Template/Unlit"
 {
     Properties
     {
@@ -16,7 +16,6 @@ Shader "Unlit/URPShader"
             #pragma fragment frag
 
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
-            #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/SpaceTransforms.hlsl"
 
             struct appdata
             {
