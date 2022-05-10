@@ -22,8 +22,11 @@ Shader "URP/PowerOcean"
         _Smoothness("_Smoothness",range(0,1)) = 0.5
         _Occlusion("_Occlusion",range(0,1)) = 0
 
-        [Header(Test)]
+        [Header(Depth)]
         _Depth("_Depth",float) = 1
+
+        [Header(Foam)]
+        _FoamTex("_FoamTex",2d) = ""{}
 
         [Header(Wave)]
         _WaveTiling("_WaveTiling",vector) = (0.1,1,0,0)
@@ -34,7 +37,7 @@ Shader "URP/PowerOcean"
     }
     SubShader
     {
-
+        Tags{"Queue"="Transparent"}
         Pass
         {
             HLSLPROGRAM
