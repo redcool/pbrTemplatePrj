@@ -37,5 +37,6 @@ half3 ScreenToWorldPos(half2 uv,half rawDepth,float4x4 invVP){
 #define GetWorldSpaceViewDir(worldPos) (_WorldSpaceCameraPos - worldPos)
 #define GetWorldSpaceLightDir(worldPos) _MainLightPosition.xyz
 #define BlendNormal(n1,n2) normalize(half3(n1.xy*n2.z+n2.xy*n1.z,n1.z+n2.z))
+#define PerceptualRoughnessToMipmapLevel(roughness) roughness * (1.7 - roughness * 0.7) * 6
 
 #endif //POWER_UTILS_HLSL

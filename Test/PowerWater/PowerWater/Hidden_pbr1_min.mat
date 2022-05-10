@@ -14,7 +14,7 @@ Material:
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
-  m_CustomRenderQueue: -1
+  m_CustomRenderQueue: 3000
   stringTagMap: {}
   disabledShaderPasses: []
   m_SavedProperties:
@@ -34,18 +34,20 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
-    - _Depth: -0.62
+    - _Depth: -0.37
     - _Metallic: 0
     - _NormalScale: 0.39
     - _NormalSpeed: 3.3
     - _NormalTiling: 0.43
     - _Occlusion: 0
-    - _Smoothness: 0.9
-    - _WaveScale: 0.25
-    - _WaveSpeed: 28.42
+    - _Smoothness: 1
+    - _WaveScale: 1
+    - _WaveSpeed: 50.3
+    - _WaveStrength: 0
     - _WaveTiling: 1
     m_Colors:
     - _Color1: {r: 0.02017319, g: 0.55970883, b: 0.8018868, a: 1}
     - _Color2: {r: 0, g: 0.29390422, b: 0.4245283, a: 1}
-    - _WaveTiling: {r: 0.19, g: 4.11, b: 0, a: 0}
+    - _WaveDir: {r: 1, g: 0, b: 0, a: 0}
+    - _WaveTiling: {r: 1, g: 0, b: 0, a: 0}
   m_BuildTextureStacks: []
