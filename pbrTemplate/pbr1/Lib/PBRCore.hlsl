@@ -2,6 +2,7 @@
 #define PBR_CORE_HLSL
 
 #include "Lib/Core/Common.hlsl"
+#include "Core/PowerUtils.hlsl"
 #include "Core/URPLib/URP_MainLightShadows.hlsl"
 #include "Core/URPLib/URP_Lighting.hlsl"
 #include "Core/URPLib/URP_GI.hlsl"

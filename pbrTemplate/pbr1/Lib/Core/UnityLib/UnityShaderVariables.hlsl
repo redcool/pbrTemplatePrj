@@ -178,6 +178,7 @@ CBUFFER_START(UnityPerDraw)
     half4  unity_SpecCube0_HDR;
 
     half4  unity_SpecCube1_HDR;
+    half4 _GlossyEnvironmentCubeMap_HDR;
 
     half4 unity_LightmapST;
     half4 unity_LightmapIndex;
@@ -299,8 +300,12 @@ TEXTURE2D(unity_ShadowMask);SAMPLER(samplerunity_ShadowMask);
 // ----------------------------------------------------------------------------
 // Reflection Probes
 
-TEXTURECUBE(unity_SpecCube0); SAMPLER(samplerunity_SpecCube0);
-// UNITY_DECLARE_TEXCUBE_NOSAMPLER(unity_SpecCube1);
+//==============================
+//  ibl
+//==============================
+TEXTURECUBE(unity_SpecCube0);SAMPLER(samplerunity_SpecCube0);
+TEXTURECUBE(unity_SpecCube1);SAMPLER(samplerunity_SpecCube1);
+TEXTURECUBE(_GlossyEnvironmentCubeMap);SAMPLER(sampler_GlossyEnvironmentCubeMap);
 
 CBUFFER_START(UnityReflectionProbes)
     half4 unity_SpecCube0_BoxMax;
