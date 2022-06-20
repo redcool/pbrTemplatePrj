@@ -161,6 +161,8 @@ CBUFFER_START(UnityShadows)
     half4 unity_ShadowFadeCenterAndType;
 CBUFFER_END
 
+half4 _GlossyEnvironmentCubeMap_HDR;
+
 // ----------------------------------------------------------------------------
  // UnityInput.hlsl
 CBUFFER_START(UnityPerDraw)
@@ -176,9 +178,8 @@ CBUFFER_START(UnityPerDraw)
     half4 unity_ProbesOcclusion;
 
     half4  unity_SpecCube0_HDR;
-
     half4  unity_SpecCube1_HDR;
-    half4 _GlossyEnvironmentCubeMap_HDR;
+
 
     half4 unity_LightmapST;
     half4 unity_LightmapIndex;

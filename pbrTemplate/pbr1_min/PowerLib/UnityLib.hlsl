@@ -86,7 +86,7 @@ float4x4 unity_WorldToCamera;
 float4x4 unity_CameraToWorld;
 #endif
 
-
+half4 _GlossyEnvironmentCubeMap_HDR;
 
 CBUFFER_START(UnityPerDraw)
 // Space block Feature
