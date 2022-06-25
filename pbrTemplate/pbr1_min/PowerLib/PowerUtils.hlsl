@@ -30,11 +30,11 @@ half3 ScreenToWorldPos(half2 uv,half rawDepth,float4x4 invVP){
 }
 
 
-#if defined(URP_LEGACY_HLSL)
 #define GetWorldSpaceViewDir(worldPos) (_WorldSpaceCameraPos - worldPos)
 #define GetWorldSpaceLightDir(worldPos) _MainLightPosition.xyz
 
-#define texCUBElod(cube,coord) cube.SampleLevel(sampler##cube,coord.xyz,coord.w)
-#endif //URP_LEGACY_HLSL
+// #if defined(URP_LEGACY_HLSL)
+// #define texCUBElod(cube,coord) cube.SampleLevel(sampler##cube,coord.xyz,coord.w)
+// #endif //URP_LEGACY_HLSL
 
 #endif //POWER_UTILS_HLSL
