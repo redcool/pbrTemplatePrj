@@ -19,7 +19,7 @@ Shader "Unlit/TestPbr"
             #pragma vertex vert
             #pragma fragment frag
 
-            #include "PowerLib/UnityLib.hlsl"
+            #include "../PowerLib/UnityLib.hlsl"
 
             struct appdata
             {
@@ -80,15 +80,15 @@ Shader "Unlit/TestPbr"
                 half nv = saturate(dot(n,v));
 
                 half d = nh*nh * (a2-1)+1;
-                half3 specTerm = a2/(d*d * max(0.001,lh*lh) * (4*a+2));
+                half specTerm = a2/(d*d * max(0.001,lh*lh) * (4*a+2));
 
-                half3 col = (diffColor + specTerm) * radiance * _MainLightColor;
+                half3 col = (diffColor + specTerm * specColor) * radiance * _MainLightColor;
 
                 half3 sh = SampleSH(n);
                 half3 giDiff = sh * diffColor;
 
-                half mip = (1.7 - rough * 0.7)*rough * 6;
                 // half mip = lerp(0,6,rough);
+                half mip = (1.7 - rough * 0.7)*rough * 6;
                 half3 reflectDir = reflect(-v,n);
                 half4 envColor = texCUBElod(_IBL,half4(reflectDir,mip));
                 envColor.xyz = DecodeHDREnvironment(envColor,_IBL_HDR);
