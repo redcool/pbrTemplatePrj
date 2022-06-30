@@ -54,7 +54,7 @@ half4 frag (v2f i) : SV_Target
     UNITY_SETUP_INSTANCE_ID(i);
 
     TANGENT_SPACE_SPLIT(i);
-    half2 mainUV = i.uv;
+    half2 mainUV = i.uv.xy;
 
     half4 pbrMask = tex2D(_PbrMask,mainUV);
     half metallic = pbrMask.r * _Metallic;

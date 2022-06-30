@@ -247,6 +247,7 @@ half3 ShadeSH9 (half4 normal)
 }
 
 // Transforms 2D UV by scale/bias property
+#undef TRANSFORM_TEX
 #define TRANSFORM_TEX(tex,name) (tex.xy * name##_ST.xy + name##_ST.zw)
 
 

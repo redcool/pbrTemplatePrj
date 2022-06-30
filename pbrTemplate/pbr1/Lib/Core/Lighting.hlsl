@@ -21,7 +21,7 @@
     float3 CalcAdditionalLights(float3 worldPos,float3 diffColor,float3 specColor,float3 n,float3 v,float a,float a2,half receiveShadow,half softShadow,half4 shadowMask ){
         uint count = GetAdditionalLightsCount();
 		float3 c = 0;
-        for(int i=0;i<count;i++){
+        for(uint i=0;i<count;i++){
 			Light l = GetAdditionalLight(i,worldPos,receiveShadow,softShadow,shadowMask);
 			c += CalcLight(l,diffColor,specColor,n,v,a,a2);
         }

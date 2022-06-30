@@ -17,7 +17,7 @@ half3 _LightDirection;
 half4 GetShadowPositionHClip(appdata_full input){
     half3 worldPos = mul(unity_ObjectToWorld,input.vertex).xyz;
     half3 worldNormal = UnityObjectToWorldNormal(input.normal);
-    half4 positionCS = UnityWorldToClipPos(ApplyShadowBias(worldPos,worldNormal,_LightDirection));
+    half4 positionCS = UnityWorldToClipPos(ApplyShadowBias(worldPos,worldNormal,_LightDirection,CustomShadowNormalBias(),CustomShadowDepthBias()));
     #if UNITY_REVERSED_Z
         positionCS.z = min(positionCS.z, positionCS.w * UNITY_NEAR_CLIP_VALUE);
     #else
