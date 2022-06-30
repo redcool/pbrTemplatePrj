@@ -42,7 +42,6 @@
 // #error unsupported shader api
 // #endif
 
-#include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Common.hlsl"
 //======================================================== like UnityCG.cginc
 #include "UnityLib/UnityShaderUtilities.hlsl"
 #include "UnityLib/UnityInstancing.hlsl"
