@@ -1,8 +1,8 @@
 #if !defined(LIGHTING_HLSL)
 #define LIGHTING_HLSL
 
-    #include "URPLib/URP_GI.hlsl"
-    #include "URPLib/URP_Lighting.hlsl"
+    #include "URP_GI.hlsl"
+    #include "URP_Lighting.hlsl"
     
     float3 CalcLight(Light light,float3 diffColor,float3 specColor,float3 n,float3 v,float a,float a2){
         float3 l = light.direction;

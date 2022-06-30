@@ -6,8 +6,7 @@
 #include "Core/Fog.hlsl"
 #include "PBRInput.hlsl"
 
-#define DRP_CODE
-#include "Core/Lighting.hlsl"
+#include "Core/URPLib/Lighting.hlsl"
 
 
 struct appdata
