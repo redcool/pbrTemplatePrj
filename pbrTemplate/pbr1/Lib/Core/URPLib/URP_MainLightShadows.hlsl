@@ -138,13 +138,13 @@ half4 TransformWorldToShadowCoord(half3 positionWS)
         return bakedShadow;
     }
 
-    half CalcShadow (half4 shadowCoord,half3 worldPos,half4 shadowMask)
+    half CalcShadow (half4 shadowCoord,half3 worldPos,half4 shadowMask,bool receiveShadow,half softScale)
     {
         half shadow = 1;
 
-        if(MainLightEnabled() && _ReceiveShadow){
+        if(MainLightEnabled() && receiveShadow){
             //shadow = SAMPLE_TEXTURE2D_SHADOW(_MainLightShadowmapTexture,sampler_MainLightShadowmapTexture, shadowCoord.xyz);
-            shadow = SampleShadowmap(TEXTURE2D_ARGS(_MainLightShadowmapTexture,sampler_MainLightShadowmapTexture),shadowCoord,_MainLightShadowSoftScale);
+            shadow = SampleShadowmap(TEXTURE2D_ARGS(_MainLightShadowmapTexture,sampler_MainLightShadowmapTexture),shadowCoord,softScale);
             shadow = lerp(1,shadow,_MainLightShadowParams.x); // shadow intensity
             shadow = BEYOND_SHADOW_FAR(shadowCoord) ? 1 : shadow; // shadow range
 

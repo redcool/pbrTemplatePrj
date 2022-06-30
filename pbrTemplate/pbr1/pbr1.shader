@@ -80,6 +80,7 @@ Shader "Lit/pbr1"
             #pragma multi_compile _ LIGHTMAP_SHADOW_MIXING
             #pragma multi_compile _ SHADOWS_SHADOWMASK
             #pragma multi_compile_fragment _ LIGHTMAP_ON
+
             #include "Lib/PBRForwardPass.hlsl"
             
             ENDHLSL

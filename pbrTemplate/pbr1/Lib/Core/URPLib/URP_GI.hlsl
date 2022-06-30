@@ -27,7 +27,8 @@
     #define LIGHTMAP_HDR_EXPONENT half(1.0)
 #endif
 
- half3 UnpackLightmapRGBM(half4 rgbmInput, half4 decodeInstructions)
+
+half3 UnpackLightmapRGBM(half4 rgbmInput, half4 decodeInstructions)
 {
 #ifdef UNITY_COLORSPACE_GAMMA
     return rgbmInput.rgb * (rgbmInput.a * decodeInstructions.x);
@@ -77,8 +78,9 @@ half4 SampleShadowMask(half2 uv){
     return SAMPLE_TEXTURE2D(unity_ShadowMask,samplerunity_ShadowMask,uv);
 }
 
-
-
+#define SampleSH(n) ShadeSH9(float4(n,1)) 
+ #define PerceptualRoughnessToMipmapLevel(roughness) roughness * (1.7 - roughness * 0.7) * 6
+ 
 //--------------------- IBL
 half3 DecodeHDREnvironment(half4 encodedIrradiance, half4 decodeInstructions)
 {

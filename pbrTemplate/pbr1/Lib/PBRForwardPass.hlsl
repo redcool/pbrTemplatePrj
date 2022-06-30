@@ -5,7 +5,9 @@
 #include "Core/BSDF.hlsl"
 #include "Core/Fog.hlsl"
 #include "PBRInput.hlsl"
-#include "PBRCore.hlsl"
+
+#define DRP_CODE
+#include "Core/Lighting.hlsl"
 
 
 struct appdata
@@ -78,7 +80,7 @@ half4 frag (v2f i) : SV_Target
 
     half4 shadowMask = SampleShadowMask(i.uv.zw);
     // return shadowMask;
-    half shadowAtten = CalcShadow(i.shadowCoord,worldPos,shadowMask);
+    half shadowAtten = CalcShadow(i.shadowCoord,worldPos,shadowMask,_ReceiveShadow,_MainLightShadowSoftScale);
     // return shadowAtten;
 //--------- lighting
     half4 mainTex = tex2D(_MainTex, mainUV) * _Color;
@@ -151,7 +153,7 @@ half4 frag (v2f i) : SV_Target
     half4 col = 1;
     col.rgb = directColor + giColor;
     #if defined(_ADDITIONAL_LIGHTS_ON)
-    col.xyz += CalcAdditionalLights(worldPos,v,n,diffColor,specColor,a,a2,shadowMask);
+    col.xyz += CalcAdditionalLights(worldPos,diffColor,specColor,n,v,a,a2,0,0,shadowMask);
     #endif
 //------ fog
     col.rgb = MixFog(col.xyz,i.fogFactor.x);
