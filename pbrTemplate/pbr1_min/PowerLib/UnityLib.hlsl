@@ -12,16 +12,8 @@
 #define CBUFFER_START(name) cbuffer name {
 #define CBUFFER_END };
 
-#if defined(DRP)
-    float4 _WorldSpaceLightPos0;
-    float4 _LightColor0;
-    #define _MainLightPosition _WorldSpaceLightPos0
-    #define _MainLightColor _LightColor0
-#else
-    float4 _MainLightPosition;
-    float4 _MainLightColor;
-#endif
-
+float4 _MainLightPosition;
+float4 _MainLightColor;
 
 //////////// #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/UnityInput.hlsl"
 // Time (t = time since current level load) values from Unity
@@ -393,5 +385,14 @@ float3 UnpackNormalScale(float4 packedNormal, float bumpScale)
 #endif
 }
 
+
+//============================ Macros
+#define UnityObjectToWorldDir(dir) TransformObjectToWorldDir(dir)
+#define UnityObjectToClipPos(v) TransformObjectToHClip(v)
+#define UnityObjectToWorldNormal(n) TransformObjectToWorldNormal(n)
+#define UnityWorldSpaceViewDir(p) GetWorldSpaceViewDir(p)
+#define UnityWorldSpaceLightDir(p) GetWorldSpaceLightDir(p)
+#define _WorldSpaceLightPos0 _MainLightPosition
+#define _LightColor0 _MainLightColor
 //============================
 #endif // UNITY_LIB_HLSL
