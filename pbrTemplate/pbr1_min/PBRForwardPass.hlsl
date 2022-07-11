@@ -96,7 +96,7 @@ half seaDepth = wpos.y - worldPos.y - _Depth;
 
     half mip = roughness * (1.7 - roughness * 0.7) * 6;
     half3 reflectDir = reflect(-v,n);
-    half4 envColor = texCUBElod(unity_SpecCube0,half4(reflectDir,mip));
+    half4 envColor = SAMPLE_TEXTURECUBE_LOD(unity_SpecCube0,samplerunity_SpecCube0,reflectDir,mip);
     envColor.xyz = DecodeHDREnvironment(envColor,unity_SpecCube0_HDR);
 
     half surfaceReduction = 1/(a2+1);
