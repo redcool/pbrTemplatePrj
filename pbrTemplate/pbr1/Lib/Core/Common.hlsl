@@ -308,22 +308,11 @@ half4 ComputeScreenPos(half4 positionCS)
 #endif  //! UNITY_CG_INCLUDED
 
 inline half Pow2(half a){return a*a;}
-
-// inline half Pow4(half a){
-//     half a2 = a*a;
-//     return a2*a2;
-// }
-
 inline half Pow5(half a){
     half a2 = a*a;
     return a2*a2*a;
 }
 
-
-half SafeDiv(half numer, half denom)
-{
-    return (numer != denom) ? numer / denom : 1;
-}
 half3 SafeNormalize(half3 inVec)
 {
     half3 dp3 = max(FLT_MIN, dot(inVec, inVec));
