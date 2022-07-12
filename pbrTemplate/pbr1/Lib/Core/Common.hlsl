@@ -309,10 +309,10 @@ half4 ComputeScreenPos(half4 positionCS)
 
 inline half Pow2(half a){return a*a;}
 
-inline half Pow4(half a){
-    half a2 = a*a;
-    return a2*a2;
-}
+// inline half Pow4(half a){
+//     half a2 = a*a;
+//     return a2*a2;
+// }
 
 inline half Pow5(half a){
     half a2 = a*a;
