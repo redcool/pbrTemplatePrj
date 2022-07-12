@@ -29,7 +29,7 @@ Shader "Lit/pbr1"
         [Group(LightModeGroup)]   
         [GroupToggle(LightModeGroup)]_SpecularOn("_SpecularOn",int) = 1
         // [Enum(PBR,0,Aniso,1,Charlie,2)]_PbrMode("_PbrMode",int) = 0
-        [GroupEnum(LightModeGroup,PBR Aniso Charlie,true)]_PbrMode("_PbrMode",int) = 0
+        [GroupEnum(LightModeGroup,_PBRMODE_PBR _PBRMODE_ANISO _PBRMODE_CHARLIE,true)]_PbrMode("_PbrMode",int) = 0
         
         [Group(ShadowGroup)]
         //[LineHeader(Shadows)]
@@ -47,7 +47,7 @@ Shader "Lit/pbr1"
         [Group(Aniso)]
         [GroupToggle(Aniso)]_CalcTangent("_CalcTangent",int) = 0
         [GroupItem(Aniso)]_AnisoRough("_AnisoRough",range(-0.5,0.5)) = 0
-        [GroupItem(Aniso)]_AnisoShift("_AnisoShift",float) = 0
+        [GroupItem(Aniso)]_AnisoShift("_AnisoShift",range(-1,1)) = 0
 
         [Group(Thin Film)]
         [GroupToggle(Thin Film)]_TFOn("_TFOn",int) = 0

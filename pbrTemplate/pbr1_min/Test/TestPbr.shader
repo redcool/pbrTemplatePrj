@@ -101,7 +101,7 @@ Shader "Unlit/TestPbr"
 // return lerp(specColor,grazingTerm,fresnelTerm).xyzx;
                 col.xyz += (giDiff + giSpec);
 
-                return half4(col,1);
+                return half4(giSpec,1);
             }
             ENDHLSL
         }
