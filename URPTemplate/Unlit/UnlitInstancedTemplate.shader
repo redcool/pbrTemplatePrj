@@ -56,7 +56,19 @@ half3 SampleSH(half3 normalWS)
             };
 
             sampler2D _MainTex;
-            float4 _MainTex_ST;
+            
+            #define CNAME UnityPerMaterial1
+            #if !defined(INSTANCING_ON)
+                // #define CNAME UnityPerMaterial
+            #endif
+
+            UNITY_INSTANCING_BUFFER_START(CNAME)
+                UNITY_DEFINE_INSTANCED_PROP(float4,_MainTex_ST)
+            UNITY_INSTANCING_BUFFER_END(CNAME)
+
+            #if defined(INSTANCING_ON)
+                #define _MainTex_ST UNITY_ACCESS_INSTANCED_PROP(CNAME,_MainTex_ST)
+            #endif
 
             v2f vert (appdata v)
             {
