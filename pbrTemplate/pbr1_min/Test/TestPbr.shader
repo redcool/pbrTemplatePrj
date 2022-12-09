@@ -70,7 +70,7 @@ Shader "Unlit/TestPbr"
                 half3 specColor = lerp(0.04,albedo,_Metallic);
 
                 half rough = 1-_Smoothness;
-                half a = rough * rough;
+                half a = max(rough * rough,1e-4);
                 half a2 = a * a;
 
                 half radiance = saturate(dot(n,l));
@@ -92,6 +92,7 @@ Shader "Unlit/TestPbr"
                 half3 reflectDir = reflect(-v,n);
                 half4 envColor = texCUBElod(_IBL,half4(reflectDir,mip));
                 envColor.xyz = DecodeHDREnvironment(envColor,_IBL_HDR);
+                // return envColor;
 
                 half surfaceReduction = 1/(a2+1);
                 half grazingTerm = saturate(_Smoothness+_Metallic);
@@ -101,7 +102,7 @@ Shader "Unlit/TestPbr"
 // return lerp(specColor,grazingTerm,fresnelTerm).xyzx;
                 col.xyz += (giDiff + giSpec);
 
-                return half4(giSpec,1);
+                return half4(col,1);
             }
             ENDHLSL
         }
