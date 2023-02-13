@@ -8,7 +8,7 @@ using UnityEngine.Rendering.Universal;
 namespace CommonShaders.Blur
 {
 
-    public class AfterTransparentRender : ScriptableRendererFeature
+    public class AfterTransparentRenderBlur : ScriptableRendererFeature
     {
         [Serializable]
         public class Settings
