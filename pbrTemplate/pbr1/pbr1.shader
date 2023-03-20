@@ -1,4 +1,4 @@
-Shader "Lit/pbr1"
+Shader "Character/pbr1"
 {
     /*
     lighting(pbr,charlie,aniso)
