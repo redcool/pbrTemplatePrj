@@ -36,8 +36,8 @@ Shader "Character/pbr1"
         [GroupToggle(ShadowGroup)]_ReceiveShadow("_ReceiveShadow",int) = 1
         [GroupItem(ShadowGroup)]_MainLightShadowSoftScale("_MainLightShadowSoftScale",range(0,1)) = 0.1
         //[LineHeader(Shadow Bias)]
-        [GroupItem(ShadowGroup)]_CustomShadowDepthBias("_CustomShadowDepthBias",range(0,1)) = 0.5
-        [GroupItem(ShadowGroup)]_CustomShadowNormalBias("_CustomShadowNormalBias",range(0,1)) = 0.5
+        [GroupSlider(ShadowGroup)]_CustomShadowDepthBias("_CustomShadowDepthBias",range(-1,1)) = 0.5
+        [GroupSlider(ShadowGroup)]_CustomShadowNormalBias("_CustomShadowNormalBias",range(-1,1)) = 0.5
 
         [Group(AdditionalLights)]
         [GroupToggle(AdditionalLights,_ADDITIONAL_LIGHTS_ON)]_CalcAdditionalLights("_CalcAdditionalLights",int) = 0
@@ -56,6 +56,11 @@ Shader "Character/pbr1"
         [GroupItem(Thin Film)]_TFSaturate("_TFSaturate",range(0,1)) = 1
         [GroupItem(Thin Film)]_TFBrightness("_TFBrightness",range(0,1)) = 1
 
+        [Group(Fog)]
+        [GroupToggle()]_FogOn("_FogOn",int) = 1
+        [GroupToggle(_,_DEPTH_FOG_NOISE_ON)]_FogNoiseOn("_FogNoiseOn",int) = 0
+        [GroupToggle(_)]_DepthFogOn("_DepthFogOn",int) = 1
+        [GroupToggle(_)]_HeightFogOn("_HeightFogOn",int) = 1
         // [Group(Lightmap)]
         // [GroupToggle(Lightmap,LIGHTMAP_ON)]_LightmapOn("_LightmapOn",int) = 0
         
@@ -73,13 +78,15 @@ Shader "Character/pbr1"
             #pragma fragment frag
             #pragma target 3.0
             // #pragma multi_compile_fog
-            #pragma multi_compile _PBRMODE_PBR _PBRMODE_ANISO _PBRMODE_CHARLIE
             #pragma multi_compile _ _MAIN_LIGHT_SHADOWS _MAIN_LIGHT_SHADOWS_CASCADE _MAIN_LIGHT_SHADOWS_SCREEN
             #pragma multi_compile_fragment _ _ADDITIONAL_LIGHTS_ON
 
-            #pragma multi_compile _ LIGHTMAP_SHADOW_MIXING
+            // #pragma multi_compile _ LIGHTMAP_SHADOW_MIXING
             #pragma multi_compile _ SHADOWS_SHADOWMASK
             #pragma multi_compile_fragment _ LIGHTMAP_ON
+
+            #pragma shader_feature _PBRMODE_PBR _PBRMODE_ANISO _PBRMODE_CHARLIE
+            #pragma shader_feature _DEPTH_FOG_NOISE_ON
 
             #include "Lib/PBRForwardPass.hlsl"
             

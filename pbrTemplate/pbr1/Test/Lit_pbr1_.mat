@@ -2,23 +2,23 @@
 %TAG !u! tag:unity3d.com,2011:
 --- !u!21 &2100000
 Material:
-  serializedVersion: 7
+  serializedVersion: 8
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: Lit_pbr1_
   m_Shader: {fileID: 4800000, guid: eef8dd0a96d0a5b4eb9c9594e8ca5288, type: 3}
-  m_Parent: {fileID: 0}
-  m_ModifiedSerializedProperties: 0
-  m_ShaderKeywords: _ADDITIONAL_LIGHTS_ON _PBRMODE_PBR
+  m_ValidKeywords:
+  - _ADDITIONAL_LIGHTS_ON
+  - _PBRMODE_CHARLIE
+  m_InvalidKeywords: []
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
   m_CustomRenderQueue: -1
   stringTagMap: {}
   disabledShaderPasses: []
-  m_LockedProperties: 
   m_SavedProperties:
     serializedVersion: 3
     m_TexEnvs:
@@ -92,25 +92,30 @@ Material:
     - _AlphaClip: 0
     - _AnisoArgs: 0
     - _AnisoGroup: 0
-    - _AnisoRough: 0.029
-    - _AnisoShift: 0
+    - _AnisoRough: -0.304
+    - _AnisoShift: -0.32
     - _Blend: 0
     - _BumpScale: 1
     - _CalcAdditionalLights: 1
-    - _CalcTangent: 1
+    - _CalcTangent: 0
     - _ClearCoatMask: 0
     - _ClearCoatSmoothness: 0
     - _Cull: 2
-    - _CustomShadowDepthBias: 0.5
+    - _CustomShadowDepthBias: 0.53
     - _CustomShadowNormalBias: 0.5
     - _Cutoff: 0.5
+    - _DepthFogOn: 1
     - _DetailAlbedoMapScale: 1
     - _DetailNormalMapScale: 1
     - _DstBlend: 0
     - _EnvironmentReflections: 1
+    - _FogNoiseOn: 0
+    - _FogON: 0
+    - _FogOn: 0
     - _GlossMapScale: 0
     - _Glossiness: 0
     - _GlossyReflections: 0
+    - _HeightFogOn: 1
     - _LightModeGroup: 0
     - _LightmapOn: 0
     - _MainGroup: 1
@@ -121,7 +126,7 @@ Material:
     - _OcclusionStrength: 1
     - _PBRMaskGroup: 0
     - _Parallax: 0.005
-    - _PbrMode: 0
+    - _PbrMode: 2
     - _QueueOffset: 0
     - _ReceiveAdditionalLightShadow: 1
     - _ReceiveShadow: 1
@@ -133,12 +138,12 @@ Material:
     - _SpecularOn: 1
     - _SrcBlend: 1
     - _Surface: 0
-    - _TFBrightness: 1
+    - _TFBrightness: 0.086
     - _TFGroup: 1
-    - _TFOffset: 0
+    - _TFOffset: 1.2
     - _TFOn: 0
     - _TFSaturate: 1
-    - _TFScale: 0.2
+    - _TFScale: 5.78
     - _WorkflowMode: 1
     - _ZWrite: 1
     m_Colors:

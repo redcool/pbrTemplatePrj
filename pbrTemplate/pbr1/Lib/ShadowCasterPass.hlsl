@@ -1,11 +1,17 @@
 #if !defined(SHADOW_CASTER_PASS_HLSL)
 #define SHADOW_CASTER_PASS_HLSL
 
-#include "Core/Common.hlsl"
 #include "PBRInput.hlsl"
-#include "Core/URPLib/URP_MainLightShadows.hlsl"
+#include "../../../../PowerShaderLib/URPLib/URP_MainLightShadows.hlsl"
 
-
+struct appdata
+{
+    half4 vertex : POSITION;
+    half2 uv : TEXCOORD0;
+    half3 normal:NORMAL;
+    half4 tangent:TANGENT;
+    UNITY_VERTEX_INPUT_INSTANCE_ID
+};
 struct v2f{
     half2 uv:TEXCOORD0;
     half4 pos:SV_POSITION;
@@ -14,10 +20,10 @@ struct v2f{
 half3 _LightDirection;
 
 //--------- shadow helpers
-half4 GetShadowPositionHClip(appdata_full input){
+half4 GetShadowPositionHClip(appdata input){
     half3 worldPos = mul(unity_ObjectToWorld,input.vertex).xyz;
     half3 worldNormal = UnityObjectToWorldNormal(input.normal);
-    half4 positionCS = UnityWorldToClipPos(ApplyShadowBias(worldPos,worldNormal,_LightDirection,CustomShadowNormalBias(),CustomShadowDepthBias()));
+    half4 positionCS = UnityWorldToClipPos(ApplyShadowBias(worldPos,worldNormal,_LightDirection,_CustomShadowNormalBias,_CustomShadowDepthBias));
     #if UNITY_REVERSED_Z
         positionCS.z = min(positionCS.z, positionCS.w * UNITY_NEAR_CLIP_VALUE);
     #else
@@ -26,7 +32,7 @@ half4 GetShadowPositionHClip(appdata_full input){
     return positionCS;
 }
 
-v2f vert(appdata_full input){
+v2f vert(appdata input){
     v2f output;
 
     #if defined(SHADOW_PASS)
@@ -34,7 +40,7 @@ v2f vert(appdata_full input){
     #else 
         output.pos = UnityObjectToClipPos(input.vertex);
     #endif
-    output.uv = TRANSFORM_TEX(input.texcoord,_MainTex);
+    output.uv = TRANSFORM_TEX(input.uv,_MainTex);
     return output;
 }
 

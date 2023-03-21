@@ -1,7 +1,6 @@
 #if !defined(PBR_INPUT_HLSL)
 #define PBR_INPUT_HLSL
-#include "Lib/Core/Common.hlsl"
-
+#include "../../../../PowerShaderLib/Lib/UnityLib.hlsl"
 
 sampler2D _MainTex;
 sampler2D _NormalMap;
@@ -31,12 +30,11 @@ half _CalcAdditionalLights,_ReceiveAdditionalLightShadow,_AdditionalIghtSoftShad
 half _TFOn,_TFScale,_TFOffset,_TFSaturate,_TFBrightness;
 half _ReceiveShadow;
 
+half _FogOn;
+half _FogNoiseOn;
+half _DepthFogOn;
+half _HeightFogOn;
+
 CBUFFER_END
 
-half CustomShadowDepthBias(){
-    return lerp(-1,1,_CustomShadowDepthBias);
-}
-half CustomShadowNormalBias(){
-    return lerp(-1,1,_CustomShadowNormalBias);
-}
 #endif //PBR_INPUT_HLSL
