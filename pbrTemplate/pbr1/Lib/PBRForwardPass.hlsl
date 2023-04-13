@@ -54,7 +54,7 @@ float4 frag (v2f i) : SV_Target
     UNITY_SETUP_INSTANCE_ID(i);
 
     TANGENT_SPACE_SPLIT(i);
-    // i.shadowCoord = TransformWorldToShadowCoord(worldPos);
+    i.shadowCoord = TransformWorldToShadowCoord(worldPos);
     float2 mainUV = i.uv.xy;
 
     float4 pbrMask = tex2D(_PbrMask,mainUV);
@@ -81,7 +81,7 @@ float4 frag (v2f i) : SV_Target
 
     float4 shadowMask = SampleShadowMask(i.uv.zw);
     // return shadowMask;
-    float shadowAtten = CalcShadow(i.shadowCoord,worldPos,shadowMask,_ReceiveShadow,_MainLightShadowSoftScale);
+    float shadowAtten = CalcShadow(i.shadowCoord,worldPos,shadowMask,_MainLightShadowSoftScale);
     // return shadowAtten;
 //--------- lighting
     float4 mainTex = tex2D(_MainTex, mainUV) * _Color;
@@ -154,7 +154,7 @@ float4 frag (v2f i) : SV_Target
     float4 col = 1;
     col.rgb = directColor + giColor;
     #if defined(_ADDITIONAL_LIGHTS_ON)
-    col.rgb += CalcAdditionalLights(worldPos,diffColor,specColor,n,v,a,a2,shadowMask);
+        col.rgb += CalcAdditionalLights(worldPos,diffColor,specColor,n,v,a,a2,shadowMask);
     #endif
 //------ fog
     // col.rgb = MixFog(col.xyz,i.fogFactor.x);

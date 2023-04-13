@@ -28,7 +28,7 @@ half _CalcAdditionalLights,_ReceiveAdditionalLightShadow,_AdditionalIghtSoftShad
 
 //thin film
 half _TFOn,_TFScale,_TFOffset,_TFSaturate,_TFBrightness;
-half _ReceiveShadow;
+half _ReceiveShadowOff;
 
 half _FogOn;
 half _FogNoiseOn;

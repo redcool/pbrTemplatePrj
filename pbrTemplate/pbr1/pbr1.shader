@@ -13,11 +13,12 @@ Shader "Character/pbr1"
     */
     Properties
     {
+        [GroupHeader(v0.0.5)]
         [Group(Main)]
         [GroupItem(Main)]_MainTex ("Texture", 2D) = "white" {}
         [GroupItem(Main)]_Color ("_Color", color) = (1,1,1,1)
         [GroupItem(Main)]_NormalMap("_NormalMap",2d)="bump"{}
-        [GroupSlider(Main)]_NormalScale("_NormalScale",range(0,5)) = 1
+        [GroupItem(Main)]_NormalScale("_NormalScale",range(0,5)) = 1
 
         [Group(PBR Mask)]
         [GroupItem(PBR Mask)]_PbrMask("_PbrMask",2d)="white"{}
@@ -26,23 +27,23 @@ Shader "Character/pbr1"
         [GroupItem(PBR Mask)]_Smoothness("_Smoothness",range(0,1)) = 0.5
         [GroupItem(PBR Mask)]_Occlusion("_Occlusion",range(0,1)) = 0
 
-        [Group(LightModeGroup)]   
-        [GroupToggle(LightModeGroup)]_SpecularOn("_SpecularOn",int) = 1
+        [Group(LightMode)]   
+        [GroupToggle(LightMode)]_SpecularOn("_SpecularOn",int) = 1
         // [Enum(PBR,0,Aniso,1,Charlie,2)]_PbrMode("_PbrMode",int) = 0
-        [GroupEnum(LightModeGroup,_PBRMODE_PBR _PBRMODE_ANISO _PBRMODE_CHARLIE,true)]_PbrMode("_PbrMode",int) = 0
+        [GroupEnum(LightMode,_PBRMODE_PBR _PBRMODE_ANISO _PBRMODE_CHARLIE,true)]_PbrMode("_PbrMode",int) = 0
         
-        [Group(ShadowGroup)]
+        [Group(Shadow)]
         //[LineHeader(Shadows)]
-        [GroupToggle(ShadowGroup)]_ReceiveShadow("_ReceiveShadow",int) = 1
-        [GroupItem(ShadowGroup)]_MainLightShadowSoftScale("_MainLightShadowSoftScale",range(0,1)) = 0.1
+        [GroupToggle(Shadow,_RECEIVE_SHADOWS_OFF)]_ReceiveShadowOff("_ReceiveShadowOff",int) = 0
+        [GroupItem(Shadow)]_MainLightShadowSoftScale("_MainLightShadowSoftScale",range(0,1)) = 0.1
         //[LineHeader(Shadow Bias)]
-        [GroupSlider(ShadowGroup)]_CustomShadowDepthBias("_CustomShadowDepthBias",range(-1,1)) = 0.5
-        [GroupSlider(ShadowGroup)]_CustomShadowNormalBias("_CustomShadowNormalBias",range(-1,1)) = 0.5
+        [GroupSlider(Shadow)]_CustomShadowDepthBias("_CustomShadowDepthBias",range(-1,1)) = 0.5
+        [GroupSlider(Shadow)]_CustomShadowNormalBias("_CustomShadowNormalBias",range(-1,1)) = 0.5
 
         [Group(AdditionalLights)]
         [GroupToggle(AdditionalLights,_ADDITIONAL_LIGHTS_ON)]_CalcAdditionalLights("_CalcAdditionalLights",int) = 0
-        [GroupToggle(AdditionalLights)]_ReceiveAdditionalLightShadow("_ReceiveAdditionalLightShadow",int) = 1
-        [GroupToggle(AdditionalLights)]_AdditionalIghtSoftShadow("_AdditionalIghtSoftShadow",int) = 0
+        // [GroupToggle(AdditionalLights,_ADDITIONAL_LIGHT_SHADOWS)]_ReceiveAdditionalLightShadow("_ReceiveAdditionalLightShadow",int) = 1
+        // [GroupToggle(AdditionalLights,_ADDITIONAL_LIGHT_SHADOWS_SOFT)]_AdditionalIghtSoftShadow("_AdditionalIghtSoftShadow",int) = 0
 
         [Group(Aniso)]
         [GroupToggle(Aniso)]_CalcTangent("_CalcTangent",int) = 0
@@ -57,10 +58,10 @@ Shader "Character/pbr1"
         [GroupItem(Thin Film)]_TFBrightness("_TFBrightness",range(0,1)) = 1
 
         [Group(Fog)]
-        [GroupToggle()]_FogOn("_FogOn",int) = 1
-        [GroupToggle(_,_DEPTH_FOG_NOISE_ON)]_FogNoiseOn("_FogNoiseOn",int) = 0
-        [GroupToggle(_)]_DepthFogOn("_DepthFogOn",int) = 1
-        [GroupToggle(_)]_HeightFogOn("_HeightFogOn",int) = 1
+        [GroupToggle(Fog)]_FogOn("_FogOn",int) = 1
+        [GroupToggle(Fog,_DEPTH_FOG_NOISE_ON)]_FogNoiseOn("_FogNoiseOn",int) = 0
+        [GroupToggle(Fog)]_DepthFogOn("_DepthFogOn",int) = 1
+        [GroupToggle(Fog)]_HeightFogOn("_HeightFogOn",int) = 1
         // [Group(Lightmap)]
         // [GroupToggle(Lightmap,LIGHTMAP_ON)]_LightmapOn("_LightmapOn",int) = 0
         
@@ -78,8 +79,11 @@ Shader "Character/pbr1"
             #pragma fragment frag
             #pragma target 3.0
             // #pragma multi_compile_fog
-            #pragma multi_compile _ _MAIN_LIGHT_SHADOWS _MAIN_LIGHT_SHADOWS_CASCADE _MAIN_LIGHT_SHADOWS_SCREEN
-            #pragma multi_compile_fragment _ _ADDITIONAL_LIGHTS_ON
+            #pragma multi_compile _ _MAIN_LIGHT_SHADOWS _MAIN_LIGHT_SHADOWS_CASCADE //_MAIN_LIGHT_SHADOWS_SCREEN
+            #pragma multi_compile _ _SHADOWS_SOFT
+            #pragma shader_feature _ADDITIONAL_LIGHTS_ON
+            #pragma multi_compile _ _ADDITIONAL_LIGHT_SHADOWS
+            // #pragma multi_compile _ _ADDITIONAL_LIGHT_SHADOWS_SOFT
 
             // #pragma multi_compile _ LIGHTMAP_SHADOW_MIXING
             #pragma multi_compile _ SHADOWS_SHADOWMASK
@@ -87,6 +91,7 @@ Shader "Character/pbr1"
 
             #pragma shader_feature _PBRMODE_PBR _PBRMODE_ANISO _PBRMODE_CHARLIE
             #pragma shader_feature _DEPTH_FOG_NOISE_ON
+            #pragma shader_feature _RECEIVE_SHADOWS_OFF
 
             #include "Lib/PBRForwardPass.hlsl"
             
