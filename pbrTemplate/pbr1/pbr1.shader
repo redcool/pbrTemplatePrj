@@ -36,9 +36,10 @@ Shader "Character/pbr1"
         //[LineHeader(Shadows)]
         [GroupToggle(Shadow,_RECEIVE_SHADOWS_OFF)]_ReceiveShadowOff("_ReceiveShadowOff",int) = 0
         [GroupItem(Shadow)]_MainLightShadowSoftScale("_MainLightShadowSoftScale",range(0,1)) = 0.1
-        //[LineHeader(Shadow Bias)]
-        [GroupSlider(Shadow)]_CustomShadowDepthBias("_CustomShadowDepthBias",range(-1,1)) = 0.5
+
+        [GroupHeader(Shadow,custom bias)]
         [GroupSlider(Shadow)]_CustomShadowNormalBias("_CustomShadowNormalBias",range(-1,1)) = 0.5
+        [GroupSlider(Shadow)]_CustomShadowDepthBias("_CustomShadowDepthBias",range(-1,1)) = 0.5
 
         [Group(AdditionalLights)]
         [GroupToggle(AdditionalLights,_ADDITIONAL_LIGHTS_ON)]_CalcAdditionalLights("_CalcAdditionalLights",int) = 0
@@ -154,11 +155,17 @@ Shader "Character/pbr1"
             HLSLPROGRAM
             #pragma vertex vert
             #pragma fragment frag
+
+            // This is used during shadow map generation to differentiate between directional and punctual light shadows, as they use different formulas to apply Normal Bias
+            #pragma multi_compile_vertex _ _CASTING_PUNCTUAL_LIGHT_SHADOW
+
             #pragma shader_feature_fragment ALPHA_TEST
             
             #define SHADOW_PASS 
             #define USE_SAMPLER2D
-            #define _MainTexChannel 3       
+            #define _MainTexChannel 3
+            #define _CustomShadowNormalBias _CustomShadowNormalBias
+            #define _CustomShadowDepthBias _CustomShadowDepthBias
             #include "Lib/PBRInput.hlsl"
             #include "../../../PowerShaderLib/URPLib/ShadowCasterPass.hlsl"
 
