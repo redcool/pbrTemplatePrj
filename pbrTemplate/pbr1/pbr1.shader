@@ -62,9 +62,31 @@ Shader "Character/pbr1"
         [GroupToggle(Fog,_DEPTH_FOG_NOISE_ON)]_FogNoiseOn("_FogNoiseOn",int) = 0
         [GroupToggle(Fog)]_DepthFogOn("_DepthFogOn",int) = 1
         [GroupToggle(Fog)]_HeightFogOn("_HeightFogOn",int) = 1
+
+
         // [Group(Lightmap)]
         // [GroupToggle(Lightmap,LIGHTMAP_ON)]_LightmapOn("_LightmapOn",int) = 0
-        
+        [Group(Alpha)]
+        [GroupHeader(Alpha,BlendMode)]
+        [GroupPresetBlendMode(Alpha,,_SrcMode,_DstMode)]_PresetBlendMode("_PresetBlendMode",int)=0
+        // [GroupEnum(Alpha,UnityEngine.Rendering.BlendMode)]
+        [HideInInspector]_SrcMode("_SrcMode",int) = 1
+        [HideInInspector]_DstMode("_DstMode",int) = 0
+
+        [GroupHeader(Alpha,Premultiply)]
+        [GroupToggle(Alpha)]_AlphaPremultiply("_AlphaPremultiply",int) = 0
+
+        [GroupHeader(Alpha,AlphaTest)]
+        [GroupToggle(Alpha,ALPHA_TEST)]_AlphaTestOn("_AlphaTestOn",int) = 0
+        [GroupSlider(Alpha)]_Cutoff("_Cutoff",range(0,1)) = 0.5
+
+        [Group(Settings)]
+        [GroupEnum(Settings,UnityEngine.Rendering.CullMode)]_CullMode("_CullMode",int) = 2
+		[GroupToggle(Settings)]_ZWriteMode("ZWriteMode",int) = 1
+		/*
+		Disabled,Never,Less,Equal,LessEqual,Greater,NotEqual,GreaterEqual,Always
+		*/
+		[GroupEnum(Settings,UnityEngine.Rendering.CompareFunction)]_ZTestMode("_ZTestMode",float) = 4
     }
 
     SubShader
@@ -74,6 +96,13 @@ Shader "Character/pbr1"
 
         Pass
         {
+			ZWrite[_ZWriteMode]
+			Blend [_SrcMode][_DstMode]
+			// BlendOp[_BlendOp]
+			Cull[_CullMode]
+			ztest[_ZTestMode]
+			// ColorMask [_ColorMask]
+
             HLSLPROGRAM
             #pragma vertex vert
             #pragma fragment frag
@@ -81,7 +110,7 @@ Shader "Character/pbr1"
             // #pragma multi_compile_fog
             #pragma multi_compile _ _MAIN_LIGHT_SHADOWS _MAIN_LIGHT_SHADOWS_CASCADE //_MAIN_LIGHT_SHADOWS_SCREEN
             #pragma multi_compile _ _SHADOWS_SOFT
-            #pragma shader_feature _ADDITIONAL_LIGHTS_ON
+            #pragma shader_feature_fragment _ADDITIONAL_LIGHTS_ON
             #pragma multi_compile _ _ADDITIONAL_LIGHT_SHADOWS
             // #pragma multi_compile _ _ADDITIONAL_LIGHT_SHADOWS_SOFT
 
@@ -89,12 +118,30 @@ Shader "Character/pbr1"
             #pragma multi_compile _ SHADOWS_SHADOWMASK
             #pragma multi_compile_fragment _ LIGHTMAP_ON
 
-            #pragma shader_feature _PBRMODE_PBR _PBRMODE_ANISO _PBRMODE_CHARLIE
-            #pragma shader_feature _DEPTH_FOG_NOISE_ON
-            #pragma shader_feature _RECEIVE_SHADOWS_OFF
+            #pragma shader_feature_fragment _PBRMODE_PBR _PBRMODE_ANISO _PBRMODE_CHARLIE
+            #pragma shader_feature_fragment _DEPTH_FOG_NOISE_ON
+            #pragma shader_feature_fragment _RECEIVE_SHADOWS_OFF
+            #pragma shader_feature_fragment ALPHA_TEST
 
             #include "Lib/PBRForwardPass.hlsl"
             
+            ENDHLSL
+        }
+
+        Pass{
+            Tags{"LightMode" = "DepthOnly"}
+
+            ZWrite On
+            ZTest LEqual
+            ColorMask 0
+            HLSLPROGRAM
+            #pragma vertex vert
+            #pragma fragment frag 
+            #pragma shader_feature_fragment ALPHA_TEST
+
+            #include "Lib/PBRInput.hlsl"
+            #include "../../../PowerShaderLib/URPLib/ShadowCasterPass.hlsl"
+
             ENDHLSL
         }
 
@@ -106,24 +153,14 @@ Shader "Character/pbr1"
             ColorMask 0
             HLSLPROGRAM
             #pragma vertex vert
-            #pragma fragment frag 
+            #pragma fragment frag
+            #pragma shader_feature_fragment ALPHA_TEST
             
             #define SHADOW_PASS 
-            #include "Lib/ShadowCasterPass.hlsl"
-
-            ENDHLSL
-        }
-        Pass{
-            Tags{"LightMode" = "DepthOnly"}
-
-            ZWrite On
-            ZTest LEqual
-            ColorMask 0
-            HLSLPROGRAM
-            #pragma vertex vert
-            #pragma fragment frag 
-
-            #include "Lib/ShadowCasterPass.hlsl"
+            #define USE_SAMPLER2D
+            #define _MainTexChannel 3       
+            #include "Lib/PBRInput.hlsl"
+            #include "../../../PowerShaderLib/URPLib/ShadowCasterPass.hlsl"
 
             ENDHLSL
         }

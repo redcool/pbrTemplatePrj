@@ -25,7 +25,7 @@ struct v2f
     float4 tSpace0:TEXCOORD1;
     float4 tSpace1:TEXCOORD2;
     float4 tSpace2:TEXCOORD3;
-    float4 shadowCoord:TEXCOORD4;
+    // float4 shadowCoord:TEXCOORD4;
     float4 fogCoord:TEXCOORD5;
     
     UNITY_VERTEX_INPUT_INSTANCE_ID
@@ -54,7 +54,7 @@ float4 frag (v2f i) : SV_Target
     UNITY_SETUP_INSTANCE_ID(i);
 
     TANGENT_SPACE_SPLIT(i);
-    i.shadowCoord = TransformWorldToShadowCoord(worldPos);
+
     float2 mainUV = i.uv.xy;
 
     float4 pbrMask = tex2D(_PbrMask,mainUV);
@@ -81,14 +81,18 @@ float4 frag (v2f i) : SV_Target
 
     float4 shadowMask = SampleShadowMask(i.uv.zw);
     // return shadowMask;
-    float shadowAtten = CalcShadow(i.shadowCoord,worldPos,shadowMask,_MainLightShadowSoftScale);
-    // return shadowAtten;
+    float4 shadowCoord = TransformWorldToShadowCoord(worldPos);
+    float shadowAtten = CalcShadow(shadowCoord,worldPos,shadowMask,_MainLightShadowSoftScale);
+    float3 radiance = _MainLightColor.xyz * nl * shadowAtten;
+
 //--------- lighting
     float4 mainTex = tex2D(_MainTex, mainUV) * _Color;
     float3 albedo = mainTex.xyz;
     float alpha = mainTex.w;
 
-    float3 radiance = _MainLightColor.xyz * nl * shadowAtten;
+    #if defined(ALPHA_TEST)
+        clip(alpha - _Cutoff);
+    #endif
     
     float specTerm = 0;
 
@@ -116,6 +120,8 @@ float4 frag (v2f i) : SV_Target
             specTerm = CharlieD(nh, roughness);
         // }
         #endif
+        // will show strange color, exceed range
+        specTerm = min(100,specTerm);
     }
 
     float3 specColor = lerp(0.04,albedo,metallic);
@@ -130,28 +136,12 @@ float4 frag (v2f i) : SV_Target
 // return directColor.xyzx;
 //------- gi
     float3 giColor = 0;
-    float3 giDiff = 0;
-
-    #if defined(LIGHTMAP_ON)
-        giDiff = SampleLightmap(i.uv.zw) * diffColor;
-    #else
-        giDiff = SampleSH(float4(n,1)) * diffColor;
-    #endif
-
-    float mip = roughness * (1.7 - roughness * 0.7) * 6;
-    float3 reflectDir = reflect(-v,n);
-    float4 envColor = SAMPLE_TEXTURECUBE_LOD(unity_SpecCube0,samplerunity_SpecCube0,reflectDir,mip);
-    envColor.xyz = DecodeHDR(envColor,unity_SpecCube0_HDR);
-
-    float surfaceReduction = 1/(a2+1);
-    
-    float grazingTerm = saturate(smoothness + metallic);
-    float fresnelTerm = Pow4(1-nv);
-    float3 giSpec = surfaceReduction * envColor.xyz * lerp(specColor,grazingTerm,fresnelTerm);
+    float3 giDiff = CalcGIDiff(normal,diffColor);
+    float3 giSpec = CalcGISpec(unity_SpecCube0,samplerunity_SpecCube0,unity_SpecCube0_HDR,specColor,worldPos,n,v,0/*reflectDirOffset*/,1/*reflectIntensity*/,nv,roughness,a2,smoothness,metallic);
     giColor = (giDiff + giSpec) * occlusion;
 // return giColor.xyzx;
 
-    float4 col = 1;
+    float4 col = 0;
     col.rgb = directColor + giColor;
     #if defined(_ADDITIONAL_LIGHTS_ON)
         col.rgb += CalcAdditionalLights(worldPos,diffColor,specColor,n,v,a,a2,shadowMask);

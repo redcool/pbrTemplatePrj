@@ -24,7 +24,7 @@ half _CalcTangent;
 half _MainLightShadowSoftScale;
 half _CustomShadowDepthBias,_CustomShadowNormalBias;
 
-half _CalcAdditionalLights,_ReceiveAdditionalLightShadow,_AdditionalIghtSoftShadow;
+// half _CalcAdditionalLights,_ReceiveAdditionalLightShadow,_AdditionalIghtSoftShadow;
 
 //thin film
 half _TFOn,_TFScale,_TFOffset,_TFSaturate,_TFBrightness;
@@ -34,6 +34,9 @@ half _FogOn;
 half _FogNoiseOn;
 half _DepthFogOn;
 half _HeightFogOn;
+
+half _AlphaPremultiply;
+half _Cutoff;
 
 CBUFFER_END
 
