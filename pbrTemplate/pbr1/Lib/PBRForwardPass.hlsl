@@ -5,6 +5,7 @@
 #include "../../../../PowerShaderLib/Lib/BSDF.hlsl"
 #include "../../../../PowerShaderLib/Lib/Colors.hlsl"
 #include "../../../../PowerShaderLib/Lib/FogLib.hlsl"
+#include "../../../../PowerShaderLib/Lib/MaterialLib.hlsl"
 #include "../../../../PowerShaderLib/URPLib/Lighting.hlsl"
 
 struct appdata
@@ -58,10 +59,15 @@ float4 frag (v2f i) : SV_Target
     float2 mainUV = i.uv.xy;
 
     float4 pbrMask = tex2D(_PbrMask,mainUV);
-    float metallic = pbrMask.r * _Metallic;
-    float smoothness = pbrMask.g * _Smoothness;
-    float occlusion = lerp(1,pbrMask.b,_Occlusion);
-    float roughness = 1 - smoothness;
+    float metallic = 0;
+    float smoothness =0;
+    float occlusion =0;
+    SplitPbrMaskTexture(metallic/**/,smoothness/**/,occlusion/**/,pbrMask,int3(0,1,2),float3(_Metallic,_Smoothness,_Occlusion),false);
+
+    float roughness = 0;
+    float a = 0;
+    float a2 = 0;
+    CalcRoughness(roughness/**/,a/**/,a2/**/,smoothness);
 
     float3 tn = UnpackNormalScale(tex2D(_NormalMap,mainUV),_NormalScale);
     float3 n = normalize(TangentToWorld(tn,i.tSpace0,i.tSpace1,i.tSpace2));
@@ -73,8 +79,6 @@ float4 frag (v2f i) : SV_Target
     float lh = saturate(dot(l,h));
     float nh = saturate(dot(n,h));
     float nl = saturate(dot(n,l));
-    float a = max(roughness * roughness, HALF_MIN_SQRT);
-    float a2 = max(a * a ,HALF_MIN);
 
     float nv = saturate(dot(n,v));
 // return v.xyzx;
