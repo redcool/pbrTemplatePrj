@@ -70,6 +70,7 @@ Shader "Custom/PlanarShadow_URP"
             #pragma vertex vert
             #pragma fragment frag
             
+            UNITY_INSTANCING_BUFFER_START(UnityPerMaterial)
             float _GroundHeight;
             float4 _ShadowColor;
             float _ShadowFalloff;
@@ -78,6 +79,7 @@ Shader "Custom/PlanarShadow_URP"
             float4 _BaseMap_ST;
             float _Clipping;
             half _Cutoff;
+            UNITY_INSTANCING_BUFFER_END(UnityPerMaterial)
 
             struct appdata
             {
