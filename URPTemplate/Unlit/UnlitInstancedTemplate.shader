@@ -6,24 +6,11 @@ Shader "Template/UnlitInstanced"
     }
 
     HLSLINCLUDE
-            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
-#include "Packages/com.unity.render-pipelines.core/ShaderLibrary/UnityInstancing.hlsl"
-#include "Packages/com.unity.render-pipelines.core/ShaderLibrary/EntityLighting.hlsl"
-// Samples SH L0, L1 and L2 terms
-half3 SampleSH(half3 normalWS)
-{
-    // LPPV is not supported in Ligthweight Pipeline
-    real4 SHCoefficients[7];
-    SHCoefficients[0] = unity_SHAr;
-    SHCoefficients[1] = unity_SHAg;
-    SHCoefficients[2] = unity_SHAb;
-    SHCoefficients[3] = unity_SHBr;
-    SHCoefficients[4] = unity_SHBg;
-    SHCoefficients[5] = unity_SHBb;
-    SHCoefficients[6] = unity_SHC;
-
-    return max(half3(0, 0, 0), SampleSH9(SHCoefficients, normalWS));
-}
+    #include "../../../PowerShaderLib/Lib/UnityLib.hlsl"
+    // urp's flow
+// #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
+// #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/BRDF.hlsl"
+// #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/GlobalIllumination.hlsl"
     ENDHLSL
     SubShader
     {
