@@ -24,7 +24,17 @@ Shader "Template/UnlitInstanced"
             #pragma fragment frag
             #pragma multi_compile_instancing
 
+            #if !defined(INSTANCING_ON)
+                #define UnityPerMaterial UnityPerMaterial
+            #endif
 
+            // define variables
+            UNITY_INSTANCING_BUFFER_START(UnityPerMaterial)
+                UNITY_DEFINE_INSTANCED_PROP(float4,_MainTex_ST)
+            UNITY_INSTANCING_BUFFER_END(UnityPerMaterial)
+
+            // define shortcot getters
+            #define _MainTex_ST UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial,_MainTex_ST)
 
             struct appdata
             {
@@ -43,19 +53,6 @@ Shader "Template/UnlitInstanced"
             };
 
             sampler2D _MainTex;
-            
-            #define CNAME UnityPerMaterial1
-            #if !defined(INSTANCING_ON)
-                // #define CNAME UnityPerMaterial
-            #endif
-
-            UNITY_INSTANCING_BUFFER_START(CNAME)
-                UNITY_DEFINE_INSTANCED_PROP(float4,_MainTex_ST)
-            UNITY_INSTANCING_BUFFER_END(CNAME)
-
-            #if defined(INSTANCING_ON)
-                #define _MainTex_ST UNITY_ACCESS_INSTANCED_PROP(CNAME,_MainTex_ST)
-            #endif
 
             v2f vert (appdata v)
             {
@@ -74,10 +71,13 @@ Shader "Template/UnlitInstanced"
                 UNITY_SETUP_INSTANCE_ID(i);
 
                 float3 sh = SampleSH(i.n);
-                return sh.xyzx;
                 // sample the texture
-                float4 col = tex2D(_MainTex, i.uv);
-                return col;
+                float4 mainTex = tex2D(_MainTex, i.uv);
+                float3 albedo = mainTex.xyz;
+                float alpha = mainTex.w;
+                float3 diffColor = albedo * sh;
+                
+                return float4(diffColor,alpha);
             }
             ENDHLSL
         }
