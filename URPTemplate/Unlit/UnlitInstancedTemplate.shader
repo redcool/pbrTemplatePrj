@@ -25,7 +25,7 @@ Shader "Template/UnlitInstanced"
             #pragma multi_compile_instancing
 
             #if !defined(INSTANCING_ON)
-                #define UnityPerMaterial UnityPerMaterial
+                #define UnityPerMaterial _UnityPerMaterial
             #endif
 
             // define variables
@@ -77,7 +77,7 @@ Shader "Template/UnlitInstanced"
                 float alpha = mainTex.w;
                 float3 diffColor = albedo * sh;
                 
-                return float4(diffColor,alpha);
+                return float4(diffColor,1);
             }
             ENDHLSL
         }
