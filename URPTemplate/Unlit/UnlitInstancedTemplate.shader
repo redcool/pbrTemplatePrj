@@ -24,9 +24,10 @@ Shader "Template/UnlitInstanced"
             #pragma fragment frag
             #pragma multi_compile_instancing
 
-            #if !defined(INSTANCING_ON)
+            // nothing
+            // #if defined(INSTANCING_ON)
                 #define UnityPerMaterial _UnityPerMaterial
-            #endif
+            // #endif
 
             // define variables
             UNITY_INSTANCING_BUFFER_START(UnityPerMaterial)
