@@ -43,7 +43,7 @@ Shader "Character/pbr1"
 
         [Group(AdditionalLights)]
         [GroupToggle(AdditionalLights,_ADDITIONAL_LIGHTS_ON)]_CalcAdditionalLights("_CalcAdditionalLights",int) = 0
-        // [GroupToggle(AdditionalLights,_ADDITIONAL_LIGHT_SHADOWS)]_ReceiveAdditionalLightShadow("_ReceiveAdditionalLightShadow",int) = 1
+        [GroupToggle(AdditionalLights,_ADDITIONAL_LIGHT_SHADOWS_ON)]_ReceiveAdditionalLightShadow("_ReceiveAdditionalLightShadow",int) = 1
         // [GroupToggle(AdditionalLights,_ADDITIONAL_LIGHT_SHADOWS_SOFT)]_AdditionalIghtSoftShadow("_AdditionalIghtSoftShadow",int) = 0
 
         [Group(Aniso)]
@@ -112,7 +112,7 @@ Shader "Character/pbr1"
             #pragma multi_compile _ _MAIN_LIGHT_SHADOWS _MAIN_LIGHT_SHADOWS_CASCADE //_MAIN_LIGHT_SHADOWS_SCREEN
             #pragma multi_compile _ _SHADOWS_SOFT
             #pragma shader_feature_fragment _ADDITIONAL_LIGHTS_ON
-            #pragma multi_compile _ _ADDITIONAL_LIGHT_SHADOWS
+            #pragma shader_feature_fragment _ _ADDITIONAL_LIGHT_SHADOWS_ON
             // #pragma multi_compile _ _ADDITIONAL_LIGHT_SHADOWS_SOFT
 
             // #pragma multi_compile _ LIGHTMAP_SHADOW_MIXING
