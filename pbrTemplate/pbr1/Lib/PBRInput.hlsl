@@ -5,6 +5,7 @@
 sampler2D _MainTex;
 sampler2D _NormalMap;
 sampler2D _PbrMask;
+sampler2D _EmissionMap;
 
 CBUFFER_START(UnityPerMaterial)
 half4 _Color;
@@ -37,6 +38,8 @@ half _HeightFogOn;
 
 half _AlphaPremultiply;
 half _Cutoff;
+
+half4 _EmissionColor;
 
 CBUFFER_END
 

@@ -150,6 +150,11 @@ float4 frag (v2f i) : SV_Target
     #if defined(_ADDITIONAL_LIGHTS_ON)
         col.rgb += CalcAdditionalLights(worldPos,diffColor,specColor,n,v,a,a2,shadowMask);
     #endif
+
+//------ emission
+    #if defined(_EMISSION)
+        col.rgb += CalcEmission(tex2D(_EmissionMap,mainUV),_EmissionColor.xyz,_EmissionColor.w);
+    #endif    
 //------ fog
     // col.rgb = MixFog(col.xyz,i.fogFactor.x);
     BlendFogSphereKeyword(col.rgb/**/,worldPos,i.fogCoord.xy,_HeightFogOn,_FogNoiseOn,_DepthFogOn); // 2fps

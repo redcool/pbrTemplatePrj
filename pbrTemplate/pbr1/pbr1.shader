@@ -45,6 +45,12 @@ Shader "Character/pbr1"
         [GroupToggle(AdditionalLights,_ADDITIONAL_LIGHTS_ON)]_CalcAdditionalLights("_CalcAdditionalLights",int) = 0
         [GroupToggle(AdditionalLights,_ADDITIONAL_LIGHT_SHADOWS_ON)]_ReceiveAdditionalLightShadow("_ReceiveAdditionalLightShadow",int) = 1
         // [GroupToggle(AdditionalLights,_ADDITIONAL_LIGHT_SHADOWS_SOFT)]_AdditionalIghtSoftShadow("_AdditionalIghtSoftShadow",int) = 0
+        
+        [Group(Emission)]
+        [GroupToggle(Emission,_EMISSION)]_EmissionOn("_EmissionOn",int) = 0
+        [GroupItem(Emission)]_EmissionMap("_EmissionMap",2d)=""{}
+        [GroupItem(Emission)]_EmissionColor("_EmissionColor(w:mask)",color) = (1,1,1,1)
+        [GroupMaterialGI(Emission)]_EmissionGI("_EmissionGI",int) = 0
 
         [Group(Aniso)]
         [GroupToggle(Aniso)]_CalcTangent("_CalcTangent",int) = 0
@@ -123,6 +129,8 @@ Shader "Character/pbr1"
             #pragma shader_feature_fragment _DEPTH_FOG_NOISE_ON
             #pragma shader_feature_fragment _RECEIVE_SHADOWS_OFF
             #pragma shader_feature_fragment ALPHA_TEST
+            #pragma shader_feature_fragment _EMISSION
+            
 
             #include "Lib/PBRInput.hlsl"
             #include "Lib/PBRForwardPass.hlsl"
