@@ -124,6 +124,7 @@ Shader "Character/pbr1"
             #pragma shader_feature_fragment _RECEIVE_SHADOWS_OFF
             #pragma shader_feature_fragment ALPHA_TEST
 
+            #include "Lib/PBRInput.hlsl"
             #include "Lib/PBRForwardPass.hlsl"
             
             ENDHLSL
@@ -171,5 +172,21 @@ Shader "Character/pbr1"
 
             ENDHLSL
         }
+        Pass{
+            Name "Meta"
+            Tags{"LightMode" = "Meta"}
+            Cull Off
+            
+            HLSLPROGRAM
+            #pragma vertex vert
+            #pragma fragment frag 
+            #pragma shader_feature_fragment ALPHA_TEST
+            #pragma shader_feature_local_fragment _EMISSION
+
+            #include "Lib/PBRInput.hlsl"
+            #include "../../../PowerShaderLib/URPLib/PBR1_MetaPass.hlsl"
+
+            ENDHLSL
+        }        
     }
 }
