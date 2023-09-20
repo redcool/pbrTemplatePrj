@@ -2,15 +2,24 @@ Shader "Unlit/Bill"
 {
     Properties
     {
+        [GroupHeader(v2.0.1)]
         _MainTex ("Texture", 2D) = "white" {}
         _Color("_Color",color) = (1,1,1,1)
         [GroupToggle]_FullFaceCamera("_FullFaceCamera",int) = 0
 
-        [Header(Alpha)]
-        [Enum(UnityEngine.Rendering.BlendMode)]_SrcMode("_SrcMode",int) = 1
-        [Enum(UnityEngine.Rendering.BlendMode)]_DstMode("_DstMode",int) = 0        
-        [GroupToggle(,_ALPHA_TEST_ON)]_ClipOn("_ClipOn",int) = 0
-        _Cutoff("_Cutoff",range(0,1)) = 0.5
+        [Group(Alpha)]
+        [GroupEnum(Alpha,UnityEngine.Rendering.BlendMode)]_SrcMode("_SrcMode",int) = 1
+        [GroupEnum(Alpha,UnityEngine.Rendering.BlendMode)]_DstMode("_DstMode",int) = 0        
+        [GroupToggle(Alpha,_ALPHA_TEST_ON)]_ClipOn("_ClipOn",int) = 0
+        [GroupItem(Alpha)]_Cutoff("_Cutoff",range(0,1)) = 0.5
+
+        [Group(Settings)]
+        [GroupEnum(Settings,UnityEngine.Rendering.CullMode)]_CullMode("_CullMode",int) = 2
+		[GroupToggle(Settings)]_ZWriteMode("ZWriteMode",int) = 1
+		/*
+		Disabled,Never,Less,Equal,LessEqual,Greater,NotEqual,GreaterEqual,Always
+		*/
+		[GroupEnum(Settings,UnityEngine.Rendering.CompareFunction)]_ZTestMode("_ZTestMode",float) = 4
     }
 
     HLSLINCLUDE
@@ -26,7 +35,12 @@ Shader "Unlit/Bill"
 
         Pass
         {
-            blend[_SrcMode][_DstMode]
+			ZWrite[_ZWriteMode]
+			Blend [_SrcMode][_DstMode]
+			// BlendOp[_BlendOp]
+			Cull[_CullMode]
+			ztest[_ZTestMode]
+
             HLSLPROGRAM
             #pragma vertex vert
             #pragma fragment frag
