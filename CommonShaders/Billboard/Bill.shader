@@ -4,6 +4,7 @@ Shader "Unlit/Bill"
     {
         _MainTex ("Texture", 2D) = "white" {}
         _Color("_Color",color) = (1,1,1,1)
+        [GroupToggle]_FullFaceCamera("_FullFaceCamera",int) = 0
 
         [Header(Alpha)]
         [Enum(UnityEngine.Rendering.BlendMode)]_SrcMode("_SrcMode",int) = 1
@@ -15,6 +16,7 @@ Shader "Unlit/Bill"
     HLSLINCLUDE
     #include "../../../PowerShaderLib/Lib/UnityLib.hlsl"
     #include "../../../PowerShaderLib/UrpLib/URP_GI.hlsl"
+    #include "../../../PowerShaderLib/Lib/BillboardLib.hlsl"
     ENDHLSL
 
     SubShader
@@ -39,12 +41,18 @@ Shader "Unlit/Bill"
             // define variables
             UNITY_INSTANCING_BUFFER_START(UnityPerMaterial)
                 UNITY_DEFINE_INSTANCED_PROP(float4,_MainTex_ST)
+                UNITY_DEFINE_INSTANCED_PROP(float4,_Color)
+                
+                UNITY_DEFINE_INSTANCED_PROP(float,_FullFaceCamera)
                 UNITY_DEFINE_INSTANCED_PROP(float,_Cutoff)
             UNITY_INSTANCING_BUFFER_END(UnityPerMaterial)
 
             // define shortcot getters
             #define _MainTex_ST UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial,_MainTex_ST)
+            #define _Color UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial,_Color)
+            #define _FullFaceCamera UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial,_FullFaceCamera)
             #define _Cutoff UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial,_Cutoff)
+            
 
             struct appdata
             {
@@ -71,7 +79,8 @@ Shader "Unlit/Bill"
                 UNITY_SETUP_INSTANCE_ID(v);
                 UNITY_TRANSFER_INSTANCE_ID(v, o);
 
-                o.vertex = TransformObjectToHClip(v.vertex);
+                // o.vertex = TransformObjectToHClip(v.vertex);
+                o.vertex = BillboardVertex(v.vertex ,_FullFaceCamera);
 
                 o.uv.xy = TRANSFORM_TEX(v.uv, _MainTex);
                 o.uv.zw = v.uv1 * unity_LightmapST.xy + unity_LightmapST.zw;
@@ -88,7 +97,7 @@ Shader "Unlit/Bill"
 
                 float3 sh = SampleSH(i.n);
                 // sample the texture
-                float4 mainTex = tex2D(_MainTex, mainUV);
+                float4 mainTex = tex2D(_MainTex, mainUV) * _Color;
                 float3 albedo = mainTex.xyz;
                 float alpha = mainTex.w;
                 #if defined(_ALPHA_TEST_ON)
