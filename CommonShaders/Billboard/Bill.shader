@@ -7,9 +7,10 @@ Shader "Unlit/Bill"
         _Color("_Color",color) = (1,1,1,1)
         [GroupToggle]_FullFaceCamera("_FullFaceCamera",int) = 0
 
+
         [Group(Alpha)]
-        [GroupEnum(Alpha,UnityEngine.Rendering.BlendMode)]_SrcMode("_SrcMode",int) = 1
-        [GroupEnum(Alpha,UnityEngine.Rendering.BlendMode)]_DstMode("_DstMode",int) = 0        
+        [GroupPresetBlendMode(Alpha,blend mode,_SrcMode,_DstMode)]_PresetBlendMode("_PresetBlendMode",int)=0
+
         [GroupToggle(Alpha,_ALPHA_TEST_ON)]_ClipOn("_ClipOn",int) = 0
         [GroupItem(Alpha)]_Cutoff("_Cutoff",range(0,1)) = 0.5
 
@@ -20,6 +21,9 @@ Shader "Unlit/Bill"
 		Disabled,Never,Less,Equal,LessEqual,Greater,NotEqual,GreaterEqual,Always
 		*/
 		[GroupEnum(Settings,UnityEngine.Rendering.CompareFunction)]_ZTestMode("_ZTestMode",float) = 4
+
+        [HideInInspector][GroupEnum(Alpha,UnityEngine.Rendering.BlendMode)]_SrcMode("_SrcMode",int) = 1
+        [HideInInspector][GroupEnum(Alpha,UnityEngine.Rendering.BlendMode)]_DstMode("_DstMode",int) = 0
     }
 
     HLSLINCLUDE
