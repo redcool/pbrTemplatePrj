@@ -15,13 +15,13 @@ Shader "Character/pbr1"
     {
         [GroupHeader(v0.0.5)]
         [Group(Main)]
-        [GroupItem(Main)]_MainTex ("Texture", 2D) = "white" {}
+        [GroupItem(Main)]_BaseMap ("_BaseMap", 2D) = "white" {}
         [GroupItem(Main)]_Color ("_Color", color) = (1,1,1,1)
         [GroupItem(Main)]_NormalMap("_NormalMap",2d)="bump"{}
         [GroupItem(Main)]_NormalScale("_NormalScale",range(0,5)) = 1
 
         [Group(PBR Mask)]
-        [GroupItem(PBR Mask)]_PbrMask("_PbrMask",2d)="white"{}
+        [GroupItem(PBR Mask)]_MetallicMaskMap("_PbrMask",2d)="white"{}
 
         [GroupItem(PBR Mask)]_Metallic("_Metallic",range(0,1)) = 0.5
         [GroupItem(PBR Mask)]_Smoothness("_Smoothness",range(0,1)) = 0.5

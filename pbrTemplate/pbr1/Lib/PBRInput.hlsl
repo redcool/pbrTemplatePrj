@@ -1,6 +1,9 @@
 #if !defined(PBR_INPUT_HLSL)
 #define PBR_INPUT_HLSL
 #include "../../../../PowerShaderLib/Lib/UnityLib.hlsl"
+#define _MainTex _BaseMap
+#define _MainTex_ST _BaseMap_ST
+#define _PbrMask _MetallicMaskMap
 
 sampler2D _MainTex;
 sampler2D _NormalMap;

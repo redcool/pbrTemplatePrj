@@ -8,8 +8,9 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: Unlit_Bill
-  m_Shader: {fileID: 4800000, guid: 13ccca108204a5a4fb78b6cd8177ba7d, type: 3}
-  m_ValidKeywords: []
+  m_Shader: {fileID: 4800000, guid: 65bf04540026636498c07ce0a4bc76cd, type: 3}
+  m_ValidKeywords:
+  - _ALPHA_TEST_ON
   m_InvalidKeywords: []
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
@@ -21,15 +22,21 @@ Material:
     serializedVersion: 3
     m_TexEnvs:
     - _MainTex:
-        m_Texture: {fileID: 2800000, guid: 01c78d88ab33d8c4bb4e9fe4c559e0c3, type: 3}
+        m_Texture: {fileID: 2800000, guid: 4efae63670d05304dbf7d092fc208449, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
+    - _ClipOn: 1
+    - _CullMode: 2
+    - _Cutoff: 0.164
     - _DstMode: 10
     - _FaceCamera: 0
     - _FullFaceCamera: 0
+    - _PresetBlendMode: 0
     - _SrcMode: 5
+    - _ZTestMode: 4
+    - _ZWriteMode: 0
     m_Colors:
-    - _Color: {r: 0.18444741, g: 1, b: 0, a: 1}
+    - _Color: {r: 1, g: 1, b: 1, a: 1}
   m_BuildTextureStacks: []
