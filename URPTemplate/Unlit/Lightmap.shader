@@ -1,4 +1,4 @@
-Shader "Template/UnlitLightmap"
+Shader "Template/Unlit/Lightmap"
 {
     Properties
     {

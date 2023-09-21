@@ -1,19 +1,9 @@
-Shader "Template/Unlit"
+Shader "Hidden/Template/Unlit"
 {
     Properties
     {
-        _TexA ("Texture", 2D) = "white" {}
-        _TexB("_TexB",2d) = ""{}
+        _MainTex ("Texture", cube) = "white" {}
     }
-
-HLSLINCLUDE
-#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
-#include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Color.hlsl"
-#include "Packages/com.unity.render-pipelines.core/ShaderLibrary/EntityLighting.hlsl"
-#include "ColorSpace.hlsl"
-
-ENDHLSL
-
     SubShader
     {
         Tags { "RenderType"="Opaque" }
@@ -25,51 +15,44 @@ ENDHLSL
             #pragma vertex vert
             #pragma fragment frag
 
+            #include "../../../PowerShaderLib/Lib/UnityLib.hlsl"
+
 
             struct appdata
             {
                 float4 vertex : POSITION;
                 float2 uv : TEXCOORD0;
+                float3 normal:NORMAL;
             };
 
             struct v2f
             {
                 float2 uv : TEXCOORD0;
                 float4 vertex : SV_POSITION;
+                float3 normal:TEXCOORD1;
+                float3 viewDir:TEXCOORD2;
             };
 
-            sampler2D _TexA;
-            sampler2D _TexB;
+            samplerCUBE _MainTex;
 
             v2f vert (appdata v)
             {
                 v2f o;
                 o.vertex = TransformObjectToHClip(v.vertex);
-                // v.vertex.xy *= 2;
-                // o.vertex = v.vertex;
                 o.uv = v.uv;
-                return o;
-            }
+                float3 worldPos = TransformObjectToWorld(v.vertex);
 
-            float3 BlendHue(float3 a,float3 b){
-                a = RgbToLch(a);
-                b = RgbToLch(b);
-                // a = float3(b.xy,a.z); // hue
-                // a = float3(b.x,a.y,b.z); // saturation
-                // a = float3(b.x,a.yz); // color
-                a = float3(a.x,b.yz); //luminosity
-                a = LchToRgb(a);
-                return a;
+                o.normal = TransformObjectToWorldNormal(v.normal);
+                o.viewDir = _WorldSpaceCameraPos.xyz - worldPos;
+                return o;
             }
 
             float4 frag (v2f i) : SV_Target
             {
+                float3 reflectDir = reflect(-i.viewDir,normalize(i.normal));
                 // sample the texture
-                float4 colA = tex2D(_TexA, i.uv);
-                float4 colB = tex2D(_TexB,i.uv);
-
-                float3 col = BlendHue(colA.xyz,colB.xyz);
-                return col.xyzx;
+                float4 col = texCUBE(_MainTex, reflectDir);
+                return col;
             }
             ENDHLSL
         }

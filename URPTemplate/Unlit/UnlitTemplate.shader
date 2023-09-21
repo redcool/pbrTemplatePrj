@@ -1,4 +1,4 @@
-Shader "Template/Unlit"
+Shader "Template/Unlit/Base"
 {
     Properties
     {

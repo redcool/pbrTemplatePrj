@@ -1,4 +1,4 @@
-Shader "Unlit/Bill"
+Shader "Template/Unlit/InstancedLightmap"
 {
     Properties
     {

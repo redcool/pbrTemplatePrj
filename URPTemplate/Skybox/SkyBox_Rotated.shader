@@ -34,20 +34,12 @@ Shader "Template/Unlit/SkyBox_Rotated"
             samplerCUBE _Cube;
             float _Angle;
 
-            float3 RotateAroundY(float3 vertex,float rad){
-                float s,c;
-                sincos(rad,s,c);
-                float2x2 m = {
-                    c,-s,
-                    s,c
-                };
-                return float3(mul(m,vertex.xz),vertex.y).xzy;
-            }
-
             v2f vert (appdata v)
             {
                 v2f o;
-                float3 rotatedVertex = RotateAroundY(v.vertex.xyz,radians(_Angle));
+                float3 rotatedVertex = v.vertex;
+                RotateUV(_Angle,0,rotatedVertex.xz);
+
                 o.vertex = TransformObjectToHClip(rotatedVertex);
                 o.viewDir = v.vertex.xyz;
                 return o;

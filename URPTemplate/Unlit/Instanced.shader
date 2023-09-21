@@ -1,4 +1,4 @@
-Shader "Template/UnlitInstanced"
+Shader "Template/Unlit/Instanced"
 {
     Properties
     {
