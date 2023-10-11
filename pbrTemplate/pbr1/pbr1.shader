@@ -149,6 +149,7 @@ Shader "Character/pbr1"
             #pragma fragment frag 
             #pragma shader_feature_fragment ALPHA_TEST
 
+            #define USE_SAMPLER2D
             #include "Lib/PBRInput.hlsl"
             #include "../../../PowerShaderLib/URPLib/ShadowCasterPass.hlsl"
 
