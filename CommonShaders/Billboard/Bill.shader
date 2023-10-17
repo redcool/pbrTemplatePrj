@@ -1,4 +1,4 @@
-Shader "Unlit/Bill"
+shader "Unlit/Bill"
 {
     Properties
     {
@@ -11,7 +11,7 @@ Shader "Unlit/Bill"
         [Group(Alpha)]
         [GroupPresetBlendMode(Alpha,blend mode,_SrcMode,_DstMode)]_PresetBlendMode("_PresetBlendMode",int)=0
 
-        [GroupToggle(Alpha,_ALPHA_TEST_ON)]_ClipOn("_ClipOn",int) = 0
+        [GroupToggle(Alpha,ALPHA_TEST)]_ClipOn("_ClipOn",int) = 0
         [GroupItem(Alpha)]_Cutoff("_Cutoff",range(0,1)) = 0.5
 
         [Group(Settings)]
@@ -30,6 +30,87 @@ Shader "Unlit/Bill"
     #include "../../../PowerShaderLib/Lib/UnityLib.hlsl"
     #include "../../../PowerShaderLib/UrpLib/URP_GI.hlsl"
     #include "../../../PowerShaderLib/Lib/BillboardLib.hlsl"
+
+
+    // nothing
+    // #if defined(INSTANCING_ON)
+        // #define UnityPerMaterial _UnityPerMaterial
+    // #endif
+
+    // define variables
+    UNITY_INSTANCING_BUFFER_START(UnityPerMaterial)
+        UNITY_DEFINE_INSTANCED_PROP(float4,_MainTex_ST)
+        UNITY_DEFINE_INSTANCED_PROP(float4,_Color)
+        
+        UNITY_DEFINE_INSTANCED_PROP(float,_FullFaceCamera)
+        UNITY_DEFINE_INSTANCED_PROP(float,_Cutoff)
+    UNITY_INSTANCING_BUFFER_END(UnityPerMaterial)
+
+    // define shortcot getters
+    #define _MainTex_ST UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial,_MainTex_ST)
+    #define _Color UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial,_Color)
+    #define _FullFaceCamera UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial,_FullFaceCamera)
+    #define _Cutoff UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial,_Cutoff)
+    
+
+    struct appdata
+    {
+        float4 vertex : POSITION;
+        float2 uv : TEXCOORD0;
+        float2 uv1:TEXCOORD1;
+        float3 n:NORMAL;
+        UNITY_VERTEX_INPUT_INSTANCE_ID
+    };
+
+    struct v2f
+    {
+        float4 uv : TEXCOORD0;
+        float4 vertex : SV_POSITION;
+        float3 n:TEXCOORD1;
+        UNITY_VERTEX_INPUT_INSTANCE_ID
+    };
+
+    sampler2D _MainTex;
+    float4x4 _CameraYRot;
+
+    v2f vertBill (appdata v)
+    {
+        v2f o;
+        UNITY_SETUP_INSTANCE_ID(v);
+        UNITY_TRANSFER_INSTANCE_ID(v, o);
+
+
+        v.vertex.xyz = mul((_CameraYRot),v.vertex).xyz;
+        o.vertex = TransformObjectToHClip(v.vertex);
+        // o.vertex = TransformBillboardObjectToHClip(v.vertex ,_FullFaceCamera);
+
+        o.uv.xy = TRANSFORM_TEX(v.uv, _MainTex);
+        o.uv.zw = v.uv1 * unity_LightmapST.xy + unity_LightmapST.zw;
+        o.n = TransformObjectToWorldNormal(v.n);
+        return o;
+    }
+
+    float4 fragBill (v2f i) : SV_Target
+    {
+        UNITY_SETUP_INSTANCE_ID(i);
+
+        float2 mainUV = i.uv.xy;
+        float2 lightmapUV = i.uv.zw;
+
+        float3 sh = SampleSH(i.n);
+        // sample the texture
+        float4 mainTex = tex2D(_MainTex, mainUV) * _Color;
+        float3 albedo = mainTex.xyz;
+        float alpha = mainTex.w;
+        #if defined(ALPHA_TEST)
+            clip(alpha - _Cutoff);
+        #endif
+
+        half3 giDiff = CalcGIDiff(i.n,albedo,lightmapUV);
+        half3 diffColor = albedo + giDiff;
+
+        return float4(diffColor,1);
+    }
     ENDHLSL
 
     SubShader
@@ -46,87 +127,65 @@ Shader "Unlit/Bill"
 			ztest[_ZTestMode]
 
             HLSLPROGRAM
-            #pragma vertex vert
-            #pragma fragment frag
+            #pragma vertex vertBill
+            #pragma fragment fragBill
             #pragma multi_compile_instancing
-            #pragma shader_feature _ALPHA_TEST_ON
+            #pragma shader_feature ALPHA_TEST
 
-            // nothing
-            // #if defined(INSTANCING_ON)
-                // #define UnityPerMaterial _UnityPerMaterial
-            // #endif
+            ENDHLSL
+        }
+        Pass{
+            Tags{"LightMode" = "ShadowCaster"}
 
-            // define variables
-            UNITY_INSTANCING_BUFFER_START(UnityPerMaterial)
-                UNITY_DEFINE_INSTANCED_PROP(float4,_MainTex_ST)
-                UNITY_DEFINE_INSTANCED_PROP(float4,_Color)
-                
-                UNITY_DEFINE_INSTANCED_PROP(float,_FullFaceCamera)
-                UNITY_DEFINE_INSTANCED_PROP(float,_Cutoff)
-            UNITY_INSTANCING_BUFFER_END(UnityPerMaterial)
+            ZWrite On
+            ZTest LEqual
+            ColorMask 0
+            cull off
+            HLSLPROGRAM
+            #pragma vertex vertBillShadow
+            #pragma fragment frag
 
-            // define shortcot getters
-            #define _MainTex_ST UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial,_MainTex_ST)
-            #define _Color UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial,_Color)
-            #define _FullFaceCamera UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial,_FullFaceCamera)
-            #define _Cutoff UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial,_Cutoff)
+            // This is used during shadow map generation to differentiate between directional and punctual light shadows, as they use different formulas to apply Normal Bias
+            #pragma multi_compile_vertex _ _CASTING_PUNCTUAL_LIGHT_SHADOW
+
+            #pragma shader_feature_fragment ALPHA_TEST
+            
+            #define SHADOW_PASS 
+            #define USE_SAMPLER2D
+            #define _MainTexChannel 3
+            #define _CustomShadowNormalBias 0
+            #define _CustomShadowDepthBias 0
+            #include "../../../PowerShaderLib/URPLib/ShadowCasterPass.hlsl"
+
+            shadow_v2f vertBillShadow(shadow_appdata input){
+                input.vertex.xyz = mul(_CameraYRot,input.vertex).xyz;
+                return vert(input);
+            }
             
 
-            struct appdata
-            {
-                float4 vertex : POSITION;
-                float2 uv : TEXCOORD0;
-                float2 uv1:TEXCOORD1;
-                float3 n:NORMAL;
-                UNITY_VERTEX_INPUT_INSTANCE_ID
-            };
+            ENDHLSL
+        }
+         Pass{
+            Name "Meta"
+            Tags{"LightMode" = "Meta"}
+            Cull Off
+            
+            HLSLPROGRAM
+            #pragma vertex vert
+            #pragma fragment fragBill 
+            #pragma shader_feature_fragment ALPHA_TEST
+            #pragma shader_feature_local_fragment _EMISSION
 
-            struct v2f
-            {
-                float4 uv : TEXCOORD0;
-                float4 vertex : SV_POSITION;
-                float3 n:TEXCOORD1;
-                UNITY_VERTEX_INPUT_INSTANCE_ID
-            };
+            #define _BaseMap _MainTex
+            #include "../../../PowerShaderLib/URPLib/MetaPass.hlsl"
 
-            sampler2D _MainTex;
 
-            v2f vert (appdata v)
-            {
-                v2f o;
-                UNITY_SETUP_INSTANCE_ID(v);
-                UNITY_TRANSFER_INSTANCE_ID(v, o);
-
-                // o.vertex = TransformObjectToHClip(v.vertex);
-                o.vertex = BillboardVertex(v.vertex ,_FullFaceCamera);
-
-                o.uv.xy = TRANSFORM_TEX(v.uv, _MainTex);
-                o.uv.zw = v.uv1 * unity_LightmapST.xy + unity_LightmapST.zw;
-                o.n = TransformObjectToWorldNormal(v.n);
-                return o;
+            float4 fragBill(Attributes input):SV_Target{
+                float4 mainTex = tex2D(_MainTex, input.uv) * _Color;
+                float3 emission = 0;
+                return MetaFragment(mainTex.xyz,emission);
             }
 
-            float4 frag (v2f i) : SV_Target
-            {
-                UNITY_SETUP_INSTANCE_ID(i);
-
-                float2 mainUV = i.uv.xy;
-                float2 lightmapUV = i.uv.zw;
-
-                float3 sh = SampleSH(i.n);
-                // sample the texture
-                float4 mainTex = tex2D(_MainTex, mainUV) * _Color;
-                float3 albedo = mainTex.xyz;
-                float alpha = mainTex.w;
-                #if defined(_ALPHA_TEST_ON)
-                    clip(alpha - _Cutoff);
-                #endif
-
-                half3 giDiff = CalcGIDiff(i.n,albedo,lightmapUV);
-                half3 diffColor = albedo + giDiff;
-
-                return float4(diffColor,1);
-            }
             ENDHLSL
         }
     }

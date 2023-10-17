@@ -10,12 +10,13 @@ Material:
   m_Name: Unlit_Bill
   m_Shader: {fileID: 4800000, guid: 65bf04540026636498c07ce0a4bc76cd, type: 3}
   m_ValidKeywords:
+  - ALPHA_TEST
+  m_InvalidKeywords:
   - _ALPHA_TEST_ON
-  m_InvalidKeywords: []
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
-  m_CustomRenderQueue: 3000
+  m_CustomRenderQueue: -1
   stringTagMap: {}
   disabledShaderPasses: []
   m_SavedProperties:
@@ -29,14 +30,14 @@ Material:
     m_Floats:
     - _ClipOn: 1
     - _CullMode: 2
-    - _Cutoff: 0.164
-    - _DstMode: 10
+    - _Cutoff: 0.306
+    - _DstMode: 0
     - _FaceCamera: 0
     - _FullFaceCamera: 0
     - _PresetBlendMode: 0
-    - _SrcMode: 5
+    - _SrcMode: 1
     - _ZTestMode: 4
-    - _ZWriteMode: 0
+    - _ZWriteMode: 1
     m_Colors:
     - _Color: {r: 1, g: 1, b: 1, a: 1}
   m_BuildTextureStacks: []
