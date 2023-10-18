@@ -1,8 +1,8 @@
-Shader "Template/Unlit/Template"
+Shader "Template/Unlit/Plane"
 {
     Properties
     {
-        _MainTex ("Texture", 2D) = "white" {}
+        _MainTex ("Texture(RGB:Color,A:Depth)", 2D) = "white" {}
     }
     SubShader
     {
@@ -16,7 +16,7 @@ Shader "Template/Unlit/Template"
             #pragma fragment frag
 
             #include "../../../PowerShaderLib/Lib/UnityLib.hlsl"
-
+            #include "../../../PowerShaderLib/URPLib/URP_Input.hlsl"
 
             struct appdata
             {
@@ -31,6 +31,7 @@ Shader "Template/Unlit/Template"
             };
 
             sampler2D _MainTex;
+
             CBUFFER_START(UnityPerMaterial)
             float4 _MainTex_ST;
             CBUFFER_END
@@ -40,14 +41,19 @@ Shader "Template/Unlit/Template"
                 v2f o;
                 o.vertex = TransformObjectToHClip(v.vertex.xyz);
                 o.uv = TRANSFORM_TEX(v.uv, _MainTex);
+                // #if defined(UNITY_UV_STARTS_AT_TOP)
+                    o.uv.y = 1-o.uv.y;
+                // #endif
                 return o;
             }
 
-            float4 frag (v2f i) : SV_Target
+            float4 frag (v2f i,out float depth:SV_DEPTH) : SV_Target
             {
+                // float2 screenUV = i.vertex.xy * _ScaledScreenParams.zw;
                 // sample the texture
                 float4 col = tex2D(_MainTex, i.uv);
-                return col;
+                depth = col.w;
+                return float4(col.xyz,1);
             }
             ENDHLSL
         }
