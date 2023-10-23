@@ -5,7 +5,7 @@ shader "Unlit/Bill"
         [GroupHeader(v2.0.1)]
         _MainTex ("Texture", 2D) = "white" {}
         _Color("_Color",color) = (1,1,1,1)
-        [GroupToggle]_FullFaceCamera("_FullFaceCamera",int) = 0
+        // [GroupToggle]_FullFaceCamera("_FullFaceCamera",int) = 0
 
 
         [Group(Alpha)]
@@ -13,6 +13,9 @@ shader "Unlit/Bill"
 
         [GroupToggle(Alpha,ALPHA_TEST)]_ClipOn("_ClipOn",int) = 0
         [GroupItem(Alpha)]_Cutoff("_Cutoff",range(0,1)) = 0.5
+
+        [Group(ShadowCaster)]
+        [GroupToggle(ShadowCaster)]_RotateShadow("_RotateShadow",int) = 0
 
         [Group(Settings)]
         [GroupEnum(Settings,UnityEngine.Rendering.CullMode)]_CullMode("_CullMode",int) = 2
@@ -42,8 +45,10 @@ shader "Unlit/Bill"
         UNITY_DEFINE_INSTANCED_PROP(float4,_MainTex_ST)
         UNITY_DEFINE_INSTANCED_PROP(float4,_Color)
         
-        UNITY_DEFINE_INSTANCED_PROP(float,_FullFaceCamera)
+        // UNITY_DEFINE_INSTANCED_PROP(float,_FullFaceCamera)
         UNITY_DEFINE_INSTANCED_PROP(float,_Cutoff)
+        UNITY_DEFINE_INSTANCED_PROP(float,_RotateShadow)
+        
     UNITY_INSTANCING_BUFFER_END(UnityPerMaterial)
 
     // define shortcot getters
@@ -51,6 +56,7 @@ shader "Unlit/Bill"
     #define _Color UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial,_Color)
     #define _FullFaceCamera UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial,_FullFaceCamera)
     #define _Cutoff UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial,_Cutoff)
+    #define _RotateShadow UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial,_RotateShadow)
     
 
     struct appdata
@@ -158,7 +164,8 @@ shader "Unlit/Bill"
             #include "../../../PowerShaderLib/URPLib/ShadowCasterPass.hlsl"
 
             shadow_v2f vertBillShadow(shadow_appdata input){
-                input.vertex.xyz = mul(_CameraYRot,input.vertex).xyz;
+                if(_RotateShadow)
+                    input.vertex.xyz = mul(_CameraYRot,input.vertex).xyz;
                 return vert(input);
             }
             
