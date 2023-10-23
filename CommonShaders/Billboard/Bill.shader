@@ -17,6 +17,12 @@ shader "Unlit/Bill"
         [Group(ShadowCaster)]
         [GroupToggle(ShadowCaster)]_RotateShadow("_RotateShadow",int) = 0
 
+        [Header(Wind)]
+        [GroupToggle(Wind,_WIND_ON)]_WindOn("_WindOn (need vertex color.r)",float) = 0
+        [GroupVectorSlider(Wind,branch edge globalOffset flutterOffset,0_0.4 0_0.5 0_0.6 0_0.06)]_WindAnimParam("_WindAnimParam(x:branch,edge,z : global offset,w:flutter offset)",vector) = (1,1,0.1,0.3)
+        [GroupVectorSlider(Wind,WindVector Intensity,0_1)]_WindDir("_WindDir,dir:(xyz),Intensity:(w)",vector) = (1,0.1,0,0.5)
+        [GroupItem(Wind)]_WindSpeed("_WindSpeed",range(0,1)) = 0.3
+
         [Group(Settings)]
         [GroupEnum(Settings,UnityEngine.Rendering.CullMode)]_CullMode("_CullMode",int) = 2
 		[GroupToggle(Settings)]_ZWriteMode("ZWriteMode",int) = 1
@@ -33,7 +39,7 @@ shader "Unlit/Bill"
     #include "../../../PowerShaderLib/Lib/UnityLib.hlsl"
     #include "../../../PowerShaderLib/UrpLib/URP_GI.hlsl"
     #include "../../../PowerShaderLib/Lib/BillboardLib.hlsl"
-
+    #include "../../../PowerShaderLib/Lib/NatureLib.hlsl"
 
     // nothing
     // #if defined(INSTANCING_ON)
@@ -48,6 +54,10 @@ shader "Unlit/Bill"
         // UNITY_DEFINE_INSTANCED_PROP(float,_FullFaceCamera)
         UNITY_DEFINE_INSTANCED_PROP(float,_Cutoff)
         UNITY_DEFINE_INSTANCED_PROP(float,_RotateShadow)
+
+        UNITY_DEFINE_INSTANCED_PROP(float4,_WindAnimParam)
+        UNITY_DEFINE_INSTANCED_PROP(float4,_WindDir)
+        UNITY_DEFINE_INSTANCED_PROP(float,_WindSpeed)
         
     UNITY_INSTANCING_BUFFER_END(UnityPerMaterial)
 
@@ -57,14 +67,19 @@ shader "Unlit/Bill"
     #define _FullFaceCamera UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial,_FullFaceCamera)
     #define _Cutoff UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial,_Cutoff)
     #define _RotateShadow UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial,_RotateShadow)
+
+    #define _WindAnimParam UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial,_WindAnimParam)
+    #define _WindDir UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial,_WindDir)
+    #define _WindSpeed UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial,_WindSpeed)
     
 
     struct appdata
     {
         float4 vertex : POSITION;
+        float3 normal:NORMAL;
+        float4 color:COLOR;
         float2 uv : TEXCOORD0;
         float2 uv1:TEXCOORD1;
-        float3 n:NORMAL;
         UNITY_VERTEX_INPUT_INSTANCE_ID
     };
 
@@ -72,7 +87,7 @@ shader "Unlit/Bill"
     {
         float4 uv : TEXCOORD0;
         float4 vertex : SV_POSITION;
-        float3 n:TEXCOORD1;
+        float3 normal:TEXCOORD1;
         UNITY_VERTEX_INPUT_INSTANCE_ID
     };
 
@@ -87,12 +102,21 @@ shader "Unlit/Bill"
 
 
         v.vertex.xyz = mul((_CameraYRot),v.vertex).xyz;
-        o.vertex = TransformObjectToHClip(v.vertex);
+        float3 worldPos = TransformObjectToWorld(v.vertex.xyz);
+        o.normal = TransformObjectToWorldNormal(v.normal);
+        #if defined(_WIND_ON)
+        branch_if(IsWindOn())
+        {
+            float4 attenParam = v.color.x;
+            worldPos = WindAnimationVertex(worldPos,v.vertex.xyz,o.normal,attenParam * _WindAnimParam, _WindDir,_WindSpeed).xyz;
+        }
+        #endif
+
+        o.vertex = TransformWorldToHClip(worldPos);
         // o.vertex = TransformBillboardObjectToHClip(v.vertex ,_FullFaceCamera);
 
         o.uv.xy = TRANSFORM_TEX(v.uv, _MainTex);
         o.uv.zw = v.uv1 * unity_LightmapST.xy + unity_LightmapST.zw;
-        o.n = TransformObjectToWorldNormal(v.n);
         return o;
     }
 
@@ -103,7 +127,7 @@ shader "Unlit/Bill"
         float2 mainUV = i.uv.xy;
         float2 lightmapUV = i.uv.zw;
 
-        float3 sh = SampleSH(i.n);
+        float3 sh = SampleSH(i.normal);
         // sample the texture
         float4 mainTex = tex2D(_MainTex, mainUV) * _Color;
         float3 albedo = mainTex.xyz;
@@ -112,7 +136,7 @@ shader "Unlit/Bill"
             clip(alpha - _Cutoff);
         #endif
 
-        half3 giDiff = CalcGIDiff(i.n,albedo,lightmapUV);
+        half3 giDiff = CalcGIDiff(i.normal,albedo,lightmapUV);
         half3 diffColor = albedo + giDiff;
 
         return float4(diffColor,1);
@@ -137,6 +161,7 @@ shader "Unlit/Bill"
             #pragma fragment fragBill
             #pragma multi_compile_instancing
             #pragma shader_feature ALPHA_TEST
+            #pragma shader_feature _WIND_ON
 
             ENDHLSL
         }
