@@ -5,7 +5,7 @@ Shader "URP/pbr1"
         [GroupHeader(v0.0.7)]
         [Group(Main)]
         [GroupItem(Main)]_BaseMap ("_BaseMap", 2D) = "white" {}
-        [GroupItem(Main)]_Color ("_Color", color) = (1,1,1,1)
+        [GroupItem(Main)][hdr][gamma]_Color ("_Color", color) = (1,1,1,1)
         [GroupItem(Main)]_NormalMap("_NormalMap",2d)="bump"{}
         [GroupItem(Main)]_NormalScale("_NormalScale",range(0,5)) = 1
 
