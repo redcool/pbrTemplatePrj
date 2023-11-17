@@ -10,6 +10,7 @@ sampler2D _NormalMap;
 sampler2D _PbrMask;
 sampler2D _EmissionMap;
 
+
 CBUFFER_START(UnityPerMaterial)
 half4 _Color;
 half4 _MainTex_ST;
@@ -32,6 +33,7 @@ half _CustomShadowDepthBias,_CustomShadowNormalBias;
 
 //thin film
 half _TFOn,_TFScale,_TFOffset,_TFSaturate,_TFBrightness;
+
 half _ReceiveShadowOff;
 
 half _FogOn;
@@ -43,6 +45,8 @@ half _AlphaPremultiply;
 half _Cutoff;
 
 half4 _EmissionColor;
+
+half _ParallaxOn,_ParallaxIterate,_ParallaxHeight,_ParallaxMapChannel;
 
 CBUFFER_END
 

@@ -7,6 +7,7 @@
 #include "../../../../PowerShaderLib/Lib/FogLib.hlsl"
 #include "../../../../PowerShaderLib/Lib/MaterialLib.hlsl"
 #include "../../../../PowerShaderLib/URPLib/Lighting.hlsl"
+#include "../../../../PowerShaderLib/Lib/ParallaxLib.hlsl"
 
 struct appdata
 {
@@ -28,6 +29,7 @@ struct v2f
     float4 tSpace2:TEXCOORD3;
     // float4 shadowCoord:TEXCOORD4;
     float4 fogCoord:TEXCOORD5;
+    float4 viewDirTS:TEXCOORD6;
     
     UNITY_VERTEX_INPUT_INSTANCE_ID
 };
@@ -44,8 +46,10 @@ v2f vert (appdata v)
 
     TANGENT_SPACE_COMBINE(v.vertex,v.normal,v.tangent,o/**/);
     // o.shadowCoord = TransformWorldToShadowCoord(worldPos);
-    o.fogCoord.xy = CalcFogFactor(p.xyz);
+    o.fogCoord.xy = CalcFogFactor(WORLD_POS);
 
+    float3 viewDir = GetWorldSpaceViewDir(WORLD_POS);
+    o.viewDirTS.xyz = WorldToTangent(viewDir,o.tSpace0,o.tSpace1,o.tSpace2);
 
     return o;
 }
@@ -57,6 +61,11 @@ float4 frag (v2f i) : SV_Target
     TANGENT_SPACE_SPLIT(i);
 
     float2 mainUV = i.uv.xy;
+    float2 lightmapUV = i.uv.zw;
+
+    branch_if(_ParallaxOn){
+        ApplyParallax(mainUV/**/,normalize(i.viewDirTS.xyz),_ParallaxHeight,_ParallaxMapChannel,_ParallaxIterate);
+    }
 
     float4 pbrMask = tex2D(_PbrMask,mainUV);
     float metallic = 0;
@@ -83,7 +92,7 @@ float4 frag (v2f i) : SV_Target
     float nv = saturate(dot(n,v));
 // return v.xyzx;
 
-    float4 shadowMask = SampleShadowMask(i.uv.zw);
+    float4 shadowMask = SampleShadowMask(lightmapUV);
     float distanceAtten = unity_LightData.z;
     // return shadowMask;
     float4 shadowCoord = TransformWorldToShadowCoord(worldPos);
@@ -141,7 +150,7 @@ float4 frag (v2f i) : SV_Target
 // return directColor.xyzx;
 //------- gi
     float3 giColor = 0;
-    float3 giDiff = CalcGIDiff(normal,diffColor);
+    float3 giDiff = CalcGIDiff(normal,diffColor,lightmapUV);
     float3 giSpec = CalcGISpec(unity_SpecCube0,samplerunity_SpecCube0,unity_SpecCube0_HDR,specColor,worldPos,n,v,0/*reflectDirOffset*/,1/*reflectIntensity*/,nv,roughness,a2,smoothness,metallic);
     giColor = (giDiff + giSpec) * occlusion;
 // return giColor.xyzx;

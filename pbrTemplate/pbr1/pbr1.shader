@@ -1,19 +1,8 @@
-Shader "Character/pbr1"
+Shader "URP/pbr1"
 {
-    /*
-    lighting(pbr,charlie,aniso)
-    shadow(main light)
-    fog
-    srp batched 
-
-    instanced
-    detail()
-    alpha
-
-    */
     Properties
     {
-        [GroupHeader(v0.0.5)]
+        [GroupHeader(v0.0.7)]
         [Group(Main)]
         [GroupItem(Main)]_BaseMap ("_BaseMap", 2D) = "white" {}
         [GroupItem(Main)]_Color ("_Color", color) = (1,1,1,1)
@@ -49,7 +38,7 @@ Shader "Character/pbr1"
         [Group(Emission)]
         [GroupToggle(Emission,_EMISSION)]_EmissionOn("_EmissionOn",int) = 0
         [GroupItem(Emission)]_EmissionMap("_EmissionMap",2d)=""{}
-        [GroupItem(Emission)]_EmissionColor("_EmissionColor(w:mask)",color) = (1,1,1,1)
+        [GroupItem(Emission)]_EmissionColor("_EmissionColor(w:mask)",color) = (0,0,0,0)
         [GroupMaterialGI(Emission)]_EmissionGI("_EmissionGI",int) = 0
 
         [Group(Aniso)]
@@ -63,6 +52,16 @@ Shader "Character/pbr1"
         [GroupItem(Thin Film)]_TFOffset("_TFOffset",float) = 0
         [GroupItem(Thin Film)]_TFSaturate("_TFSaturate",range(0,1)) = 1
         [GroupItem(Thin Film)]_TFBrightness("_TFBrightness",range(0,1)) = 1
+
+//================================================= Parallax
+        [Group(Parallax)]
+        [GroupToggle(Parallax)]_ParallaxOn("_ParallaxOn",int) = 0
+        [GroupSlider(Parallax,iterate count,int)]_ParallaxIterate("_ParallaxIterate",range(1,10)) = 1
+        // [GroupToggle(Parallax,run in vertex shader)]_ParallaxInVSOn("_ParallaxInVSOn",int) = 0
+        
+        [GroupItem(Parallax)]_ParallaxMap("_ParallaxMap",2d) = "white"{}
+        [GroupEnum(Parallax,R 0 G 1 B 2 A 3)]_ParallaxMapChannel("_ParallaxMapChannel",int) = 3
+        [GroupSlider(Parallax)]_ParallaxHeight("_ParallaxHeight",range(0.005,0.3)) = 0.01        
 
         [Group(Fog)]
         [GroupToggle(Fog)]_FogOn("_FogOn",int) = 1
@@ -122,11 +121,14 @@ Shader "Character/pbr1"
             // #pragma multi_compile _ _ADDITIONAL_LIGHT_SHADOWS_SOFT
 
             // #pragma multi_compile _ LIGHTMAP_SHADOW_MIXING
+            #define SHADOWS_FULL_MIX // for shadowMask
             #pragma multi_compile _ SHADOWS_SHADOWMASK
             #pragma multi_compile_fragment _ LIGHTMAP_ON
 
             #pragma shader_feature_fragment _PBRMODE_PBR _PBRMODE_ANISO _PBRMODE_CHARLIE
             #pragma shader_feature_fragment _DEPTH_FOG_NOISE_ON
+
+            // #pragma shader_feature_local _PARALLAX
             #pragma shader_feature_fragment _RECEIVE_SHADOWS_OFF
             #pragma shader_feature_fragment ALPHA_TEST
             #pragma shader_feature_fragment _EMISSION
