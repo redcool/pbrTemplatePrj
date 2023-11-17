@@ -1,16 +1,5 @@
 Shader "Character/pbr1"
 {
-    /*
-    lighting(pbr,charlie,aniso)
-    shadow(main light)
-    fog
-    srp batched 
-
-    instanced
-    detail()
-    alpha
-
-    */
     Properties
     {
         [GroupHeader(v0.0.5)]
@@ -49,7 +38,7 @@ Shader "Character/pbr1"
         [Group(Emission)]
         [GroupToggle(Emission,_EMISSION)]_EmissionOn("_EmissionOn",int) = 0
         [GroupItem(Emission)]_EmissionMap("_EmissionMap",2d)=""{}
-        [GroupItem(Emission)]_EmissionColor("_EmissionColor(w:mask)",color) = (1,1,1,1)
+        [GroupItem(Emission)]_EmissionColor("_EmissionColor(w:mask)",color) = (0,0,0,0)
         [GroupMaterialGI(Emission)]_EmissionGI("_EmissionGI",int) = 0
 
         [Group(Aniso)]
@@ -122,6 +111,7 @@ Shader "Character/pbr1"
             // #pragma multi_compile _ _ADDITIONAL_LIGHT_SHADOWS_SOFT
 
             // #pragma multi_compile _ LIGHTMAP_SHADOW_MIXING
+            #define SHADOWS_FULL_MIX // for shadowMask
             #pragma multi_compile _ SHADOWS_SHADOWMASK
             #pragma multi_compile_fragment _ LIGHTMAP_ON
 

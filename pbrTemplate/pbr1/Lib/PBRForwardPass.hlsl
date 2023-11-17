@@ -57,6 +57,7 @@ float4 frag (v2f i) : SV_Target
     TANGENT_SPACE_SPLIT(i);
 
     float2 mainUV = i.uv.xy;
+    float2 lightmapUV = i.uv.zw;
 
     float4 pbrMask = tex2D(_PbrMask,mainUV);
     float metallic = 0;
@@ -141,7 +142,7 @@ float4 frag (v2f i) : SV_Target
 // return directColor.xyzx;
 //------- gi
     float3 giColor = 0;
-    float3 giDiff = CalcGIDiff(normal,diffColor);
+    float3 giDiff = CalcGIDiff(normal,diffColor,lightmapUV);
     float3 giSpec = CalcGISpec(unity_SpecCube0,samplerunity_SpecCube0,unity_SpecCube0_HDR,specColor,worldPos,n,v,0/*reflectDirOffset*/,1/*reflectIntensity*/,nv,roughness,a2,smoothness,metallic);
     giColor = (giDiff + giSpec) * occlusion;
 // return giColor.xyzx;
