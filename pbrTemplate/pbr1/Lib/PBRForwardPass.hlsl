@@ -46,7 +46,8 @@ v2f vert (appdata v)
 
     TANGENT_SPACE_COMBINE(v.vertex,v.normal,v.tangent,o/**/);
     // o.shadowCoord = TransformWorldToShadowCoord(worldPos);
-    o.fogCoord.xy = CalcFogFactor(WORLD_POS);
+
+    o.fogCoord.xy = CalcFogFactor(WORLD_POS,o.vertex.z,_HeightFogOn,_DepthFogOn);
 
     float3 viewDir = GetWorldSpaceViewDir(WORLD_POS);
     o.viewDirTS.xyz = WorldToTangent(viewDir,o.tSpace0,o.tSpace1,o.tSpace2);
@@ -166,8 +167,8 @@ float4 frag (v2f i) : SV_Target
         col.rgb += CalcEmission(tex2D(_EmissionMap,mainUV),_EmissionColor.xyz,_EmissionColor.w);
     #endif    
 //------ fog
-    // col.rgb = MixFog(col.xyz,i.fogFactor.x);
-    BlendFogSphereKeyword(col.rgb/**/,worldPos,i.fogCoord.xy,_HeightFogOn,_FogNoiseOn,_DepthFogOn); // 2fps
+    BlendFogSphere(col.rgb/**/,worldPos,i.fogCoord.xy,_HeightFogOn,_FogNoiseOn,_DepthFogOn); // 2fps
+
     col.a = alpha;
     return col;
 }
