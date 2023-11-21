@@ -4,9 +4,9 @@ shader "Unlit/Bill"
     {
         [GroupHeader(v2.0.1)]
         _MainTex ("Texture", 2D) = "white" {}
-        _Color("_Color",color) = (1,1,1,1)
+        [hdr]_Color("_Color",color) = (1,1,1,1)
+        [GroupToggle()]_ApplyMainLightColor("_ApplyMainLightColor",int) = 1
         // [GroupToggle]_FullFaceCamera("_FullFaceCamera",int) = 0
-
 
         [Group(Alpha)]
         [GroupPresetBlendMode(Alpha,blend mode,_SrcMode,_DstMode)]_PresetBlendMode("_PresetBlendMode",int)=0
@@ -58,6 +58,7 @@ shader "Unlit/Bill"
         UNITY_DEFINE_INSTANCED_PROP(float4,_WindAnimParam)
         UNITY_DEFINE_INSTANCED_PROP(float4,_WindDir)
         UNITY_DEFINE_INSTANCED_PROP(float,_WindSpeed)
+        UNITY_DEFINE_INSTANCED_PROP(float,_ApplyMainLightColor)
         
     UNITY_INSTANCING_BUFFER_END(UnityPerMaterial)
 
@@ -71,7 +72,7 @@ shader "Unlit/Bill"
     #define _WindAnimParam UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial,_WindAnimParam)
     #define _WindDir UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial,_WindDir)
     #define _WindSpeed UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial,_WindSpeed)
-    
+    #define _ApplyMainLightColor UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial,_ApplyMainLightColor)
 
     struct appdata
     {
@@ -99,7 +100,6 @@ shader "Unlit/Bill"
         v2f o;
         UNITY_SETUP_INSTANCE_ID(v);
         UNITY_TRANSFER_INSTANCE_ID(v, o);
-
 
         v.vertex.xyz = mul((_CameraYRot),v.vertex).xyz;
         float3 worldPos = TransformObjectToWorld(v.vertex.xyz);
@@ -130,6 +130,7 @@ shader "Unlit/Bill"
         float3 sh = SampleSH(i.normal);
         // sample the texture
         float4 mainTex = tex2D(_MainTex, mainUV) * _Color;
+
         float3 albedo = mainTex.xyz;
         float alpha = mainTex.w;
         #if defined(ALPHA_TEST)
@@ -137,9 +138,10 @@ shader "Unlit/Bill"
         #endif
 
         half3 giDiff = CalcGIDiff(i.normal,albedo,lightmapUV);
-        half3 diffColor = albedo + giDiff;
+        half3 diffCol = albedo * (_ApplyMainLightColor? _MainLightColor : 1);
+        half3 col = diffCol + giDiff;
 
-        return float4(diffColor,1);
+        return float4(col,1);
     }
     ENDHLSL
 
