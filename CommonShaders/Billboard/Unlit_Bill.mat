@@ -28,6 +28,7 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
+    - _ApplyMainLightColor: 1
     - _ClipOn: 1
     - _CullMode: 2
     - _Cutoff: 0.306
@@ -35,9 +36,14 @@ Material:
     - _FaceCamera: 0
     - _FullFaceCamera: 0
     - _PresetBlendMode: 0
+    - _RotateShadow: 0
     - _SrcMode: 1
+    - _WindOn: 0
+    - _WindSpeed: 0.3
     - _ZTestMode: 4
     - _ZWriteMode: 1
     m_Colors:
-    - _Color: {r: 1, g: 1, b: 1, a: 1}
+    - _Color: {r: 2, g: 2, b: 2, a: 1}
+    - _WindAnimParam: {r: 1, g: 1, b: 0.1, a: 0.3}
+    - _WindDir: {r: 1, g: 0.1, b: 0, a: 0.5}
   m_BuildTextureStacks: []
