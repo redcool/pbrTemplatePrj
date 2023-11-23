@@ -34,6 +34,7 @@ Shader "FX/Others/BoxScan"
 
             #include "../../../PowerShaderLib/Lib/UnityLib.hlsl"
             #include "../../../PowerShaderLib/Lib/PowerUtils.hlsl"
+            #include "../../../PowerShaderLib/Lib/SDF.hlsl"
             #include "../../../PowerShaderLib/URPLib/URP_Input.hlsl"
 
             struct appdata
@@ -73,16 +74,7 @@ Shader "FX/Others/BoxScan"
                 return o;
             }
 
-            float CalcWorldDistance(out float distSign,out float bandDist,float3 worldPos,float3 center,float radius,float2 distRange,float2 distSignRange=float2(-1,1)){
-                float d = distance(worldPos,center) - radius;
-                distSign = smoothstep(distSignRange.x,distSignRange.y,(d));
-                d = abs(d);
 
-                d = smoothstep(distRange.x,distRange.y,d);
-                d = 1-d;
-                bandDist = smoothstep(0,0.2,saturate(d)); // color blending
-                return d;
-            }
 
             float4 frag (v2f i) : SV_Target
             {
