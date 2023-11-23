@@ -1,4 +1,4 @@
-Shader "FX/Others/Scan"
+Shader "FX/Others/BoxScan"
 {
     Properties
     {

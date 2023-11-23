@@ -65,7 +65,7 @@ Shader "URP/pbr1"
 
         [Group(Fog)]
         [GroupToggle(Fog)]_FogOn("_FogOn",int) = 1
-        [GroupToggle(Fog,SIMPLE_FOG,use urp linear depth fog)]_SimpleFog("_SimpleFog",int) = 1
+        [GroupToggle(Fog,SIMPLE_FOG,use simple linear depth height fog)]_SimpleFog("_SimpleFog",int) = 0
         [GroupToggle(Fog)]_FogNoiseOn("_FogNoiseOn",int) = 0
         [GroupToggle(Fog)]_DepthFogOn("_DepthFogOn",int) = 1
         [GroupToggle(Fog)]_HeightFogOn("_HeightFogOn",int) = 1
