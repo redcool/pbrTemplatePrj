@@ -1,4 +1,4 @@
-Shader "Custom/PlanarShadow_URP"
+Shader "Character/PlanarShadow_URP"
 {
     Properties
     {
