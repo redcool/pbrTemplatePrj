@@ -16,8 +16,15 @@ shader "Unlit/Bill"
 
         [Group(ShadowCaster)]
         [GroupToggle(ShadowCaster)]_RotateShadow("_RotateShadow",int) = 0
+//=================================================  weather
+        [Group(Fog)]
+        [GroupToggle(Fog)]_FogOn("_FogOn",int) = 1
+        [GroupToggle(Fog,SIMPLE_FOG,use simple linear depth height fog)]_SimpleFog("_SimpleFog",int) = 0
+        [GroupToggle(Fog)]_FogNoiseOn("_FogNoiseOn",int) = 0
+        [GroupToggle(Fog)]_DepthFogOn("_DepthFogOn",int) = 1
+        [GroupToggle(Fog)]_HeightFogOn("_HeightFogOn",int) = 1
 
-        [Header(Wind)]
+        [Group(Wind)]
         [GroupToggle(Wind,_WIND_ON)]_WindOn("_WindOn (need vertex color.r)",float) = 0
         [GroupVectorSlider(Wind,branch edge globalOffset flutterOffset,0_0.4 0_0.5 0_0.6 0_0.06)]_WindAnimParam("_WindAnimParam(x:branch,edge,z : global offset,w:flutter offset)",vector) = (1,1,0.1,0.3)
         [GroupVectorSlider(Wind,WindVector Intensity,0_1)]_WindDir("_WindDir,dir:(xyz),Intensity:(w)",vector) = (1,0.1,0,0.5)
@@ -41,6 +48,7 @@ shader "Unlit/Bill"
     #include "../../../PowerShaderLib/Lib/BillboardLib.hlsl"
     #include "../../../PowerShaderLib/Lib/NatureLib.hlsl"
 
+
     // nothing
     // #if defined(INSTANCING_ON)
         // #define UnityPerMaterial _UnityPerMaterial
@@ -48,17 +56,22 @@ shader "Unlit/Bill"
 
     // define variables
     UNITY_INSTANCING_BUFFER_START(UnityPerMaterial)
-        UNITY_DEFINE_INSTANCED_PROP(float4,_MainTex_ST)
-        UNITY_DEFINE_INSTANCED_PROP(float4,_Color)
+        UNITY_DEFINE_INSTANCED_PROP(half4,_MainTex_ST)
+        UNITY_DEFINE_INSTANCED_PROP(half4,_Color)
         
         // UNITY_DEFINE_INSTANCED_PROP(float,_FullFaceCamera)
-        UNITY_DEFINE_INSTANCED_PROP(float,_Cutoff)
-        UNITY_DEFINE_INSTANCED_PROP(float,_RotateShadow)
+        UNITY_DEFINE_INSTANCED_PROP(half,_Cutoff)
+        UNITY_DEFINE_INSTANCED_PROP(half,_RotateShadow)
 
-        UNITY_DEFINE_INSTANCED_PROP(float4,_WindAnimParam)
-        UNITY_DEFINE_INSTANCED_PROP(float4,_WindDir)
-        UNITY_DEFINE_INSTANCED_PROP(float,_WindSpeed)
-        UNITY_DEFINE_INSTANCED_PROP(float,_ApplyMainLightColor)
+        UNITY_DEFINE_INSTANCED_PROP(half4,_WindAnimParam)
+        UNITY_DEFINE_INSTANCED_PROP(half4,_WindDir)
+        UNITY_DEFINE_INSTANCED_PROP(half,_WindSpeed)
+        UNITY_DEFINE_INSTANCED_PROP(half,_ApplyMainLightColor)
+
+        UNITY_DEFINE_INSTANCED_PROP(half,_FogOn)
+        UNITY_DEFINE_INSTANCED_PROP(half,_FogNoiseOn)
+        UNITY_DEFINE_INSTANCED_PROP(half,_DepthFogOn)
+        UNITY_DEFINE_INSTANCED_PROP(half,_HeightFogOn)
         
     UNITY_INSTANCING_BUFFER_END(UnityPerMaterial)
 
@@ -73,6 +86,8 @@ shader "Unlit/Bill"
     #define _WindDir UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial,_WindDir)
     #define _WindSpeed UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial,_WindSpeed)
     #define _ApplyMainLightColor UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial,_ApplyMainLightColor)
+
+    #include "../../../PowerShaderLib/Lib/FogLib.hlsl"
 
     struct appdata
     {
@@ -89,6 +104,8 @@ shader "Unlit/Bill"
         float4 uv : TEXCOORD0;
         float4 vertex : SV_POSITION;
         float3 normal:TEXCOORD1;
+        float4 worldPos:TEXCOORD2;
+        float4 fogCoord:TEXCOORD3;
         UNITY_VERTEX_INPUT_INSTANCE_ID
     };
 
@@ -97,7 +114,7 @@ shader "Unlit/Bill"
 
     v2f vertBill (appdata v)
     {
-        v2f o;
+        v2f o = (v2f)0;
         UNITY_SETUP_INSTANCE_ID(v);
         UNITY_TRANSFER_INSTANCE_ID(v, o);
 
@@ -117,6 +134,9 @@ shader "Unlit/Bill"
 
         o.uv.xy = TRANSFORM_TEX(v.uv, _MainTex);
         o.uv.zw = v.uv1 * unity_LightmapST.xy + unity_LightmapST.zw;
+
+        o.worldPos.xyz = worldPos;
+        o.fogCoord.xy = CalcFogFactor(worldPos.xyz,o.vertex.z,_HeightFogOn,_DepthFogOn);
         return o;
     }
 
@@ -138,8 +158,10 @@ shader "Unlit/Bill"
         #endif
 
         half3 giDiff = CalcGIDiff(i.normal,albedo,lightmapUV);
-        half3 diffCol = albedo * (_ApplyMainLightColor? _MainLightColor : 1);
+        half3 diffCol = albedo * (_ApplyMainLightColor? _MainLightColor.xyz : 1);
         half3 col = diffCol + giDiff;
+
+        // BlendFogSphereKeyword(col.rgb/**/,i.worldPos.xyz,i.fogCoord.xy,_HeightFogOn,_FogNoiseOn,_DepthFogOn); // 2fps
 
         return float4(col,1);
     }
