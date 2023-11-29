@@ -161,7 +161,7 @@ shader "Unlit/Bill"
         half3 diffCol = albedo * (_ApplyMainLightColor? _MainLightColor.xyz : 1);
         half3 col = diffCol + giDiff;
 
-        // BlendFogSphereKeyword(col.rgb/**/,i.worldPos.xyz,i.fogCoord.xy,_HeightFogOn,_FogNoiseOn,_DepthFogOn); // 2fps
+        BlendFogSphereKeyword(col.rgb/**/,i.worldPos.xyz,i.fogCoord.xy,_HeightFogOn,_FogNoiseOn,_DepthFogOn); // 2fps
 
         return float4(col,1);
     }
