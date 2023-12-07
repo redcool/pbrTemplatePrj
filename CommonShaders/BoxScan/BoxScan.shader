@@ -2,22 +2,30 @@ Shader "FX/Others/BoxScan"
 {
     Properties
     {
-        [GroupHeader(ScanLine v0.0.1)]
-        _MainTex ("Inner Texture", 2D) = "white" {}
-        _MainTex2 ("Texture2", 2D) = "white" {}
+        [GroupHeader(ScanLine v0.0.2)]
 
-        [GroupHeader(Edge Color)]
-        [hdr]_Color("_Color",color) = (1,0,0,0)
-        [hdr]_Color2("_Color2",color) = (0,1,0,0)
-        _ColorScale("_ColorScale",range(1,100)) = 1
+        [Group(Color)]
+        [GroupHeader(Color,Edge Textures)]
+        [GroupItem(Color)] _MainTex ("Inner Texture", 2D) = "white" {}
+        [GroupItem(Color)] _MainTex2 ("outer Texture", 2D) = "white" {}
 
-        [GroupHeader(Distance)]
-        _Center("_Center",vector) = (0,0,0,0)
-        _Radius("_Radius",float) = 1
-        [GroupVectorSlider(_, Range.x range.y texRange.x texRange.y, 0_1 1_2 m1_1 m1_1,,field )] _Range("_Range",vector) = (0,1,0,0)
+        [GroupHeader(Color,Edge Colors)]
+        [GroupItem(Color)]  [hdr]_Color("_Color",color) = (1,0,0,0)
+        [GroupItem(Color)]  [hdr]_Color2("_Color2",color) = (0,1,0,0)
+        [GroupItem(Color)] _ColorScale("_ColorScale",range(1,100)) = 1
 
-        [GroupHeader(Options)]
-        [GroupToggle]_ReverseTextureOn("_ReverseTextureOn",int) = 0
+        [Group(Noise)]
+        [GroupItem(Noise)] _NoiseTex("_NoiseTex",2d) = "bump"{}
+        [GroupItem(Noise)] _NoiseScale("_NoiseScale",float) = 0.2
+
+        [Group(Distance)]
+        [GroupHeader(Distance,Base)]
+        [GroupItem(Distance)] _Center("_Center",vector) = (0,0,0,0)
+        [GroupItem(Distance)] _Radius("_Radius",float) = 1
+        [GroupVectorSlider(Distance, Range.x range.y texRange.x texRange.y, 0_1 1_2 m1_1 m1_1,color range texture range,field )] _Range("_Range",vector) = (0,1,0,0)
+
+        [GroupHeader(Distance,Options)]
+        [GroupToggle(Distance)]_ReverseTextureOn("_ReverseTextureOn",int) = 0
     }
     SubShader
     {
@@ -49,7 +57,7 @@ Shader "FX/Others/BoxScan"
                 float4 vertex : SV_POSITION;
             };
 
-            sampler2D _MainTex,_MainTex2;
+            sampler2D _MainTex,_MainTex2,_NoiseTex;
             sampler2D _CameraOpaqueTexture,_CameraColorTexture,_CameraDepthTexture,_CameraDepthAttachment;
 
             CBUFFER_START(UnityPerMaterial)
@@ -60,6 +68,7 @@ Shader "FX/Others/BoxScan"
             half4 _Color,_Color2;
             half _ColorScale;
             half _ReverseTextureOn;
+            half _NoiseScale;
             CBUFFER_END
 
 // #define _CameraDepthTexture _CameraDepthAttachment
@@ -83,14 +92,15 @@ Shader "FX/Others/BoxScan"
 // float d = distance(screenUV ,0.5) - _Radius;
 // d = abs(d);
 // return smoothstep(_Range.x,_Range.y,d);
-
-
+//============ Noise                
+                half4 borderNoiseTex = tex2D(_NoiseTex,screenUV);
+                half borderNoise = (borderNoiseTex.x*2-1) * _NoiseScale;
+//============ world pos
                 float depthTex = tex2D(_CameraDepthTexture,screenUV).x;
                 float3 worldPos = ScreenToWorldPos(screenUV,depthTex,UNITY_MATRIX_I_VP);
 //============ Distances                
                 float distSign,bandDist;
-                float d = CalcWorldDistance(distSign/**/,bandDist/**/,worldPos,_Center,_Radius,_Range.xy,_Range.zw);
-
+                float d = CalcWorldDistance(distSign/**/,bandDist/**/,worldPos,_Center,_Radius+borderNoise,_Range.xy,_Range.zw);
                 // float d = distance(worldPos,_Center) - _Radius;
                 // distSign = smoothstep(-1,1,(d));
                 // d = abs(d);
@@ -98,7 +108,7 @@ Shader "FX/Others/BoxScan"
                 // d = smoothstep(_Range.x,_Range.y,d);
                 // d = 1-d;
                 // bandDist = smoothstep(0,0.2,saturate(d)); // color blending
-// return d;
+
 //============Textures
                 half3 tex = 1;
                 half4 tex1 = tex2D(_MainTex,worldPos.xz * _MainTex_ST.xy + _MainTex_ST.zw);
@@ -109,13 +119,13 @@ Shader "FX/Others/BoxScan"
 //============ colors
                 half4 color = lerp(_Color,_Color2,d) * _ColorScale;
                 color = lerp(1,color,bandDist);
-
 //============ blends
                 half4 opaqueTex = tex2D(_CameraOpaqueTexture,screenUV);
                 // opaqueTex *= color;
 
                 half4 col = 1;
                 half texRate = _ReverseTextureOn ? 1 - distSign : distSign;
+
                 col.xyz = lerp(opaqueTex.xyz,tex.xyz,texRate) * color.xyz;
                 return col;
             }
