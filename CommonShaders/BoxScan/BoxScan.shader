@@ -2,7 +2,7 @@ Shader "FX/Others/BoxScan"
 {
     Properties
     {
-        [GroupHeader(ScanLine v0.0.2)]
+        [GroupHeader(ScanLine v0.0.3)]
 
         [Group(Color)]
         [GroupHeader(Color,Edge Textures)]
@@ -15,9 +15,11 @@ Shader "FX/Others/BoxScan"
         [GroupItem(Color)] _ColorScale("_ColorScale",range(1,100)) = 1
 
         [Group(Noise)]
+        [GroupToggle(Noise,_NOISE_ON)]_NoiseOn("_NoiseOn",float) = 0
         [GroupItem(Noise)] _NoiseTex("_NoiseTex",2d) = "bump"{}
         [GroupItem(Noise)] _NoiseScale("_NoiseScale",float) = 0.2
-
+        [GroupItem(Noise)] _BorderNoiseScale("_BorderNoiseScale",float) = 0.2
+        
         [Group(Distance)]
         [GroupHeader(Distance,Base)]
         [GroupItem(Distance)] _Center("_Center",vector) = (0,0,0,0)
@@ -39,10 +41,12 @@ Shader "FX/Others/BoxScan"
             HLSLPROGRAM
             #pragma vertex vert
             #pragma fragment frag
+            #pragma shader_feature _NOISE_ON
 
             #include "../../../PowerShaderLib/Lib/UnityLib.hlsl"
             #include "../../../PowerShaderLib/Lib/PowerUtils.hlsl"
             #include "../../../PowerShaderLib/Lib/SDF.hlsl"
+            #include "../../../PowerShaderLib/Lib/NoiseLib.hlsl"
             #include "../../../PowerShaderLib/URPLib/URP_Input.hlsl"
 
             struct appdata
@@ -61,14 +65,14 @@ Shader "FX/Others/BoxScan"
             sampler2D _CameraOpaqueTexture,_CameraColorTexture,_CameraDepthTexture,_CameraDepthAttachment;
 
             CBUFFER_START(UnityPerMaterial)
-            half4 _MainTex_ST,_MainTex2_ST;
+            half4 _MainTex_ST,_MainTex2_ST,_NoiseTex_ST;
             half3 _Center;
             half _Radius;
             half4 _Range;
             half4 _Color,_Color2;
             half _ColorScale;
             half _ReverseTextureOn;
-            half _NoiseScale;
+            half _NoiseScale,_BorderNoiseScale;
             CBUFFER_END
 
 // #define _CameraDepthTexture _CameraDepthAttachment
@@ -92,13 +96,21 @@ Shader "FX/Others/BoxScan"
 // float d = distance(screenUV ,0.5) - _Radius;
 // d = abs(d);
 // return smoothstep(_Range.x,_Range.y,d);
-//============ Noise                
-                half4 borderNoiseTex = tex2D(_NoiseTex,screenUV);
-                half borderNoise = (borderNoiseTex.x*2-1) * _NoiseScale;
 //============ world pos
                 float depthTex = tex2D(_CameraDepthTexture,screenUV).x;
                 float3 worldPos = ScreenToWorldPos(screenUV,depthTex,UNITY_MATRIX_I_VP);
-//============ Distances                
+//============ Noise
+
+                float borderNoise = 0;
+#if defined(_NOISE_ON)
+                half noise = N21(floor((worldPos.xz+_Time.zz))) * 2-1;
+                // return noise;
+                half4 borderNoiseTex = tex2D(_NoiseTex,worldPos.xz * _NoiseTex_ST.xy + _NoiseTex_ST.zw * (_Time.x * noise*_NoiseScale));
+                // half4 borderNoiseTex = tex2D(_NoiseTex,screenUV * _NoiseTex_ST.xy*100 + _NoiseTex_ST.zw * noise * _Time.x);
+                borderNoise = (borderNoiseTex.x*2-1) * _BorderNoiseScale;
+#endif
+
+//============ Distances
                 float distSign,bandDist;
                 float d = CalcWorldDistance(distSign/**/,bandDist/**/,worldPos,_Center,_Radius+borderNoise,_Range.xy,_Range.zw);
                 // float d = distance(worldPos,_Center) - _Radius;
