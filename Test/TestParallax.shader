@@ -128,25 +128,9 @@ Shader "TestParallax"
 
                 if(uv.x >1 || uv.x < 0 || uv.y>1 ||uv.y<0)
                     discard;
-float4 c = tex2D(_MainTex,uv);
+                    
+                float4 c = tex2D(_MainTex,uv);
                 return c;
-
-                float3 worldPos = float3(i.tSpace0.w,i.tSpace1.w,i.tSpace2.w);
-                float3x3 rot = float3x3(i.tSpace0.xyz,i.tSpace1.xyz,i.tSpace2.xyz);
-                float3 v = normalize(_WorldSpaceCameraPos - worldPos);
-                float3 viewDirTS = mul(-v,rot);
-
-                float3 pos = float3(i.uv,0);
-                float3 dir = viewDirTS;
-
-                float4 col = 0;
-
-                if(CheckDepth(pos,dir)){
-                    col = tex2D(_MainTex, pos.xy);
-                }
-                // sample the texture
-                
-                return col;
             }
             ENDHLSL
         }
