@@ -21,24 +21,26 @@ Shader "FX/Others/BoxScan"
         [GroupToggle(Noise,_NOISE_ON)]_NoiseOn("_NoiseOn",float) = 0
         [GroupItem(Noise)] _NoiseTex("_NoiseTex",2d) = "bump"{}
         [GroupToggle(Noise,,stop auto pan)]_NoiseTexOffsetStop("_NoiseTex OffsetStop",int) = 0
-        [GroupItem(Noise)] _NoiseScale("_NoiseScale",float) = 0.2
+        [GroupItem(Noise)] _TextureNoiseScale("_TextureNoiseScale",float) = 0.2
+        [GroupItem(Noise)] _BorderNoiseScale("_BorderNoiseScale",float) = 0.2
         
         [Group(Distance)]
         [GroupHeader(Distance,Base)]
         [GroupItem(Distance,sphere position)] _Center("_Center",vector) = (0,0,0,0)
         [GroupItem(Distance,sphere radius)] _Radius("_Radius",float) = 1
 
-        [GroupHeader(Distance,Border Range)]
+        [Group(Border)]
+        [GroupHeader(Border,Border Range)]
         // distance and inner dist
-        [GroupVectorSlider(Distance, colorRange.x colorRange.y texRange.x texRange.y, 0_1 1_2 m1_1 m1_1,color range and texture range,field )]
+        [GroupVectorSlider(Border, colorRange.x colorRange.y texRange.x texRange.y, 0_1 1_2 m1_1 m1_1,color range and texture range,field )]
         _Range("_Range",vector) = (0,1,1,5)
 
-        [GroupHeader(Distance,Border Inner Range)]
-        [GroupToggle(Distance,,control sphere inner distance)]_InnerDistanceOn("_InnerDistanceOn",float) = 0
-        [GroupVectorSlider(Distance, range.x range.y, 0_1 1_2,inner distance,field )] _InnerRange("_InnerRange",vector) = (-10,-3,0,0)
+        [GroupHeader(Border,Border Inner Range)]
+        [GroupToggle(Border,,control sphere inner distance)]_InnerDistanceOn("_InnerDistanceOn",float) = 0
+        [GroupVectorSlider(Border, range.x range.y, 0_1 1_2,inner distance,field )] _InnerRange("_InnerRange",vector) = (-10,-3,0,0)
 
-        [GroupHeader(Distance,Options)]
-        [GroupToggle(Distance)]_ReverseTextureOn("_ReverseTextureOn",int) = 0
+        [GroupHeader(Border,Options)]
+        [GroupToggle(Border)]_ReverseTextureOn("_ReverseTextureOn",int) = 0
     }
     SubShader
     {
@@ -85,7 +87,7 @@ Shader "FX/Others/BoxScan"
             half4 _Color,_Color2;
             half _ColorScale;
             half _ReverseTextureOn;
-            half _NoiseScale;
+            half _TextureNoiseScale,_BorderNoiseScale;
             half _InnerDistanceOn;
             CBUFFER_END
 
@@ -115,20 +117,22 @@ Shader "FX/Others/BoxScan"
                 float3 worldPos = ScreenToWorldPos(screenUV,depthTex,UNITY_MATRIX_I_VP);
 //============ Noise
 
-                float borderNoise = 0;
+                float borderNoise = 0,textureNoise = 0;
 #if defined(_NOISE_ON)
                 // half noise = N21(floor((worldPos.xz+worldPos.xy+worldPos.xz )))*2-1;
                 // return noise;
                 half2 noiseOffset = UVOffset(_NoiseTex_ST.zw, _NoiseTexOffsetStop);
                 half4 borderNoiseTex = tex2D(_NoiseTex,(worldPos.xz)* _NoiseTex_ST.xy + noiseOffset);
-                borderNoise = (borderNoiseTex.x*2-1) * _NoiseScale;
+                half noise = (borderNoiseTex.x*2-1);
+                borderNoise =  noise * _BorderNoiseScale;
+                textureNoise = noise * _TextureNoiseScale;
 #endif
 
 //============ Distances
                 float dist,distSign,bandDist;
                 float d = CalcWorldDistance(dist,distSign/**/,bandDist/**/,worldPos,_Center,_Radius+borderNoise,_Range.xy,_Range.zw);
                 float d2 = _InnerDistanceOn ? (smoothstep(_InnerRange.x,_InnerRange.y,dist)) : 1;
-
+// return d;
                 // float d = distance(worldPos,_Center) - _Radius;
                 // distSign = smoothstep(-1,1,(d));
                 // d = 1 - abs(d);
@@ -139,8 +143,8 @@ Shader "FX/Others/BoxScan"
                 
 //============Textures
                 half3 tex = 1;
-                half4 tex1 = tex2D(_MainTex,worldPos.xz * _MainTex_ST.xy + UVOffset(_MainTex_ST.zw,_MainTexOffsetStop)+borderNoise);
-                half4 tex2 = tex2D(_MainTex2,worldPos.xz * _MainTex2_ST.xy + UVOffset(_MainTex2_ST.zw,_MainTex2OffsetStop)+borderNoise);
+                half4 tex1 = tex2D(_MainTex,worldPos.xz * _MainTex_ST.xy + UVOffset(_MainTex_ST.zw,_MainTexOffsetStop)+textureNoise);
+                half4 tex2 = tex2D(_MainTex2,worldPos.xz * _MainTex2_ST.xy + UVOffset(_MainTex2_ST.zw,_MainTex2OffsetStop)+textureNoise);
                 tex = tex1.xyz * tex2.xyz;
 
                 // tex = lerp(tex1,tex2,distSign);
