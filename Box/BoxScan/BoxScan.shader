@@ -2,7 +2,7 @@ Shader "FX/Others/BoxScan"
 {
     Properties
     {
-        [GroupHeader(BoxScan v0.0.4)]
+        [GroupHeader(v0.0.4)]
 
         [Group(Color)]
         [GroupHeader(Color,Edge Textures)]
@@ -114,6 +114,8 @@ Shader "FX/Others/BoxScan"
 // return smoothstep(_Range.x,_Range.y,d);
 //============ world pos
                 float depthTex = tex2D(_CameraDepthTexture,screenUV).x;
+                half isFar = depthTex.x>0.999990;
+                
                 float3 worldPos = ScreenToWorldPos(screenUV,depthTex,UNITY_MATRIX_I_VP);
 //============ Noise
 
