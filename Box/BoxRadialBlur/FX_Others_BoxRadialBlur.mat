@@ -9,24 +9,32 @@ Material:
   m_PrefabAsset: {fileID: 0}
   m_Name: FX_Others_BoxRadialBlur
   m_Shader: {fileID: 4800000, guid: 11a4fb937cbdcc8429ad44bb05adac34, type: 3}
+  m_Parent: {fileID: 0}
+  m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
   m_InvalidKeywords: []
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
-  m_CustomRenderQueue: 3100
+  m_CustomRenderQueue: 3000
   stringTagMap: {}
   disabledShaderPasses: []
+  m_LockedProperties: 
   m_SavedProperties:
     serializedVersion: 3
-    m_TexEnvs: []
+    m_TexEnvs:
+    - _NoiseTex:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
-    - _BlurSize: 51.56
+    - _BlurSize: -1.41
     - _Intensity: -3.88
+    - _NoiseScale: 1
     - _Radius: 0
-    - _SampleCount: 9.81
+    - _SampleCount: 10
     m_Colors:
     - _Center: {r: 0.5, g: 0.5, b: 0, a: 0}
-    - _Range: {r: 0.185, g: 0.566, b: 0, a: 0}
+    - _Range: {r: 0, g: 1, b: 0, a: 0}
   m_BuildTextureStacks: []
