@@ -3,19 +3,20 @@ Shader "FX/Others/BoxRadialBlur"
     Properties
     {
         [GroupHeader(v0.0.1)]
+        
+        [Group(NoiseTex)]
+        [GroupToggle(NoiseTex,_NOISE_TEX_ON,effects blurs)] _NoiseTexOn("_NoiseTexOn",int) = 0
+        [GroupItem(NoiseTex)] _NoiseTex("_NoiseTex",2d) = ""{}
+        [GroupItem(NoiseTex)] _NoiseScale("_NoiseScale",float) = 1
 
-        _NoiseTex("_NoiseTex",2d) = ""{}
-        _NoiseScale("_NoiseScale",float) = 1
+        [Group(Options)]
+        [GroupVectorSlider(Options,centerX centerY,0_1 0_1,radialBlur center)] _Center("_Center",vector) = (0,0,0,0)
+        [GroupItem(Options,radialBlur atten radius)] _Radius("_Radius",range(-1,1)) = 0
 
-        [GroupVectorSlider(,centerX centerY,0_1 0_1,)]
-        _Center("_Center",vector) = (0,0,0,0)
-        _Radius("_Radius",range(-1,1)) = 0
+        [GroupVectorSlider(Options,rangeX rangeY,0_1 0_1,smooth _Radius curve)] _Range("_Range",vector) = (0,1,0,0)
 
-        [GroupVectorSlider(,rangeX rangeY,0_1 0_1,,)]
-        _Range("_Range",vector) = (0,1,0,0)
-
-        _SampleCount("_SampleCount",range(4,10)) = 4
-        _BlurSize("_BlurSize",float) = 1
+        [GroupItem(Options,sample screenTexture count)] _SampleCount("_SampleCount",range(4,10)) = 4
+        [GroupItem(Options,blur scale)] _BlurSize("_BlurSize",float) = 1
     }
     SubShader
     {
@@ -30,6 +31,8 @@ Shader "FX/Others/BoxRadialBlur"
             HLSLPROGRAM
             #pragma vertex vert
             #pragma fragment frag
+
+            #pragma shader_feature _NOISE_TEX_ON
 
             #include "../../../PowerShaderLib/Lib/UnityLib.hlsl"
             // #include "../../../PowerShaderLib/Lib/PowerUtils.hlsl"
@@ -127,9 +130,12 @@ Shader "FX/Others/BoxRadialBlur"
             {
                 float aspect = _ScaledScreenParams.x/_ScaledScreenParams.y;
                 float2 screenUV = i.vertex.xy / _ScaledScreenParams.xy;
-
+                
+                float noise = 1;
+                #if defined(_NOISE_TEX_ON)
                 float noiseTex = tex2D(_NoiseTex,screenUV).x;
-                float noise = noiseTex * _NoiseScale;
+                noise = noiseTex * _NoiseScale;
+                #endif
 
                 float2 uvStepOffset = CalcStepUVOffset(screenUV,_Center,_SampleCount,_Radius,_Range,_BlurSize);
 
