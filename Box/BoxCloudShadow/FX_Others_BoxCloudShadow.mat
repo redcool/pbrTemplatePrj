@@ -7,42 +7,54 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: FX_Others_BoxClouds
+  m_Name: FX_Others_BoxCloudShadow
   m_Shader: {fileID: 4800000, guid: 00540f5d3d03ba6459e2c4f7d38b1a8e, type: 3}
+  m_Parent: {fileID: 0}
+  m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
   m_InvalidKeywords: []
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
-  m_CustomRenderQueue: -1
+  m_CustomRenderQueue: 3000
   stringTagMap: {}
   disabledShaderPasses: []
+  m_LockedProperties: 
   m_SavedProperties:
     serializedVersion: 3
     m_TexEnvs:
+    - _CloudTex:
+        m_Texture: {fileID: 2800000, guid: 044e3d322e348c34d8e409df582d315e, type: 3}
+        m_Scale: {x: 0.01, y: 0.01}
+        m_Offset: {x: 2, y: 0}
     - _MainTex:
-        m_Texture: {fileID: 0}
-        m_Scale: {x: 1, y: 1}
-        m_Offset: {x: 0, y: 0}
+        m_Texture: {fileID: 2800000, guid: 044e3d322e348c34d8e409df582d315e, type: 3}
+        m_Scale: {x: 0.1, y: 0.1}
+        m_Offset: {x: 5.01, y: 1}
     - _MainTex2:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _NoiseTex:
-        m_Texture: {fileID: 0}
-        m_Scale: {x: 1, y: 1}
+        m_Texture: {fileID: 2800000, guid: 044e3d322e348c34d8e409df582d315e, type: 3}
+        m_Scale: {x: 0.02, y: 0.02}
         m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
+    - _BaseShadowIntensity: 0.19
     - _BorderNoiseScale: 0.2
+    - _CloudTexOffsetStop: 0
     - _ColorScale: 5.1
     - _InnerDistanceOn: 0
     - _MainTex2OffsetStop: 0
     - _MainTexOffsetStop: 0
     - _NoiseOn: 0
+    - _NoiseRangeMax: 0.524
+    - _NoiseRangeMin: 0.108
     - _NoiseTexOffsetStop: 0
     - _Radius: 23.59
     - _ReverseTextureOn: 0
+    - _ShadowIntensity: 7.74
     - _TextureNoiseScale: 0.2
     m_Colors:
     - _Center: {r: 0, g: 0, b: 0, a: 0}
@@ -50,4 +62,5 @@ Material:
     - _Color2: {r: 0, g: 1, b: 0, a: 0}
     - _InnerRange: {r: -10, g: -3, b: 0, a: 0}
     - _Range: {r: 0, g: 1, b: 1, a: 5}
+    - _ShadowColor: {r: 0.103773594, g: 0.103773594, b: 0.103773594, a: 0}
   m_BuildTextureStacks: []

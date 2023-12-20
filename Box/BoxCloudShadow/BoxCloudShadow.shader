@@ -1,4 +1,4 @@
-Shader "FX/Others/BoxClouds"
+Shader "FX/Others/BoxCloudShadow"
 {
     Properties
     {
