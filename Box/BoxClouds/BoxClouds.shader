@@ -54,7 +54,8 @@ Shader "FX/Others/BoxClouds"
             };
 
             sampler2D _NoiseTex;
-            sampler2D _CameraColorTexture,_CameraDepthTexture;
+            sampler2D _CameraColorTexture;
+            sampler2D _CameraDepthTexture;
 
             CBUFFER_START(UnityPerMaterial)
             half4 _NoiseTex_ST;
