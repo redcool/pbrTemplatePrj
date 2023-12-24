@@ -38,7 +38,8 @@ Shader "Hidden/FX/Others/Template"
             };
 
             sampler2D _MainTex;
-            sampler2D _CameraColorTexture,_CameraDepthTexture;
+            sampler2D _CameraColorTexture;
+            sampler2D _CameraDepthTexture;
 
             CBUFFER_START(UnityPerMaterial)
             half4 _MainTex_ST;

@@ -56,7 +56,8 @@ Shader "FX/Others/BoxRadialBlur"
             };
 
             sampler2D _NoiseTex;
-            sampler2D _CameraOpaqueTexture,_CameraDepthTexture;
+            sampler2D _CameraOpaqueTexture;
+            sampler2D _CameraDepthTexture;
 
             CBUFFER_START(UnityPerMaterial)
             float4 _NoiseTex_ST;

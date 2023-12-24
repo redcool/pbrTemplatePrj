@@ -76,7 +76,8 @@ Shader "FX/Others/BoxScan"
             };
 
             sampler2D _MainTex,_MainTex2,_NoiseTex;
-            sampler2D _CameraOpaqueTexture,_CameraColorTexture,_CameraDepthTexture,_CameraDepthAttachment;
+            sampler2D _CameraOpaqueTexture,_CameraColorTexture;
+            sampler2D _CameraDepthTexture,_CameraDepthAttachment;
 
             CBUFFER_START(UnityPerMaterial)
             half4 _MainTex_ST,_MainTex2_ST,_NoiseTex_ST;
