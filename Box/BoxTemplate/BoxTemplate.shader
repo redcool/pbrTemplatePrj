@@ -3,6 +3,9 @@ Shader "Hidden/FX/Others/Template"
     Properties
     {
         [GroupHeader(v0.0.1)]
+        [Group(Base)]
+        [GroupToggle(Base)]_FullScreenOn("_FullScreenOn",int) = 1
+
         _MainTex("_MainTex",2d)=""{}
     }
     SubShader
@@ -42,6 +45,7 @@ Shader "Hidden/FX/Others/Template"
             sampler2D _CameraDepthTexture;
 
             CBUFFER_START(UnityPerMaterial)
+            half _FullScreenOn;
             half4 _MainTex_ST;
 
             CBUFFER_END
@@ -52,8 +56,7 @@ Shader "Hidden/FX/Others/Template"
             v2f vert (appdata v)
             {
                 v2f o;
-                // o.vertex = TransformObjectToHClip(v.vertex.xyz);
-                o.vertex = float4(v.vertex.xy*2,0,1);
+                o.vertex = _FullScreenOn ? float4(v.vertex.xy * 2,0,1) : TransformObjectToHClip(v.vertex.xyz);
                 o.uv = v.uv;
                 return o;
             }
@@ -66,7 +69,7 @@ Shader "Hidden/FX/Others/Template"
 
 //============ world pos
                 float depthTex = tex2D(_CameraDepthTexture,screenUV).x;
-                half isFar = depthTex.x > 0.999999;
+                half isFar = IsTooFar(depthTex.x);
                 
                 float3 worldPos = ScreenToWorldPos(screenUV,depthTex,UNITY_MATRIX_I_VP);
                 return worldPos.xyzx;

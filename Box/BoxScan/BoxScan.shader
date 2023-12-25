@@ -3,6 +3,8 @@ Shader "FX/Others/BoxScan"
     Properties
     {
         [GroupHeader(v0.0.4)]
+        [Group(Base)]
+        [GroupToggle(Base)]_FullScreenOn("_FullScreenOn",int) = 1
 
         [Group(Color)]
         [GroupHeader(Color,Edge Textures)]
@@ -80,6 +82,7 @@ Shader "FX/Others/BoxScan"
             sampler2D _CameraDepthTexture,_CameraDepthAttachment;
 
             CBUFFER_START(UnityPerMaterial)
+            half _FullScreenOn;
             half4 _MainTex_ST,_MainTex2_ST,_NoiseTex_ST;
             half _MainTexOffsetStop,_MainTex2OffsetStop,_NoiseTexOffsetStop;
             half3 _Center;
@@ -98,8 +101,7 @@ Shader "FX/Others/BoxScan"
             v2f vert (appdata v)
             {
                 v2f o;
-                // o.vertex = TransformObjectToHClip(v.vertex.xyz);
-                o.vertex = float4(v.vertex.xy*2,0,1);
+                o.vertex = _FullScreenOn ? float4(v.vertex.xy * 2,0,1) : TransformObjectToHClip(v.vertex.xyz);
                 o.uv = v.uv;
                 return o;
             }
@@ -115,7 +117,7 @@ Shader "FX/Others/BoxScan"
 // return smoothstep(_Range.x,_Range.y,d);
 //============ world pos
                 float depthTex = tex2D(_CameraDepthTexture,screenUV).x;
-                half isFar = depthTex.x>0.999990;
+                half isFar = IsTooFar(depthTex.x);
                 
                 float3 worldPos = ScreenToWorldPos(screenUV,depthTex,UNITY_MATRIX_I_VP);
 //============ Noise

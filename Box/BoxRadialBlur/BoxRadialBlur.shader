@@ -3,19 +3,24 @@ Shader "FX/Others/BoxRadialBlur"
     Properties
     {
         [GroupHeader(v0.0.1)]
+        [Group(Base)]
+        [GroupToggle(Base)]_FullScreenOn("_FullScreenOn",int) = 1
 
-        _NoiseTex("_NoiseTex",2d) = ""{}
-        _NoiseScale("_NoiseScale",float) = 1
+        [Group(NoiseTex)]
+        [GroupItem(NoiseTex)] _NoiseTex("_NoiseTex",2d) = ""{}
+        [GroupItem(NoiseTex)] _NoiseScale("_NoiseScale",float) = 1
 
-        [GroupVectorSlider(,centerX centerY,0_1 0_1,)]
-        _Center("_Center",vector) = (0,0,0,0)
-        _Radius("_Radius",range(-1,1)) = 0
+        [Group(RadialBlur)]
+        [GroupHeader(RadialBlur,Distance)]
+        [GroupVectorSlider(RadialBlur,centerX centerY,0_1 0_1,)]
+        [GroupItem(RadialBlur)] _Center("_Center",vector) = (0,0,0,0)
+        [GroupItem(RadialBlur)] _Radius("_Radius",range(-1,1)) = 0
 
-        [GroupVectorSlider(,rangeX rangeY,0_1 0_1,,)]
-        _Range("_Range",vector) = (0,1,0,0)
+        [GroupVectorSlider(RadialBlur,rangeX rangeY,0_1 0_1,,)] _Range("_Range",vector) = (0,1,0,0)
 
-        _SampleCount("_SampleCount",range(4,10)) = 4
-        _BlurSize("_BlurSize",float) = 1
+        [GroupHeader(RadialBlur,Blur)]
+        [GroupItem(RadialBlur)] _SampleCount("_SampleCount",range(4,10)) = 4
+        [GroupItem(RadialBlur)] _BlurSize("_BlurSize",float) = 1
     }
     SubShader
     {
@@ -60,6 +65,7 @@ Shader "FX/Others/BoxRadialBlur"
             sampler2D _CameraDepthTexture;
 
             CBUFFER_START(UnityPerMaterial)
+            half _FullScreenOn;
             float4 _NoiseTex_ST;
             float _NoiseScale;
 
@@ -80,15 +86,25 @@ Shader "FX/Others/BoxRadialBlur"
             v2f vert (appdata v)
             {
                 v2f o;
-                // o.vertex = TransformObjectToHClip(v.vertex.xyz);
-                o.vertex = float4(v.vertex.xy*2,0,1);
+                o.vertex = _FullScreenOn ? float4(v.vertex.xy * 2,0,1) : TransformObjectToHClip(v.vertex.xyz);
                 o.uv = v.uv;
                 return o;
             }
 
-            float2 CalcStepUVOffset(float2 uv,float2 center,int sampleCount,float attenRadius,float2 attenRange,float blurSize){
+            /**
+                Get step dir for radiual blur
+                cur blur uv = uv + stepDir*stepIndex
+
+                uv : cur uv
+                center : sdf(circle)' center
+                radius : circle 's radius
+                sampleCount : iterate count
+                attenRange : [min,max] for smoothstep
+                blurSize : scale final step dir
+            */
+            float2 CalcStepUVOffset(float2 uv,float2 center,float radius,int sampleCount,float2 attenRange,float blurSize){
                 float2 dir = (uv - _Center);
-                float atten = saturate(length(dir) - attenRadius);
+                float atten = saturate(length(dir) - radius);
                 atten = smoothstep(attenRange.x,attenRange.y,atten);
                 // return atten;
                 float2 stepDir = dir/sampleCount;
@@ -132,7 +148,7 @@ Shader "FX/Others/BoxRadialBlur"
                 float noiseTex = tex2D(_NoiseTex,screenUV).x;
                 float noise = noiseTex * _NoiseScale;
 
-                float2 uvStepOffset = CalcStepUVOffset(screenUV,_Center,_SampleCount,_Radius,_Range,_BlurSize);
+                float2 uvStepOffset = CalcStepUVOffset(screenUV,_Center,_Radius,_SampleCount,_Range,_BlurSize);
 
                 float4 col = SampleBlur(screenUV,_SampleCount,uvStepOffset * noise);
                 return col;
