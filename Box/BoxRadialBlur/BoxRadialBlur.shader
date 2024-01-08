@@ -162,7 +162,7 @@ Shader "FX/Others/BoxRadialBlur"
                 float2 uvStepOffset = CalcStepUVOffset(screenUV,_Center,_Radius,_SampleCount,_Range,_BlurSize);
 
                 // distortion 1 step
-                screenUV += _SampleCount<=2 ? uvStepOffset : 0;
+                screenUV += _SampleCount<=2 ? uvStepOffset*0.1 : 0;
                 float4 col = SampleBlur(screenUV,_SampleCount,uvStepOffset * noise);
                 return col;
             }
