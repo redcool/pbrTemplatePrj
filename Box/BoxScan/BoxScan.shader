@@ -43,6 +43,21 @@ Shader "FX/Others/BoxScan"
 
         [GroupHeader(Border,Options)]
         [GroupToggle(Border)]_ReverseTextureOn("_ReverseTextureOn",int) = 0
+
+        [Group(SceneFogOn)]
+        [GroupToggle(SceneFogOn,_SCENE_FOG_ON)] _SceneFogOn("_SceneFogOn",int) = 0
+        [GroupItem(SceneFogOn)] _FogMainTex("_FogMainTex",2d) = ""{}
+        [GroupItem(SceneFogOn)] _FogDetailTex("_FogDetailTex",2d) = ""{}
+
+        [GroupItem(SceneFogOn)] _FogColor("_FogColor",Color) =(1,1,1,1)
+        
+        [GroupHeader(SceneFogOn,Height)]
+        [GroupItem(SceneFogOn)] _FogHeight("_FogHeight",float) = 10
+        [GroupItem(SceneFogOn)] _FogHeightRange("_FogHeightRange",float) = 1
+        
+        [GroupItem(SceneFogOn)] _HeightNoiseScale("_HeightNoiseScale",range(0,1)) = 0.2
+        
+        [GroupItem(SceneFogOn)] _FogDensity("_FogDensity",range(0,1)) = 1
     }
     SubShader
     {
@@ -57,6 +72,7 @@ Shader "FX/Others/BoxScan"
             #pragma vertex vert
             #pragma fragment frag
             #pragma shader_feature _NOISE_ON
+            #pragma shader_feature _SCENE_FOG_ON
 
             #include "../../../PowerShaderLib/Lib/UnityLib.hlsl"
             #include "../../../PowerShaderLib/Lib/PowerUtils.hlsl"
@@ -81,6 +97,8 @@ Shader "FX/Others/BoxScan"
             sampler2D _CameraOpaqueTexture,_CameraColorTexture;
             sampler2D _CameraDepthTexture,_CameraDepthAttachment;
 
+            sampler2D _FogDetailTex,_FogMainTex;
+
             CBUFFER_START(UnityPerMaterial)
             half _FullScreenOn;
             half4 _MainTex_ST,_MainTex2_ST,_NoiseTex_ST;
@@ -93,6 +111,15 @@ Shader "FX/Others/BoxScan"
             half _ReverseTextureOn;
             half _TextureNoiseScale,_BorderNoiseScale;
             half _InnerDistanceOn;
+            // fog
+            half _FogHeight,_FogHeightRange;
+            half _HeightNoiseScale;
+            half4 _FogMainTex_ST;
+            half4 _FogDetailTex_ST;
+            half _FogDensity;
+            half4 _FogColor;
+
+
             CBUFFER_END
 
 // #define _CameraDepthTexture _CameraDepthAttachment
@@ -106,7 +133,27 @@ Shader "FX/Others/BoxScan"
                 return o;
             }
 
+            void ApplySceneFog(inout half3 mainColor,float3 worldPos,half fogAtten){
+                float4 noiseUV = worldPos.xzxz * _FogDetailTex_ST.xyxy + _FogDetailTex_ST.zwzw * _Time.xxxx;
 
+                half2 noise = tex2D(_FogDetailTex,noiseUV.xy).xy * 2 -1;
+                noise += tex2D(_FogDetailTex,noiseUV.zw).xy * 2 -1;
+
+                half2 mainUV = worldPos.xz * _FogMainTex_ST.xy + _FogMainTex_ST.zw *_Time.xx;
+
+                half4 fog = tex2D(_FogMainTex,mainUV + noise * 0.02);
+                fog *= _FogColor;
+
+                half heightAtten = (_FogHeight * (1+noise.x*_HeightNoiseScale) - worldPos.y);
+                heightAtten =smoothstep(0,_FogHeightRange, heightAtten);
+                // mainColor = heightAtten;
+                // return;
+
+                heightAtten = saturate(heightAtten);
+                
+                half fogRate = heightAtten * _FogDensity * fogAtten;
+                mainColor = lerp(mainColor,fog,fogRate);
+            }
 
             float4 frag (v2f i) : SV_Target
             {
@@ -152,12 +199,16 @@ Shader "FX/Others/BoxScan"
                 half4 tex2 = tex2D(_MainTex2,worldPos.xz * _MainTex2_ST.xy + UVOffset(_MainTex2_ST.zw,_MainTex2OffsetStop)+textureNoise);
                 tex = tex1.xyz * tex2.xyz;
 
+                
                 // tex = lerp(tex1,tex2,distSign);
 //============ colors
                 half4 color = lerp(_Color,_Color2,d) * _ColorScale;
                 color = lerp(1,color,bandDist);
 //============ blends
                 half4 opaqueTex = tex2D(_CameraOpaqueTexture,screenUV);
+#if defined(_SCENE_FOG_ON)                
+                ApplySceneFog(opaqueTex.xyz/**/,worldPos,1-isFar);
+#endif                
                 // opaqueTex *= color;
 
                 half4 col = 1;
