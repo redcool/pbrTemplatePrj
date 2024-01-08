@@ -113,17 +113,6 @@ Shader "FX/Others/BoxRadialBlur"
                 // return dir *blurSize * atten;
             }
 
-            float2 CalcUVOffset(float2 uv,float2 center,float radius,int sampleCount,float2 attenRange,float blurSize){
-                float2 dir = (uv - center);
-                float atten = saturate(length(dir) - radius);
-                atten = smoothstep(attenRange.x,attenRange.y,atten);
-                // return atten;
-                float2 stepDir = dir/sampleCount;
-
-                return stepDir *blurSize * atten;
-                // return dir *blurSize * atten;
-            }
-
             float4 SampleBlur(float2 uv,int sampleCount,float2 uvStepOffset){
                 float4 c = 0;
                 for(int i=0;i<sampleCount;i++){
