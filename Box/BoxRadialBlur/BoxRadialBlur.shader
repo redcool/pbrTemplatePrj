@@ -19,7 +19,7 @@ Shader "FX/Others/BoxRadialBlur"
         [GroupVectorSlider(RadialBlur,rangeX rangeY,0_1 0_1,,)] _Range("_Range",vector) = (0,1,0,0)
 
         [GroupHeader(RadialBlur,Blur)]
-        [GroupItem(RadialBlur)] _SampleCount("_SampleCount",range(4,10)) = 4
+        [GroupItem(RadialBlur)] _SampleCount("_SampleCount",range(1,10)) = 4
         [GroupItem(RadialBlur)] _BlurSize("_BlurSize",float) = 1
     }
     SubShader
@@ -103,7 +103,18 @@ Shader "FX/Others/BoxRadialBlur"
                 blurSize : scale final step dir
             */
             float2 CalcStepUVOffset(float2 uv,float2 center,float radius,int sampleCount,float2 attenRange,float blurSize){
-                float2 dir = (uv - _Center);
+                float2 dir = (uv - center);
+                float atten = saturate(length(dir) - radius);
+                atten = smoothstep(attenRange.x,attenRange.y,atten);
+                // return atten;
+                float2 stepDir = dir/sampleCount;
+
+                return stepDir *blurSize * atten;
+                // return dir *blurSize * atten;
+            }
+
+            float2 CalcUVOffset(float2 uv,float2 center,float radius,int sampleCount,float2 attenRange,float blurSize){
+                float2 dir = (uv - center);
                 float atten = saturate(length(dir) - radius);
                 atten = smoothstep(attenRange.x,attenRange.y,atten);
                 // return atten;
@@ -114,8 +125,8 @@ Shader "FX/Others/BoxRadialBlur"
             }
 
             float4 SampleBlur(float2 uv,int sampleCount,float2 uvStepOffset){
-                float4 c = tex2D(_CameraOpaqueTexture,uv);
-                for(int i=1;i<sampleCount;i++){
+                float4 c = 0;
+                for(int i=0;i<sampleCount;i++){
                     float4 c1 = tex2D(_CameraOpaqueTexture,uv + i * uvStepOffset);
                     c += c1;
                     // c = lerp(c,c1,0.5);
@@ -150,6 +161,8 @@ Shader "FX/Others/BoxRadialBlur"
 
                 float2 uvStepOffset = CalcStepUVOffset(screenUV,_Center,_Radius,_SampleCount,_Range,_BlurSize);
 
+                // distortion 1 step
+                screenUV += _SampleCount<=2 ? uvStepOffset : 0;
                 float4 col = SampleBlur(screenUV,_SampleCount,uvStepOffset * noise);
                 return col;
             }
