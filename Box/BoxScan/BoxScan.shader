@@ -2,7 +2,7 @@ Shader "FX/Others/BoxScan"
 {
     Properties
     {
-        [GroupHeader(v0.0.4)]
+        [GroupHeader(v0.0.5)]
         [Group(Base)]
         [GroupToggle(Base)]_FullScreenOn("_FullScreenOn",int) = 1
 
@@ -207,7 +207,7 @@ Shader "FX/Others/BoxScan"
 //============ blends
                 half4 opaqueTex = tex2D(_CameraOpaqueTexture,screenUV);
 #if defined(_SCENE_FOG_ON)                
-                ApplySceneFog(opaqueTex.xyz/**/,worldPos,1-isFar);
+                ApplySceneFog(opaqueTex.xyz/**/,worldPos,(1-isFar) * distSign);
 #endif                
                 // opaqueTex *= color;
 
