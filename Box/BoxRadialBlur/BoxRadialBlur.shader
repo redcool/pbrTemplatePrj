@@ -11,7 +11,7 @@ Shader "FX/Others/BoxRadialBlur"
         [GroupToggle(NoiseTex,,stop auto uv scroll)] _NoiseTexOffsetStop("_NoiseTexOffsetStop",int) = 0
         [GroupToggle(NoiseTex,_NOISE_POLAR_UV, use polar uv sample)]_NoiseTexPolarUV("_NoiseTexPolarUV",int) = 0
         [GroupItem(NoiseTex)] _NoiseScale("_NoiseScale",float) = 1
-        [GroupItem(NoiseTex,noise atten screen uv radius)] _NoiseRadius("_NoiseRadius",range(0,1)) = 1
+        [GroupItem(NoiseTex,noise atten screen uv radius)] _NoiseAttenRadius("_NoiseAttenRadius",range(0,1)) = 0
         
 
         [Group(RadialBlur)]
@@ -73,7 +73,7 @@ Shader "FX/Others/BoxRadialBlur"
             CBUFFER_START(UnityPerMaterial)
             half _FullScreenOn;
             half4 _NoiseTex_ST;
-            half _NoiseScale,_NoiseRadius;
+            half _NoiseScale,_NoiseAttenRadius;
             half _NoiseTexOffsetStop;
 
             half _BlurSize;
@@ -154,17 +154,23 @@ Shader "FX/Others/BoxRadialBlur"
                 float aspect = _ScaledScreenParams.x/_ScaledScreenParams.y;
                 float2 screenUV = i.vertex.xy / _ScaledScreenParams.xy;
 //============== Noise
+                half2 noiseOffset = UVOffset(_NoiseTex_ST.zw, _NoiseTexOffsetStop);
+//============== Polar or Cartesian
                 float2 noiseUV = screenUV;
                 #if defined(_NOISE_POLAR_UV)
-                noiseUV = ToPolar(screenUV*2-1);
+                    noiseUV = ToPolar(screenUV*2-1);
+                    noiseUV= noiseUV * _NoiseTex_ST.xy + noiseOffset;
+                    noiseUV = ToCartesian(noiseUV);
+                #else
+                    noiseUV= noiseUV * _NoiseTex_ST.xy + noiseOffset;
                 #endif
-                half2 noiseOffset = UVOffset(_NoiseTex_ST.zw, _NoiseTexOffsetStop);
-                float noiseTex = tex2D(_NoiseTex,noiseUV * _NoiseTex_ST.xy + noiseOffset).x;
+
+                float noiseTex = tex2D(_NoiseTex,noiseUV).x;
                 float noise = noiseTex * _NoiseScale*0.02;
 //============== Distance
                 float distanceAtten = 0;
                 float2 uvStepOffset = CalcStepUVOffset(distanceAtten/**/,screenUV,_Center,_Radius,_SampleCount,_Range,_BlurSize);
-                noise = saturate(noise * (distanceAtten - _NoiseRadius));
+                noise = saturate(noise * (distanceAtten - _NoiseAttenRadius));
                 // return noise;
                 // distortion 1 step
                 screenUV += _SampleCount<=2 ? uvStepOffset*0.1 : 0;
