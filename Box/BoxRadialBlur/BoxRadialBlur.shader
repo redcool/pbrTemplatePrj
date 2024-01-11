@@ -40,6 +40,7 @@ Shader "FX/Others/BoxRadialBlur"
             #pragma vertex vert
             #pragma fragment frag
             #pragma shader_feature _NOISE_POLAR_UV
+            #pragma multi_compile_fragment _ _SRGB_TO_LINEAR_CONVERSION _LINEAR_TO_SRGB_CONVERSION
 
             #include "../../../PowerShaderLib/Lib/UnityLib.hlsl"
             // #include "../../../PowerShaderLib/Lib/PowerUtils.hlsl"
@@ -149,6 +150,31 @@ Shader "FX/Others/BoxRadialBlur"
                 return c/sampleCount;
             }
 
+            float4 GammaLinearTransfer(float4 color){
+                /**
+                    1 DrawObjectsPass, enable _SRGB_TO_LINEAR_CONVERSION
+                    2 texture enable SRGB
+                **/
+                float alpha = color.a;
+
+                #if defined(_SRGB_TO_LINEAR_CONVERSION)
+                // return float4(1,0,0,1);
+                color.xyz = color.xyz * color.xyz;
+                #endif
+
+                #if _LINEAR_TO_SRGB_CONVERSION
+                // return float4(0,1,0,1);
+                float4 gammaColor = sqrt(color);
+                color.xyz = gammaColor.xyz;
+
+                // improve white color
+                alpha = lerp(color.w,gammaColor.w,color.w);
+                #endif
+
+                // color.rgb *= alpha;
+                return color;
+            }
+
             float4 frag (v2f i) : SV_Target
             {
                 float aspect = _ScaledScreenParams.x/_ScaledScreenParams.y;
@@ -175,6 +201,7 @@ Shader "FX/Others/BoxRadialBlur"
                 // distortion 1 step
                 screenUV += _SampleCount<=2 ? uvStepOffset*0.1 : 0;
                 float4 col = SampleBlur(screenUV,_SampleCount,uvStepOffset + noise);
+        col = GammaLinearTransfer(col);
                 return col;
             }
             ENDHLSL
