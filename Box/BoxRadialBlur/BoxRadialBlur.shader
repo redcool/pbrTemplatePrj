@@ -2,7 +2,7 @@ Shader "FX/Others/BoxRadialBlur"
 {
     Properties
     {
-        [GroupHeader(v0.0.2)]
+        [GroupHeader(v0.0.3)]
         [Group(Base)]
         [GroupToggle(Base)] _FullScreenOn("_FullScreenOn",int) = 1
 
