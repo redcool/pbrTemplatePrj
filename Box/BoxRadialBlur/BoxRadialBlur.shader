@@ -4,7 +4,11 @@ Shader "FX/Others/BoxRadialBlur"
     {
         [GroupHeader(v0.0.2)]
         [Group(Base)]
-        [GroupToggle(Base)]_FullScreenOn("_FullScreenOn",int) = 1
+        [GroupToggle(Base)] _FullScreenOn("_FullScreenOn",int) = 1
+
+        [Group(MainTex)]
+        [GroupToggle(MainTex,_MAIN_TEX_ON)] _MainTexOn("_MainTexOn",int) = 0
+        [GroupItem(MainTex)] _MainTex("_MainTex",2d) = ""{}
 
         [Group(NoiseTex)]
         [GroupItem(NoiseTex)] _NoiseTex("_NoiseTex",2d) = ""{}
@@ -40,6 +44,7 @@ Shader "FX/Others/BoxRadialBlur"
             #pragma vertex vert
             #pragma fragment frag
             #pragma shader_feature _NOISE_POLAR_UV
+            #pragma shader_feature _MAIN_TEX_ON
             #pragma multi_compile_fragment _ _SRGB_TO_LINEAR_CONVERSION _LINEAR_TO_SRGB_CONVERSION
 
             #include "../../../PowerShaderLib/Lib/UnityLib.hlsl"
@@ -71,6 +76,8 @@ Shader "FX/Others/BoxRadialBlur"
             sampler2D _CameraOpaqueTexture;
             sampler2D _CameraDepthTexture;
 
+            sampler2D _MainTex;
+
             CBUFFER_START(UnityPerMaterial)
             half _FullScreenOn;
             half4 _NoiseTex_ST;
@@ -83,13 +90,16 @@ Shader "FX/Others/BoxRadialBlur"
             half2 _Center;
             half _SampleCount;
 
-
             CBUFFER_END
 
             half4 _CameraOpaqueTexture_TexelSize;
             half4 _NoiseTex_TexelSize;
 // #define _CameraDepthTexture _CameraDepthAttachment
 // #define _CameraOpaqueTexture _CameraColorTexture
+
+#if defined(_MAIN_TEX_ON)
+    #define _CameraOpaqueTexture _MainTex
+#endif
 
             v2f vert (appdata v)
             {
