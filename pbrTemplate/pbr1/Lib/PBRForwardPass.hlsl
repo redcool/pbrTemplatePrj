@@ -81,7 +81,7 @@ float4 frag (v2f i) : SV_Target
 
     float3 tn = UnpackNormalScale(tex2D(_NormalMap,mainUV),_NormalScale);
     float3 n = normalize(TangentToWorld(tn,i.tSpace0,i.tSpace1,i.tSpace2));
-
+return n.xyzx;
     float3 l = (_MainLightPosition.xyz);
     float3 v = normalize(UnityWorldSpaceViewDir(worldPos));
     float3 h = normalize(l+v);
