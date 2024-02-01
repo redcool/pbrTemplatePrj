@@ -32,7 +32,7 @@ shader "Unlit/Bill"
 
         [Group(Snow)]
         [GroupToggle(Snow,_SNOW_ON)]_SnowOn("_SnowOn",int) = 0
-        // [GroupToggle(Snow,,snow show in edge first)]_ApplyEdgeOn("_ApplyEdgeOn",int) = 1
+        [GroupToggle(Snow,,snow show in edge first)]_ApplyEdgeOn("_ApplyEdgeOn",int) = 1
         [GroupItem(Snow)]_SnowIntensity("_SnowIntensity",range(0,1)) = 0
         [GroupToggle(Snow,,mainTex.a as snow atten)] _SnowIntensityUseMainTexA("_SnowIntensityUseMainTexA",int) = 0
 
@@ -75,6 +75,7 @@ shader "Unlit/Bill"
         UNITY_DEFINE_INSTANCED_PROP(half,_ApplyMainLightColor)
 
         UNITY_DEFINE_INSTANCED_PROP(half,_SnowIntensity)
+        UNITY_DEFINE_INSTANCED_PROP(half,_ApplyEdgeOn)
         UNITY_DEFINE_INSTANCED_PROP(half,_SnowIntensityUseMainTexA)
 
         UNITY_DEFINE_INSTANCED_PROP(half,_FogOn)
@@ -166,7 +167,7 @@ shader "Unlit/Bill"
         branch_if(IsSnowOn())
         {
             half snowAtten = (_SnowIntensityUseMainTexA ? alpha : 1) * _SnowIntensity;            
-            albedo = MixSnow(albedo,1,snowAtten,i.normal);
+            albedo = MixSnow(albedo,1,snowAtten,i.normal,_ApplyEdgeOn);
         }
         #endif        
         #if defined(ALPHA_TEST)
