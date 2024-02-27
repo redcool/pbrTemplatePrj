@@ -11,7 +11,7 @@ Shader "URP/pbr1_learn"
     }
 
     HLSLINCLUDE
-    #define _TEST
+        #define _TEST
         #include "../../../PowerShaderLib/Lib/UnityLib.hlsl"
 
         struct appdata{
@@ -51,7 +51,11 @@ Shader "URP/pbr1_learn"
             return l;
         }
 
-        #define POW4(a) (a*a*a*a)
+        #define POW4(a) ((a)*(a)*(a)*(a))
+        float Pow4(float a){
+            float a2 = a*a;
+            return a2*a2;
+        };
 
         v2f vert(appdata i){
             v2f o=(v2f)0;
@@ -125,7 +129,7 @@ Shader "URP/pbr1_learn"
             float surfaceReduction = 1/(a2+1);
             float grazingTerm = saturate(smoothness+metallic);
 
-            float fresnelTerm = POW4(1 - nv);
+            float fresnelTerm = Pow4(1 - nv);
             float3 giSpec = surfaceReduction * envColor.xyz * lerp(specColor,grazingTerm,fresnelTerm);
 
             float3 giDiff = SampleSH(n) * diffColor;
