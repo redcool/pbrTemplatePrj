@@ -123,7 +123,7 @@ Shader "FX/Others/BoxScan"
             CBUFFER_END
 
 // #define _CameraDepthTexture _CameraDepthAttachment
-#define _CameraOpaqueTexture _CameraColorTexture
+// #define _CameraOpaqueTexture _CameraColorTexture
 
             v2f vert (appdata v)
             {
