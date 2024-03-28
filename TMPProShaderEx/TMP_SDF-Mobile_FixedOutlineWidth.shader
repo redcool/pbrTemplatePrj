@@ -93,6 +93,10 @@ SubShader {
 		#include "UnityUI.cginc"
 		#include "TMPro_Properties.cginc"
 
+		// gamma linear space
+		#include "../../PowerShaderLib/Lib/ColorSpace.hlsl"
+		#pragma multi_compile_fragment _ _SRGB_TO_LINEAR_CONVERSION _LINEAR_TO_SRGB_CONVERSION
+
 		struct vertex_t {
 			UNITY_VERTEX_INPUT_INSTANCE_ID
 			float4	vertex			: POSITION;
@@ -232,6 +236,16 @@ SubShader {
 			#if UNITY_UI_ALPHACLIP
 			clip(c.a - 0.001);
 			#endif
+
+			#if defined(_SRGB_TO_LINEAR_CONVERSION)
+			c.xyz = LinearToGamma(c.xyz);
+			#endif
+
+			float alpha = c.a;
+			#if _LINEAR_TO_SRGB_CONVERSION
+			GammaToLinear(c/**/,alpha/**/);
+			#endif
+			c.xyz *= alpha;
 
 			return c;
 		}
