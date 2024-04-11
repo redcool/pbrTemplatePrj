@@ -12,7 +12,23 @@ Shader "Template/Unlit/Color_MRT"
         [GroupToggle(Fog)]_FogNoiseOn("_FogNoiseOn",int) = 0
         [GroupToggle(Fog)]_DepthFogOn("_DepthFogOn",int) = 1
         [GroupToggle(Fog)]_HeightFogOn("_HeightFogOn",int) = 1
+// ================================================== stencil settings
+        [Group(Stencil)]
+        [GroupEnum(Stencil,UnityEngine.Rendering.CompareFunction)]_StencilComp ("Stencil Comparison", Float) = 0
+        [GroupItem(Stencil)]_Stencil ("Stencil ID", int) = 0
+        [GroupEnum(Stencil,UnityEngine.Rendering.StencilOp)]_StencilOp ("Stencil Operation", Float) = 0
+        _StencilWriteMask ("Stencil Write Mask", Float) = 255
+        _StencilReadMask ("Stencil Read Mask", Float) = 255
 
+        [Header(Blend)]
+        [Enum(UnityEngine.Rendering.BlendMode)]_SrcMode("_SrcMode",int) = 1
+        [Enum(UnityEngine.Rendering.BlendMode)]_DstMode("_DstMode",int) = 0
+
+//================================================= settings
+        [Header(Settings)]
+        [GroupToggle]_ZWriteMode("_ZWriteMode",int) = 1
+        [Enum(UnityEngine.Rendering.CompareFunction)]_ZTestMode("_ZTestMode",int) = 4
+        [Enum(UnityEngine.Rendering.CullMode)]_CullMode("_CullMode",int) = 2
     }
     SubShader
     {
@@ -21,6 +37,20 @@ Shader "Template/Unlit/Color_MRT"
 
         Pass
         {
+            blend [_SrcMode][_DstMode]
+            zwrite[_ZWriteMode]
+            ztest[_ZTestMode]
+            cull [_CullMode]
+
+            Stencil
+            {
+                Ref [_Stencil]
+                Comp [_StencilComp]
+                Pass [_StencilOp]
+                ReadMask [_StencilReadMask]
+                WriteMask [_StencilWriteMask]
+            }
+
             HLSLPROGRAM
             #pragma vertex vert
             #pragma fragment frag
