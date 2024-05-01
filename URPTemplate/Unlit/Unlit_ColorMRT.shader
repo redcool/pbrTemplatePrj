@@ -4,7 +4,7 @@ Shader "Template/Unlit/Color_MRT"
     {
         [Group(Main)]
         [GroupItem(Main)] _MainTex ("Texture", 2D) = "white" {}
-        [GroupItem(Main)] _Color("_Color",color) = (1,1,1,1)
+        [GroupItem(Main)] [hdr] _Color("_Color",color) = (1,1,1,1)
 
         [Group(Fog)]
         [GroupToggle(Fog)]_FogOn("_FogOn",int) = 1
