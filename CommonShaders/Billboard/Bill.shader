@@ -16,6 +16,9 @@ shader "Unlit/Bill"
 
         [Group(ShadowCaster)]
         [GroupToggle(ShadowCaster)]_RotateShadow("_RotateShadow",int) = 0
+
+        [Group(Diffuse)]
+        [GroupVectorSlider(Diffuse,Min Max,0_1 0_1)] _DiffuseRange("_DiffuseRange",vector) = (0,0.5,0,0)
 //=================================================  weather
         [Group(Fog)]
         [GroupToggle(Fog)]_FogOn("_FogOn",int) = 1
@@ -53,7 +56,7 @@ shader "Unlit/Bill"
     #include "../../../PowerShaderLib/UrpLib/URP_GI.hlsl"
     #include "../../../PowerShaderLib/Lib/BillboardLib.hlsl"
     #include "../../../PowerShaderLib/Lib/NatureLib.hlsl"
-
+    #include "../../../PowerShaderLib/Lib/MaterialLib.hlsl"
 
     // nothing
     // #if defined(INSTANCING_ON)
@@ -82,6 +85,9 @@ shader "Unlit/Bill"
         UNITY_DEFINE_INSTANCED_PROP(half,_FogNoiseOn)
         UNITY_DEFINE_INSTANCED_PROP(half,_DepthFogOn)
         UNITY_DEFINE_INSTANCED_PROP(half,_HeightFogOn)
+
+        UNITY_DEFINE_INSTANCED_PROP(half2,_DiffuseRange)
+        
         
     UNITY_INSTANCING_BUFFER_END(UnityPerMaterial)
 
@@ -105,6 +111,7 @@ shader "Unlit/Bill"
     #define _FogNoiseOn UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial,_FogNoiseOn)
     #define _DepthFogOn UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial,_DepthFogOn)
     #define _HeightFogOn UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial,_HeightFogOn)
+    #define _DiffuseRange UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial,_DiffuseRange)
 
     #include "../../../PowerShaderLib/Lib/FogLib.hlsl"
 
@@ -140,11 +147,12 @@ shader "Unlit/Bill"
         v.vertex.xyz = mul((_CameraYRot),v.vertex).xyz;
         float3 worldPos = TransformObjectToWorld(v.vertex.xyz);
         o.normal = TransformObjectToWorldNormal(v.normal);
+        float3 n = CalcSphereWorldNormal(unity_ObjectToWorld,worldPos);
         #if defined(_WIND_ON)
         branch_if(IsWindOn())
         {
             float4 attenParam = v.color.x;
-            worldPos = WindAnimationVertex(worldPos,v.vertex.xyz,o.normal,attenParam * _WindAnimParam, _WindDir,_WindSpeed).xyz;
+            worldPos = WindAnimationVertex(worldPos,v.vertex.xyz,n,attenParam * _WindAnimParam, _WindDir,_WindSpeed).xyz;
         }
         #endif
 
@@ -166,7 +174,7 @@ shader "Unlit/Bill"
         float2 mainUV = i.uv.xy;
         float2 lightmapUV = i.uv.zw;
 
-        float3 sh = SampleSH(i.normal);
+        float3 n = CalcSphereWorldNormal(unity_ObjectToWorld,i.worldPos);
         // sample the texture
         float4 mainTex = tex2D(_MainTex, mainUV) * _Color;
 
@@ -176,16 +184,19 @@ shader "Unlit/Bill"
         branch_if(IsSnowOn())
         {
             half snowAtten = (_SnowIntensityUseMainTexA ? alpha : 1) * _SnowIntensity;            
-            albedo = MixSnow(albedo,1,snowAtten,i.normal,_ApplyEdgeOn);
+            albedo = MixSnow(albedo,1,snowAtten,n,_ApplyEdgeOn);
         }
         #endif        
         #if defined(ALPHA_TEST)
             clip(alpha - _Cutoff);
         #endif
 
-        half3 giDiff = CalcGIDiff(i.normal,albedo,lightmapUV);
+        half3 giDiff = CalcGIDiff(n,albedo,lightmapUV);
         half3 diffCol = albedo * (_ApplyMainLightColor? _MainLightColor.xyz : 1);
         half3 col = diffCol + giDiff;
+
+        half nl = saturate(dot(n,_MainLightPosition.xyz));
+        col.xyz *= saturate(smoothstep(_DiffuseRange.x,_DiffuseRange.y,nl) + 0);
 
         BlendFogSphereKeyword(col.rgb/**/,i.worldPos.xyz,i.fogCoord.xy,_HeightFogOn,_FogNoiseOn,_DepthFogOn); // 2fps
 
@@ -212,7 +223,7 @@ shader "Unlit/Bill"
             #pragma multi_compile_instancing
             #pragma shader_feature ALPHA_TEST
             #pragma shader_feature _WIND_ON
-            #pragma shader_feature_local_fragment _SNOW_ON
+            #pragma shader_feature _SNOW_ON
 
             ENDHLSL
         }
