@@ -2,7 +2,7 @@ shader "Unlit/Bill"
 {
     Properties
     {
-        [GroupHeader(v2.0.2)]
+        [GroupHeader(v2.0.1)]
         _MainTex ("Texture", 2D) = "white" {}
         [hdr]_Color("_Color",color) = (1,1,1,1)
         [GroupToggle()]_ApplyMainLightColor("_ApplyMainLightColor",int) = 1
@@ -37,6 +37,8 @@ shader "Unlit/Bill"
         [GroupToggle(Snow,_SNOW_ON)]_SnowOn("_SnowOn",int) = 0
         [GroupToggle(Snow,,snow show in edge first)]_ApplyEdgeOn("_ApplyEdgeOn",int) = 1
         [GroupItem(Snow)]_SnowIntensity("_SnowIntensity",range(0,1)) = 0
+
+        [GroupVectorSlider(Snow,NoiseTilingX NoiseTilingY,0_10 0_10,,float)]_SnowNoiseTiling("_SnowNoiseTiling",vector) = (1,1,0,0)
         [GroupToggle(Snow,,mainTex.a as snow atten)] _SnowIntensityUseMainTexA("_SnowIntensityUseMainTexA",int) = 0
 
         [Group(Settings)]
@@ -78,6 +80,8 @@ shader "Unlit/Bill"
         UNITY_DEFINE_INSTANCED_PROP(half,_ApplyMainLightColor)
 
         UNITY_DEFINE_INSTANCED_PROP(half,_SnowIntensity)
+        UNITY_DEFINE_INSTANCED_PROP(half2,_SnowNoiseTiling)
+        
         UNITY_DEFINE_INSTANCED_PROP(half,_ApplyEdgeOn)
         UNITY_DEFINE_INSTANCED_PROP(half,_SnowIntensityUseMainTexA)
 
@@ -104,6 +108,8 @@ shader "Unlit/Bill"
     #define _ApplyMainLightColor UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial,_ApplyMainLightColor)
 
     #define _SnowIntensity UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial,_SnowIntensity)
+    #define _SnowNoiseTiling UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial,_SnowNoiseTiling)
+    
     #define _ApplyEdgeOn UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial,_ApplyEdgeOn)
     #define _SnowIntensityUseMainTexA UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial,_SnowIntensityUseMainTexA)
 
@@ -146,8 +152,9 @@ shader "Unlit/Bill"
 
         v.vertex.xyz = mul((_CameraYRot),v.vertex).xyz;
         float3 worldPos = TransformObjectToWorld(v.vertex.xyz);
-        o.normal = TransformObjectToWorldNormal(v.normal);
-        float3 n = CalcSphereWorldNormal(unity_ObjectToWorld,worldPos);
+        float3 n = v.vertex.xyz;
+        o.normal = n;
+
         #if defined(_WIND_ON)
         branch_if(IsWindOn())
         {
@@ -174,7 +181,8 @@ shader "Unlit/Bill"
         float2 mainUV = i.uv.xy;
         float2 lightmapUV = i.uv.zw;
 
-        float3 n = CalcSphereWorldNormal(unity_ObjectToWorld,i.worldPos);
+        // float3 n = CalcSphereWorldNormal(unity_ObjectToWorld,i.worldPos);
+        float3 n = normalize(i.normal);
         // sample the texture
         float4 mainTex = tex2D(_MainTex, mainUV) * _Color;
 
@@ -183,10 +191,12 @@ shader "Unlit/Bill"
         #if defined(_SNOW_ON)
         branch_if(IsSnowOn())
         {
+            float3 snowColor = CalcNoiseSnowColor(albedo,1,i.worldPos.xzy,float4(_SnowNoiseTiling.xy,0,0));
+            // return float4(snowColor,1);
             half snowAtten = (_SnowIntensityUseMainTexA ? alpha : 1) * _SnowIntensity;            
-            albedo = MixSnow(albedo,1,snowAtten,n,_ApplyEdgeOn);
+            albedo = MixSnow(albedo,snowColor,snowAtten,n,_ApplyEdgeOn);
         }
-        #endif        
+        #endif
         #if defined(ALPHA_TEST)
             clip(alpha - _Cutoff);
         #endif
