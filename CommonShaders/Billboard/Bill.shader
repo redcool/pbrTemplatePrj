@@ -2,7 +2,7 @@ shader "Unlit/Bill"
 {
     Properties
     {
-        [GroupHeader(v2.0.1)]
+        [GroupHeader(v2.0.2)]
         _MainTex ("Texture", 2D) = "white" {}
         [hdr]_Color("_Color",color) = (1,1,1,1)
         [GroupToggle()]_ApplyMainLightColor("_ApplyMainLightColor",int) = 1
@@ -200,7 +200,7 @@ shader "Unlit/Bill"
 
         BlendFogSphereKeyword(col.rgb/**/,i.worldPos.xyz,i.fogCoord.xy,_HeightFogOn,_FogNoiseOn,_DepthFogOn); // 2fps
 
-        return float4(col,1);
+        return float4(col,alpha);
     }
     ENDHLSL
 
