@@ -191,7 +191,8 @@ shader "Unlit/Bill"
         #if defined(_SNOW_ON)
         branch_if(IsSnowOn())
         {
-            float3 snowColor = CalcNoiseSnowColor(albedo,1,i.worldPos.xzy,float4(_SnowNoiseTiling.xy,0,0));
+            float3 startPos = unity_ObjectToWorld._14_24_34 + i.normal;
+            float3 snowColor = CalcNoiseSnowColor(albedo,1,startPos.xzy,float4(_SnowNoiseTiling.xy,0,0));
             // return float4(snowColor,1);
             half snowAtten = (_SnowIntensityUseMainTexA ? alpha : 1) * _SnowIntensity;            
             albedo = MixSnow(albedo,snowColor,snowAtten,n,_ApplyEdgeOn);
@@ -221,6 +222,7 @@ shader "Unlit/Bill"
 
         Pass
         {
+            name "Forward"
 			ZWrite[_ZWriteMode]
 			Blend [_SrcMode][_DstMode]
 			// BlendOp[_BlendOp]
@@ -239,6 +241,7 @@ shader "Unlit/Bill"
         }
         Pass{
             Tags{"LightMode" = "ShadowCaster"}
+            name "ShadowCaster"
 
             ZWrite On
             ZTest LEqual
