@@ -2,23 +2,34 @@ shader "Unlit/Bill"
 {
     Properties
     {
-        [GroupHeader(v2.0.2)]
-        _MainTex ("Texture", 2D) = "white" {}
-        [hdr]_Color("_Color",color) = (1,1,1,1)
-        [GroupToggle()]_ApplyMainLightColor("_ApplyMainLightColor",int) = 1
+        [GroupHeader(v2.0.3)]
+        [Group(Main)]
+        [GroupItem(Main)] _MainTex ("Texture", 2D) = "white" {}
+        [GroupItem(Main)] [hdr]_Color("_Color",color) = (1,1,1,1)
         // [GroupToggle]_FullFaceCamera("_FullFaceCamera",int) = 0
-
+//=================================================  Lighting
         [Group(Alpha)]
+        [GroupHeader(Alpha,Blend)]
         [GroupPresetBlendMode(Alpha,blend mode,_SrcMode,_DstMode)]_PresetBlendMode("_PresetBlendMode",int)=0
 
+        [GroupHeader(Alpha,Clip)]
         [GroupToggle(Alpha,ALPHA_TEST)]_ClipOn("_ClipOn",int) = 0
         [GroupItem(Alpha)]_Cutoff("_Cutoff",range(0,1)) = 0.5
+//=================================================  Lighting
+        [Group(Lighting)]
+        
+        // [GroupToggle(Lighting)]_ApplyMainLightColor("_ApplyMainLightColor",int) = 1
+        [GroupItem(Lighting)]_Metallic("_Metallic",range(0,1)) = 0.5
 
-        [Group(ShadowCaster)]
-        [GroupToggle(ShadowCaster)]_RotateShadow("_RotateShadow",int) = 0
+        [GroupHeader(Lighting,Shadow)]
+        [GroupToggle(Lighting,shadow caster use matrix _CameraYRot )]_RotateShadow("_RotateShadow",int) = 0
 
-        [Group(Diffuse)]
-        [GroupVectorSlider(Diffuse,Min Max,0_1 0_1)] _DiffuseRange("_DiffuseRange",vector) = (0,0.5,0,0)
+        [GroupHeader(Lighting,Diffuse)]
+        [GroupVectorSlider(Lighting,Min Max,0_1 0_1)] _DiffuseRange("_DiffuseRange",vector) = (0,0.5,0,0)
+
+        [GroupHeader(Lighting,MatCap)]
+        [GroupItem(Lighting,specTerm use )] _MatCap("_MatCap",2d)=""{}
+        [GroupItem(Lighting)] _MatCapScale("_MatCapScale",float)= 1
 //=================================================  weather
         [Group(Fog)]
         [GroupToggle(Fog)]_FogOn("_FogOn",int) = 1
@@ -40,7 +51,7 @@ shader "Unlit/Bill"
 
         [GroupVectorSlider(Snow,NoiseTilingX NoiseTilingY,0_10 0_10,,float)]_SnowNoiseTiling("_SnowNoiseTiling",vector) = (1,1,0,0)
         [GroupToggle(Snow,,mainTex.a as snow atten)] _SnowIntensityUseMainTexA("_SnowIntensityUseMainTexA",int) = 0
-
+//=================================================  Settings
         [Group(Settings)]
         [GroupEnum(Settings,UnityEngine.Rendering.CullMode)]_CullMode("_CullMode",int) = 2
 		[GroupToggle(Settings)]_ZWriteMode("ZWriteMode",int) = 1
@@ -60,6 +71,7 @@ shader "Unlit/Bill"
     #include "../../../PowerShaderLib/Lib/NatureLib.hlsl"
     #include "../../../PowerShaderLib/Lib/MaterialLib.hlsl"
 
+    #include "../../../PowerShaderLib/Lib/MatCapLib.hlsl"
     // nothing
     // #if defined(INSTANCING_ON)
         // #define UnityPerMaterial _UnityPerMaterial
@@ -77,7 +89,7 @@ shader "Unlit/Bill"
         UNITY_DEFINE_INSTANCED_PROP(half4,_WindAnimParam)
         UNITY_DEFINE_INSTANCED_PROP(half4,_WindDir)
         UNITY_DEFINE_INSTANCED_PROP(half,_WindSpeed)
-        UNITY_DEFINE_INSTANCED_PROP(half,_ApplyMainLightColor)
+        // UNITY_DEFINE_INSTANCED_PROP(half,_ApplyMainLightColor)
 
         UNITY_DEFINE_INSTANCED_PROP(half,_SnowIntensity)
         UNITY_DEFINE_INSTANCED_PROP(half2,_SnowNoiseTiling)
@@ -92,6 +104,9 @@ shader "Unlit/Bill"
 
         UNITY_DEFINE_INSTANCED_PROP(half2,_DiffuseRange)
         
+        UNITY_DEFINE_INSTANCED_PROP(half4,_MatCap_ST)
+        UNITY_DEFINE_INSTANCED_PROP(half,_MatCapScale)
+        UNITY_DEFINE_INSTANCED_PROP(half,_Metallic)
         
     UNITY_INSTANCING_BUFFER_END(UnityPerMaterial)
 
@@ -119,6 +134,12 @@ shader "Unlit/Bill"
     #define _HeightFogOn UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial,_HeightFogOn)
     #define _DiffuseRange UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial,_DiffuseRange)
 
+    #define _MatCap_ST UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial,_MatCap_ST)
+    #define _MatCapScale UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial,_MatCapScale)
+    #define _Metallic UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial,_Metallic)
+    
+
+    // _FogOn,need define first
     #include "../../../PowerShaderLib/Lib/FogLib.hlsl"
 
     struct appdata
@@ -138,10 +159,13 @@ shader "Unlit/Bill"
         float3 normal:TEXCOORD1;
         float4 worldPos:TEXCOORD2;
         float4 fogCoord:TEXCOORD3;
+        float3 vertexNormal:TEXCOORD4;
         UNITY_VERTEX_INPUT_INSTANCE_ID
     };
 
     sampler2D _MainTex;
+    TEXTURE2D(_MatCap);SAMPLER(sampler_MatCap);
+
     float4x4 _CameraYRot;
 
     v2f vertBill (appdata v)
@@ -171,6 +195,7 @@ shader "Unlit/Bill"
 
         o.worldPos.xyz = worldPos;
         o.fogCoord.xy = CalcFogFactor(worldPos.xyz,o.vertex.z,_HeightFogOn,_DepthFogOn);
+        o.vertexNormal = (v.normal);
         return o;
     }
 
@@ -188,6 +213,7 @@ shader "Unlit/Bill"
 
         float3 albedo = mainTex.xyz;
         float alpha = mainTex.w;
+
         #if defined(_SNOW_ON)
         branch_if(IsSnowOn())
         {
@@ -198,19 +224,33 @@ shader "Unlit/Bill"
             albedo = MixSnow(albedo,snowColor,snowAtten,n,_ApplyEdgeOn);
         }
         #endif
+
         #if defined(ALPHA_TEST)
             clip(alpha - _Cutoff);
         #endif
 
+        // =========== gi 
         half3 giDiff = CalcGIDiff(n,albedo,lightmapUV);
-        half3 diffCol = albedo * (_ApplyMainLightColor? _MainLightColor.xyz : 1);
-        half3 col = diffCol + giDiff;
+        half3 col = giDiff;
 
+        // =========== direct 
         half nl = saturate(dot(n,_MainLightPosition.xyz));
-        col.xyz *= saturate(smoothstep(_DiffuseRange.x,_DiffuseRange.y,nl) + 0);
+        nl = saturate(smoothstep(_DiffuseRange.x,_DiffuseRange.y,nl) + 0);
 
+        half3 radiance = _MainLightColor.xyz * nl;
+
+        half3 diffCol = albedo * (1- _Metallic);
+        half3 specCol = lerp(0.04,albedo,_Metallic);
+
+        // =========== specular
+        // float3 n1 = normalize(cross( ddy(i.worldPos) , ddx(i.worldPos) ));
+        float4 matCap = SampleMatCap(_MatCap,sampler_MatCap,i.vertexNormal,_MatCap_ST,0);
+        float3 specTerm = matCap.xyz * _MatCapScale;
+
+        half3 directColor = (diffCol + specCol * specTerm) * nl;
+        col += directColor;
+        // =========== fog
         BlendFogSphereKeyword(col.rgb/**/,i.worldPos.xyz,i.fogCoord.xy,_HeightFogOn,_FogNoiseOn,_DepthFogOn); // 2fps
-
         return float4(col,alpha);
     }
     ENDHLSL
