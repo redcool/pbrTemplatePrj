@@ -247,7 +247,7 @@ shader "Unlit/Bill"
         float4 matCap = SampleMatCap(_MatCap,sampler_MatCap,i.vertexNormal,_MatCap_ST,0);
         float3 specTerm = matCap.xyz * _MatCapScale;
 
-        half3 directColor = (diffCol + specCol * specTerm) * nl;
+        half3 directColor = (diffCol + specCol * specTerm) * radiance;
         col += directColor;
         // =========== fog
         BlendFogSphereKeyword(col.rgb/**/,i.worldPos.xyz,i.fogCoord.xy,_HeightFogOn,_FogNoiseOn,_DepthFogOn); // 2fps
