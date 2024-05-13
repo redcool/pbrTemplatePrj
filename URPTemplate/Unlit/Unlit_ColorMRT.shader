@@ -17,18 +17,28 @@ Shader "Template/Unlit/Color_MRT"
         [GroupEnum(Stencil,UnityEngine.Rendering.CompareFunction)]_StencilComp ("Stencil Comparison", Float) = 0
         [GroupItem(Stencil)]_Stencil ("Stencil ID", int) = 0
         [GroupEnum(Stencil,UnityEngine.Rendering.StencilOp)]_StencilOp ("Stencil Operation", Float) = 0
-        _StencilWriteMask ("Stencil Write Mask", Float) = 255
-        _StencilReadMask ("Stencil Read Mask", Float) = 255
+        [HideInInspector] _StencilWriteMask ("Stencil Write Mask", Float) = 255
+        [HideInInspector] _StencilReadMask ("Stencil Read Mask", Float) = 255
 
-        [Header(Blend)]
-        [Enum(UnityEngine.Rendering.BlendMode)]_SrcMode("_SrcMode",int) = 1
-        [Enum(UnityEngine.Rendering.BlendMode)]_DstMode("_DstMode",int) = 0
+        [Group(Alpha)]
+        [GroupHeader(Alpha,AlphaTest)]
+        [GroupToggle(Alpha,ALPHA_TEST)]_ClipOn("_AlphaTestOn",int) = 0
+        [GroupSlider(Alpha)]_Cutoff("_Cutoff",range(0,1)) = 0.5
+        
+        [GroupHeader(Alpha,BlendMode)]
+        [GroupPresetBlendMode(Alpha,,_SrcMode,_DstMode)]_PresetBlendMode("_PresetBlendMode",int)=0
+        // [GroupEnum(Alpha,UnityEngine.Rendering.BlendMode)]
+        [HideInInspector]_SrcMode("_SrcMode",int) = 1
+        [HideInInspector]_DstMode("_DstMode",int) = 0
 
 //================================================= settings
-        [Header(Settings)]
-        [GroupToggle]_ZWriteMode("_ZWriteMode",int) = 1
-        [Enum(UnityEngine.Rendering.CompareFunction)]_ZTestMode("_ZTestMode",int) = 4
-        [Enum(UnityEngine.Rendering.CullMode)]_CullMode("_CullMode",int) = 2
+        [Group(Settings)]
+		[GroupToggle(Settings)]_ZWriteMode("ZWriteMode",int) = 1
+		/*
+		Disabled,Never,Less,Equal,LessEqual,Greater,NotEqual,GreaterEqual,Always
+		*/
+		[GroupEnum(Settings,UnityEngine.Rendering.CompareFunction)]_ZTestMode("_ZTestMode",float) = 4
+        [GroupEnum(Settings,UnityEngine.Rendering.CullMode)]_CullMode("_CullMode",int) = 2
     }
     SubShader
     {
@@ -55,6 +65,7 @@ Shader "Template/Unlit/Color_MRT"
             #pragma vertex vert
             #pragma fragment frag
             #pragma shader_feature SIMPLE_FOG
+            #pragma shader_feature ALPHA_TEST
 
             #include "../../../PowerShaderLib/Lib/UnityLib.hlsl"
             #include "../../../PowerShaderLib/URPLib/URP_MotionVectors.hlsl"
@@ -86,6 +97,7 @@ Shader "Template/Unlit/Color_MRT"
             float4 _MainTex_ST;
             half4 _Color;
             half _FogOn,_FogNoiseOn,_DepthFogOn,_HeightFogOn;
+            half _Cutoff;
             CBUFFER_END
             
             #include "../../../PowerShaderLib/Lib/FogLib.hlsl"
@@ -110,6 +122,9 @@ Shader "Template/Unlit/Color_MRT"
             {
                 // sample the texture
                 float4 col = tex2D(_MainTex, i.uv) * _Color * i.color;
+                #if defined(ALPHA_TEST)
+                    clip(col.w - _Cutoff);
+                #endif
                 float3 worldPos = i.worldPos.xyz;
 
                 //-------- output mrt
