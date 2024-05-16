@@ -9,6 +9,8 @@
     #include "../../../PowerShaderLib/Lib/MaterialLib.hlsl"
 
     #include "../../../PowerShaderLib/Lib/MatCapLib.hlsl"
+    #include "../../../PowerShaderLib/URPLib/URP_MotionVectors.hlsl"
+
     // nothing
     // #if defined(INSTANCING_ON)
         // #define UnityPerMaterial _UnityPerMaterial
@@ -88,6 +90,7 @@
         float4 color:COLOR;
         float2 uv : TEXCOORD0;
         float2 uv1:TEXCOORD1;
+        DECLARE_MOTION_VS_INPUT(prevPos);
         UNITY_VERTEX_INPUT_INSTANCE_ID
     };
 
@@ -99,6 +102,8 @@
         float4 worldPos:TEXCOORD2;
         float4 fogCoord:TEXCOORD3;
         float3 vertexNormal:TEXCOORD4;
+        // motion vectors
+        DECLARE_MOTION_VS_OUTPUT(6,7);
         UNITY_VERTEX_INPUT_INSTANCE_ID
     };
 
@@ -138,10 +143,13 @@
         o.worldPos.xyz = worldPos;
         o.fogCoord.xy = CalcFogFactor(worldPos.xyz,o.vertex.z,_HeightFogOn,_DepthFogOn);
         o.vertexNormal = (v.normal);
+
+        CALC_MOTION_POSITIONS(v.prevPos,v.vertex,o,o.vertex);
+
         return o;
     }
 
-    float4 fragBill (v2f i) : SV_Target
+    float4 fragBill (v2f i,out float4 outputNormal:SV_TARGET1,out float4 outputMotionVectors:SV_TARGET2) : SV_Target
     {
         UNITY_SETUP_INSTANCE_ID(i);
 
@@ -150,6 +158,14 @@
 
         // float3 n = CalcSphereWorldNormal(unity_ObjectToWorld,i.worldPos);
         float3 n = normalize(i.normal);
+
+        //-------- output mrt
+        // output world normal
+        outputNormal = half4(n.xyz,0);
+        // output motion
+        outputMotionVectors = CALC_MOTION_VECTORS(i);
+
+
         // sample the texture
         float4 mainTex = tex2D(_MainTex, mainUV) * _Color;
 
