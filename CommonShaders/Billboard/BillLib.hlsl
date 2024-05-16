@@ -144,7 +144,7 @@
         o.fogCoord.xy = CalcFogFactor(worldPos.xyz,o.vertex.z,_HeightFogOn,_DepthFogOn);
         o.vertexNormal = (v.normal);
 
-        CALC_MOTION_POSITIONS(v.prevPos,v.vertex,o,o.vertex);
+        CALC_MOTION_POSITIONS_WORLD((v.prevPos.xyz),worldPos,o,o.vertex);
 
         return o;
     }
