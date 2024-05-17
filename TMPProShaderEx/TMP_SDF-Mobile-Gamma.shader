@@ -3,7 +3,7 @@
 // - No Glow Option
 // - Softness is applied on both side of the outline
 
-Shader "TextMeshPro/Mobile/Distance Field" {
+Shader "TextMeshPro/Mobile/Distance Field-Gamma" {
 
 Properties {
 	[HDR]_FaceColor     ("Face Color", Color) = (1,1,1,1)
