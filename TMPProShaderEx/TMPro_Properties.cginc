@@ -1,4 +1,6 @@
 // UI Editable properties
+CBUFFER_START(UnityPerMaterial)
+
 uniform sampler2D	_FaceTex;					// Alpha : Signed Distance
 uniform float		_FaceUVSpeedX;
 uniform float		_FaceUVSpeedY;
@@ -83,3 +85,8 @@ uniform float		_ScaleX;
 uniform float		_ScaleY;
 uniform float		_PerspectiveFilter;
 uniform float		_Sharpness;
+
+
+float4 _FaceTex_ST;
+float4 _OutlineTex_ST;
+CBUFFER_END

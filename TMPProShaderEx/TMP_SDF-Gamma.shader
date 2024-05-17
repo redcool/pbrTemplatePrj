@@ -111,7 +111,7 @@ SubShader {
 	ColorMask [_ColorMask]
 
 	Pass {
-		CGPROGRAM
+		HLSLPROGRAM
 		#pragma target 3.0
 		#pragma vertex VertShader
 		#pragma fragment PixShader
@@ -122,12 +122,13 @@ SubShader {
 		#pragma multi_compile __ UNITY_UI_CLIP_RECT
 		#pragma multi_compile __ UNITY_UI_ALPHACLIP
 
-		#include "UnityCG.cginc"
+		// #define USE_URP
+		#include "../../PowerShaderLib/Lib/UnityLib.hlsl"
+		#include "../../PowerShaderLib/Lib/ColorSpace.hlsl"
+
 		#include "UnityUI.cginc"
 		#include "TMPro_Properties.cginc"
 		#include "TMPro.cginc"
-		// gamma linear space
-		#include "../../PowerShaderLib/Lib/ColorSpace.hlsl"
 		#pragma multi_compile_fragment _ _SRGB_TO_LINEAR_CONVERSION _LINEAR_TO_SRGB_CONVERSION
 
 		struct vertex_t {
@@ -156,10 +157,6 @@ SubShader {
 		#endif
 			float4 textures			: TEXCOORD5;
 		};
-
-		// Used by Unity internally to handle Texture Tiling and Offset.
-		float4 _FaceTex_ST;
-		float4 _OutlineTex_ST;
 
 		pixel_t VertShader(vertex_t input)
 		{
@@ -308,22 +305,13 @@ SubShader {
 			clip(faceColor.a - 0.001);
 		#endif
 
-
-		#if defined(_SRGB_TO_LINEAR_CONVERSION)
-		faceColor.xyz = LinearToGamma(faceColor.xyz);
-		#endif
-
-		float alpha = faceColor.a;
-		#if _LINEAR_TO_SRGB_CONVERSION
-		GammaToLinear(faceColor/**/,alpha/**/);
-		#endif
-		faceColor.xyz *= alpha;
+		LinearGammaAutoChange(faceColor/**/);
 		
   		return faceColor * input.color.a;
 		// return faceColor;
 		}
 
-		ENDCG
+		ENDHLSL
 	}
 }
 

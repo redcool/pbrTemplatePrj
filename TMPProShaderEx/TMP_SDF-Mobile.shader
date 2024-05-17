@@ -3,7 +3,7 @@
 // - No Glow Option
 // - Softness is applied on both side of the outline
 
-Shader "TextMeshPro/Mobile/Distance Field - FixedOutlineWidth " {
+Shader "TextMeshPro/Mobile/Distance Field" {
 
 Properties {
 	[HDR]_FaceColor     ("Face Color", Color) = (1,1,1,1)
@@ -92,11 +92,8 @@ SubShader {
 		// #define USE_URP
 		#include "../../PowerShaderLib/Lib/UnityLib.hlsl"
 		#include "../../PowerShaderLib/Lib/ColorSpace.hlsl"
-		
 		#include "UnityUI.cginc"
 		#include "TMPro_Properties.cginc"
-
-		#pragma multi_compile_fragment _ _SRGB_TO_LINEAR_CONVERSION _LINEAR_TO_SRGB_CONVERSION
 
 		struct vertex_t {
 			UNITY_VERTEX_INPUT_INSTANCE_ID
@@ -121,6 +118,7 @@ SubShader {
 			half2	underlayParam	: TEXCOORD4;			// Scale(x), Bias(y)
 			#endif
 		};
+
 
 		pixel_t VertShader(vertex_t input)
 		{
@@ -152,10 +150,7 @@ SubShader {
 
 			scale /= 1 + (_OutlineSoftness * _ScaleRatioA * scale);
 			float bias = (0.5 - weight) * scale - 0.5;
-			//float outline = _OutlineWidth * _ScaleRatioA * 0.5 * scale;
-
-			// use _OutlineWidth direct
-			float outline = _OutlineWidth *_ScaleRatioA *10;
+			float outline = _OutlineWidth * _ScaleRatioA * 0.5 * scale;
 
 			float opacity = input.color.a;
 			#if (UNDERLAY_ON | UNDERLAY_INNER)
@@ -236,7 +231,7 @@ SubShader {
 			#if UNITY_UI_ALPHACLIP
 			clip(c.a - 0.001);
 			#endif
-
+		
 			LinearGammaAutoChange(c/**/);
 
 			return c;
