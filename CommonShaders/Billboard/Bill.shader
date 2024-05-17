@@ -108,6 +108,7 @@ shader "URP/Unlit/Bill"
 
             #pragma shader_feature_fragment ALPHA_TEST
 
+            #define _DEPTH_FOG_NOISE_ON
             #include "BillLib.hlsl"
             
             #define SHADOW_PASS 

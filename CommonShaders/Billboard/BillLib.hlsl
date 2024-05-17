@@ -220,7 +220,7 @@
         }
         #endif
 
-        BlendFogSphereKeyword(col.rgb/**/,i.worldPos.xyz,i.fogCoord.xy,_HeightFogOn,_FogNoiseOn,_DepthFogOn); // 2fps
+        BlendFogSphereKeyword(col.rgb/**/,i.worldPos.xyz,i.fogCoord.xy,_HeightFogOn,fogNoise,_DepthFogOn); // 2fps
         return float4(col,alpha);
     }
 #endif //BILL_LIB_HLSL
