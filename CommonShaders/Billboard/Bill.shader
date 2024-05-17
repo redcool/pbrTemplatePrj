@@ -33,7 +33,7 @@ shader "URP/Unlit/Bill"
 //=================================================  weather
         [Group(Fog)]
         [GroupToggle(Fog)]_FogOn("_FogOn",int) = 1
-        [GroupToggle(Fog,SIMPLE_FOG,use simple linear depth height fog)]_SimpleFog("_SimpleFog",int) = 0
+        // [GroupToggle(Fog,SIMPLE_FOG,use simple linear depth height fog)]_SimpleFog("_SimpleFog",int) = 0
         [GroupToggle(Fog)]_FogNoiseOn("_FogNoiseOn",int) = 0
         [GroupToggle(Fog)]_DepthFogOn("_DepthFogOn",int) = 1
         [GroupToggle(Fog)]_HeightFogOn("_HeightFogOn",int) = 1
@@ -85,6 +85,8 @@ shader "URP/Unlit/Bill"
             #pragma shader_feature ALPHA_TEST
             #pragma shader_feature _WIND_ON
             #pragma shader_feature _SNOW_ON
+
+            #define _DEPTH_FOG_NOISE_ON
             #include "BillLib.hlsl"
 
             ENDHLSL

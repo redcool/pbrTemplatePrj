@@ -155,6 +155,7 @@
 
         float2 mainUV = i.uv.xy;
         float2 lightmapUV = i.uv.zw;
+        float3 worldPos = i.worldPos;
 
         // float3 n = CalcSphereWorldNormal(unity_ObjectToWorld,i.worldPos);
         float3 n = normalize(i.normal);
@@ -208,7 +209,17 @@
 
         half3 directColor = (diffCol + specCol * specTerm) * radiance;
         col += directColor;
+
         // =========== fog
+        float fogNoise = 0;
+        #if defined(_DEPTH_FOG_NOISE_ON)
+        branch_if(_FogNoiseOn)
+        {
+            half4 weights=float4(1,.1,.1,1);
+            fogNoise = CalcWorldNoise(worldPos,_FogNoiseTilingOffset,-_GlobalWindDir,weights);
+        }
+        #endif
+
         BlendFogSphereKeyword(col.rgb/**/,i.worldPos.xyz,i.fogCoord.xy,_HeightFogOn,_FogNoiseOn,_DepthFogOn); // 2fps
         return float4(col,alpha);
     }
