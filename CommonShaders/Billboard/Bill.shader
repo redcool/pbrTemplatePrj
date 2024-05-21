@@ -6,7 +6,7 @@ shader "URP/Unlit/Bill"
         [Group(Main)]
         [GroupItem(Main)] _MainTex ("Texture", 2D) = "white" {}
         [GroupItem(Main)] [hdr]_Color("_Color",color) = (1,1,1,1)
-        // [GroupToggle(Main,_FACE_CAMERA)]_FullFaceCamera("_FullFaceCamera",int) = 0
+        [GroupToggle(Main,_FACE_CAMERA)]_FullFaceCamera("_FullFaceCamera",int) = 0
 //=================================================  Lighting
         [Group(Alpha)]
         [GroupHeader(Alpha,Blend)]
