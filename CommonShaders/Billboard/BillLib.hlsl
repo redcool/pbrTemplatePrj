@@ -133,9 +133,11 @@
             worldPos = WindAnimationVertex(worldPos,posAtten.xyz,n,attenParam * _WindAnimParam, _WindDir,_WindSpeed).xyz;
         }
         #endif
-
+        #if defined(_FACE_CAMERA)
+        o.vertex = TransformBillboardObjectToHClip(v.vertex ,1);
+        #else
         o.vertex = TransformWorldToHClip(worldPos);
-        // o.vertex = TransformBillboardObjectToHClip(v.vertex ,_FullFaceCamera);
+        #endif        
 
         o.uv.xy = TRANSFORM_TEX(v.uv, _MainTex);
         o.uv.zw = v.uv1 * unity_LightmapST.xy + unity_LightmapST.zw;
