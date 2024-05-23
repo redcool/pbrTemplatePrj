@@ -82,6 +82,9 @@ Properties {
 
 	// _CullMode			("Cull Mode", Float) = 0
 	_ColorMask			("Color Mask", Float) = 15
+	
+	[Group(Effects)]
+	[GroupToggle(Effects)]_GrayOn("_GrayOn",int) = 0
 
 	[Group(Alpha)]
 	[GroupPresetBlendMode(Alpha,,_SrcMode,_DstMode)]_PresetBlendMode("_PresetBlendMode",int)=0
@@ -321,7 +324,7 @@ SubShader {
 		#endif
 
 		LinearGammaAutoChange(faceColor/**/);
-		
+		faceColor.xyz = lerp(faceColor.xyz,dot(float3(0.2,0.7,0.02),faceColor.xyz),_GrayOn);		
   		return faceColor * input.color.a;
 		// return faceColor;
 		}

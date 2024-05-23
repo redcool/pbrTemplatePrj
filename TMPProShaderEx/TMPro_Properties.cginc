@@ -86,7 +86,7 @@ uniform float		_ScaleY;
 uniform float		_PerspectiveFilter;
 uniform float		_Sharpness;
 
-
 float4 _FaceTex_ST;
 float4 _OutlineTex_ST;
+float _GrayOn;
 CBUFFER_END
