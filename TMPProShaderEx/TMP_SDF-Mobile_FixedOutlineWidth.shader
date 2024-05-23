@@ -170,7 +170,7 @@ SubShader {
 			//float outline = _OutlineWidth * _ScaleRatioA * 0.5 * scale;
 
 			// use _OutlineWidth direct
-			float outline = _OutlineWidth *_ScaleRatioA *10;
+			float outline = _OutlineWidth *_ScaleRatioA *2;
 
 			float opacity = input.color.a;
 			#if (UNDERLAY_ON | UNDERLAY_INNER)
