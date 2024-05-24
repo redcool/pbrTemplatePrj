@@ -142,9 +142,11 @@ float4 _ScaledScreenParams;
 			float isOrtho = unity_OrthoParams.w;
 			float pixelScale = lerp(80,1,isOrtho);
 
+			float2 screenSize = float2(1920,1080);
+			screenSize = lerp(screenSize.xy, screenSize.yx ,_ScreenParams.y > _ScreenParams.x);
 			float2 pixelSize = vPosition.w;
-			pixelSize /= float2(_ScaleX, _ScaleY) * abs(mul((float2x2)UNITY_MATRIX_P, float2(1440,808).xy));
-// 			float2 pixelSize = 4/_ScaledScreenParams*float2(_ScaleX, _ScaleY) * pixelScale;
+			pixelSize /= float2(_ScaleX, _ScaleY) * abs(mul((float2x2)UNITY_MATRIX_P, screenSize.xy));
+			// pixelSize = 4/_ScaledScreenParams*float2(_ScaleX, _ScaleY);
 			pixelSize *= pixelScale;
 
 			float scale = rsqrt(dot(pixelSize, pixelSize));
@@ -216,6 +218,7 @@ float4 _ScaledScreenParams;
 			#ifdef OUTLINE_ON
 			c = lerp(input.outlineColor, input.faceColor, saturate(d - input.param.z));
 			c *= saturate(d - input.param.y);
+			// c *= smoothstep(0.5,1,d - input.param.y);
 			#endif
 
 			#if UNDERLAY_ON
