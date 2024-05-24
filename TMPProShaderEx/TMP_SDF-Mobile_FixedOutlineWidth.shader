@@ -49,8 +49,25 @@ Properties {
 	_StencilWriteMask	("Stencil Write Mask", Float) = 255
 	_StencilReadMask	("Stencil Read Mask", Float) = 255
 
-	_CullMode			("Cull Mode", Float) = 0
+	// _CullMode			("Cull Mode", Float) = 0
 	_ColorMask			("Color Mask", Float) = 15
+
+	[Group(Effects)]
+	[GroupToggle(Effects)]_GrayOn("_GrayOn",int) = 0
+
+	[Group(Alpha)]
+	[GroupPresetBlendMode(Alpha,,_SrcMode,_DstMode)]_PresetBlendMode("_PresetBlendMode",int)=0
+	// [GroupEnum(Alpha,UnityEngine.Rendering.BlendMode)]
+	[HideInInspector]_SrcMode("_SrcMode",int) = 1
+	[HideInInspector]_DstMode("_DstMode",int) = 10  
+
+	[Group(Settings)]
+	[GroupToggle(Settings)]_ZWriteMode("ZWriteMode",int) = 0
+	/*
+	Disabled,Never,Less,Equal,LessEqual,Greater,NotEqual,GreaterEqual,Always
+	*/
+	[GroupEnum(Settings,UnityEngine.Rendering.CompareFunction)]_ZTestMode("_ZTestMode",float) = 8
+	[GroupEnum(Settings,UnityEngine.Rendering.CullMode)]_CullMode("_CullMode",int) = 0
 }
 
 SubShader {
@@ -71,12 +88,13 @@ SubShader {
 		WriteMask [_StencilWriteMask]
 	}
 
-	Cull [_CullMode]
-	ZWrite Off
-	Lighting Off
 	Fog { Mode Off }
+	Cull[_CullMode]
+	Lighting Off
+	ZWrite [_ZWriteMode]
 	ZTest [unity_GUIZTestMode]
-	Blend One OneMinusSrcAlpha
+	// Blend One OneMinusSrcAlpha
+	blend [_SrcMode][_DstMode]
 	ColorMask [_ColorMask]
 
 	Pass {
@@ -239,12 +257,12 @@ float4 _ScaledScreenParams;
 			#endif
 
 			LinearGammaAutoChange(c/**/);
-
+			c.xyz = lerp(c.xyz,dot(float3(0.2,0.7,0.02),c.xyz),_GrayOn);
 			return c;
 		}
 		ENDHLSL
 	}
 }
 
-CustomEditor "TMPro.EditorUtilities.TMP_SDFShaderGUI"
+CustomEditor "PowerUtilities.TMP_SDFShaderGUI"
 }
