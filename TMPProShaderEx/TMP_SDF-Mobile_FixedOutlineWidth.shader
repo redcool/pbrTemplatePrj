@@ -121,7 +121,7 @@ SubShader {
 			half2	underlayParam	: TEXCOORD4;			// Scale(x), Bias(y)
 			#endif
 		};
-
+float4 _ScaledScreenParams;
 		pixel_t VertShader(vertex_t input)
 		{
 			pixel_t output;
@@ -155,7 +155,7 @@ SubShader {
 			//float outline = _OutlineWidth * _ScaleRatioA * 0.5 * scale;
 
 			// use _OutlineWidth direct
-			float outline = _OutlineWidth *_ScaleRatioA *2;
+			float outline = _OutlineWidth *_ScaleRatioA *10;
 
 			float opacity = input.color.a;
 			#if (UNDERLAY_ON | UNDERLAY_INNER)
@@ -209,7 +209,8 @@ SubShader {
 
 			#ifdef OUTLINE_ON
 			c = lerp(input.outlineColor, input.faceColor, saturate(d - input.param.z));
-			c *= saturate(d - input.param.y);
+			// c *= saturate(d - input.param.y);
+			c *= smoothstep(0.5,1,d - input.param.y);
 			#endif
 
 			#if UNDERLAY_ON
