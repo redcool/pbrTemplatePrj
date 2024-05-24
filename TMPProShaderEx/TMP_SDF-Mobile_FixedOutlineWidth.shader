@@ -49,25 +49,8 @@ Properties {
 	_StencilWriteMask	("Stencil Write Mask", Float) = 255
 	_StencilReadMask	("Stencil Read Mask", Float) = 255
 
-	// _CullMode			("Cull Mode", Float) = 0
+	_CullMode			("Cull Mode", Float) = 0
 	_ColorMask			("Color Mask", Float) = 15
-
-	[Group(Effects)]
-	[GroupToggle(Effects)]_GrayOn("_GrayOn",int) = 0
-
-	[Group(Alpha)]
-	[GroupPresetBlendMode(Alpha,,_SrcMode,_DstMode)]_PresetBlendMode("_PresetBlendMode",int)=0
-	// [GroupEnum(Alpha,UnityEngine.Rendering.BlendMode)]
-	[HideInInspector]_SrcMode("_SrcMode",int) = 1
-	[HideInInspector]_DstMode("_DstMode",int) = 10  
-
-	[Group(Settings)]
-	[GroupToggle(Settings)]_ZWriteMode("ZWriteMode",int) = 0
-	/*
-	Disabled,Never,Less,Equal,LessEqual,Greater,NotEqual,GreaterEqual,Always
-	*/
-	[GroupEnum(Settings,UnityEngine.Rendering.CompareFunction)]_ZTestMode("_ZTestMode",float) = 8
-	[GroupEnum(Settings,UnityEngine.Rendering.CullMode)]_CullMode("_CullMode",int) = 0
 }
 
 SubShader {
@@ -88,13 +71,12 @@ SubShader {
 		WriteMask [_StencilWriteMask]
 	}
 
-	Fog { Mode Off }
-	Cull[_CullMode]
+	Cull [_CullMode]
+	ZWrite Off
 	Lighting Off
-	ZWrite [_ZWriteMode]
+	Fog { Mode Off }
 	ZTest [unity_GUIZTestMode]
-	// Blend One OneMinusSrcAlpha
-	blend [_SrcMode][_DstMode]
+	Blend One OneMinusSrcAlpha
 	ColorMask [_ColorMask]
 
 	Pass {
@@ -156,8 +138,14 @@ float4 _ScaledScreenParams;
 			vert.y += _VertexOffsetY;
 			float4 vPosition = UnityObjectToClipPos(vert);
 
+			// float2 screenSize = _ScaledScreenParams;
+			float isOrtho = unity_OrthoParams.w;
+			float pixelScale = lerp(80,1,isOrtho);
+
 			float2 pixelSize = vPosition.w;
-			pixelSize /= float2(_ScaleX, _ScaleY) * abs(mul((float2x2)UNITY_MATRIX_P, _ScreenParams.xy));
+			pixelSize /= float2(_ScaleX, _ScaleY) * abs(mul((float2x2)UNITY_MATRIX_P, float2(1440,808).xy));
+// 			float2 pixelSize = 4/_ScaledScreenParams*float2(_ScaleX, _ScaleY) * pixelScale;
+			pixelSize *= pixelScale;
 
 			float scale = rsqrt(dot(pixelSize, pixelSize));
 			scale *= abs(input.texcoord1.y) * _GradientScale * (_Sharpness + 1);
@@ -227,8 +215,7 @@ float4 _ScaledScreenParams;
 
 			#ifdef OUTLINE_ON
 			c = lerp(input.outlineColor, input.faceColor, saturate(d - input.param.z));
-			// c *= saturate(d - input.param.y);
-			c *= smoothstep(0.5,1,d - input.param.y);
+			c *= saturate(d - input.param.y);
 			#endif
 
 			#if UNDERLAY_ON
@@ -257,12 +244,12 @@ float4 _ScaledScreenParams;
 			#endif
 
 			LinearGammaAutoChange(c/**/);
-			c.xyz = lerp(c.xyz,dot(float3(0.2,0.7,0.02),c.xyz),_GrayOn);
+
 			return c;
 		}
 		ENDHLSL
 	}
 }
 
-CustomEditor "PowerUtilities.TMP_SDFShaderGUI"
+CustomEditor "TMPro.EditorUtilities.TMP_SDFShaderGUI"
 }
