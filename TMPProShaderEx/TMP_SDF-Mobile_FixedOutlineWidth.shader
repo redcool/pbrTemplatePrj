@@ -158,14 +158,14 @@ float4 _ScaledScreenParams;
 
 			// float2 screenSize = _ScaledScreenParams;
 			float isOrtho = unity_OrthoParams.w;
-			float pixelScale = lerp(80,1,isOrtho);
+			float pixelScale = lerp(4,1,isOrtho);
 
 			float2 screenSize = float2(1920,1080);
 			screenSize = lerp(screenSize.xy, screenSize.yx ,_ScreenParams.y > _ScreenParams.x);
 			float2 pixelSize = vPosition.w;
 			pixelSize /= float2(_ScaleX, _ScaleY) * abs(mul((float2x2)UNITY_MATRIX_P, screenSize.xy));
 			// pixelSize = 4/_ScaledScreenParams*float2(_ScaleX, _ScaleY);
-			pixelSize *= pixelScale;
+			// pixelSize *= pixelScale;
 
 			float scale = rsqrt(dot(pixelSize, pixelSize));
 			scale *= abs(input.texcoord1.y) * _GradientScale * (_Sharpness + 1);
