@@ -139,7 +139,7 @@ SubShader {
 			half2	underlayParam	: TEXCOORD4;			// Scale(x), Bias(y)
 			#endif
 		};
-float4 _ScaledScreenParams;
+
 		pixel_t VertShader(vertex_t input)
 		{
 			pixel_t output;
