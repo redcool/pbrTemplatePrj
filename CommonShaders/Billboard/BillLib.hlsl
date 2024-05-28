@@ -162,11 +162,7 @@
         // float3 n = CalcSphereWorldNormal(unity_ObjectToWorld,i.worldPos);
         float3 n = normalize(i.normal);
 
-        //-------- output mrt
-        // output world normal
-        outputNormal = half4(n.xyz,0);
-        // output motion
-        outputMotionVectors = CALC_MOTION_VECTORS(i);
+
 
 
         // sample the texture
@@ -189,6 +185,12 @@
         #if defined(ALPHA_TEST)
             clip(alpha - _Cutoff);
         #endif
+        
+        //-------- output mrt
+        // output world normal
+        outputNormal = half4(n.xyz,0);
+        // output motion
+        outputMotionVectors = CALC_MOTION_VECTORS(i);        
 
         // =========== gi 
         half3 giDiff = CalcGIDiff(n,albedo,lightmapUV);
