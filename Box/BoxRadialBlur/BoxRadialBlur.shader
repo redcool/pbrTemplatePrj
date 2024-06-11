@@ -20,40 +20,37 @@ Shader "FX/Others/BoxRadialBlur"
 
         [Group(RadialBlur)]
         [GroupHeader(RadialBlur,Distance)]
-        [GroupVectorSlider(RadialBlur,centerX centerY,0_1 0_1,)]
-        [GroupItem(RadialBlur,blur start pos)] _Center("_Center",vector) = (0,0,0,0)
+        [GroupVectorSlider(RadialBlur,centerX centerY,0_1 0_1,center of blur,)] _Center("_Center",vector) = (0,0,0,0)
+
         [GroupItem(RadialBlur,blur atten screen uv radius)] _Radius("_Radius",range(-1,1)) = 0
 
-        [GroupVectorSlider(RadialBlur,rangeX rangeY,0_1 0_1,,)] _Range("_Range",vector) = (0,1,0,0)
+        [GroupVectorSlider(RadialBlur,rangeX rangeY,0_1 0_1,radial blur edge width,)] _Range("_Range",vector) = (0,1,0,0)
 
         [GroupHeader(RadialBlur,Blur)]
         [GroupItem(RadialBlur)] _SampleCount("_SampleCount",range(1,10)) = 4
         [GroupItem(RadialBlur)] _BlurSize("_BlurSize",float) = 1
+        
+//================================================= Blend
+        // [Header(Blend)]
+        // [Enum(UnityEngine.Rendering.BlendMode)]_SrcMode("_SrcMode",int) = 1
+        // [Enum(UnityEngine.Rendering.BlendMode)]_DstMode("_DstMode",int) = 0
+
+//================================================= settings
+        [Header(Settings)]
+        // [GroupToggle]_ZWriteMode("_ZWriteMode",int) = 1
+        // [Enum(UnityEngine.Rendering.CompareFunction)]_ZTestMode("_ZTestMode",int) = 4
+        [Enum(UnityEngine.Rendering.CullMode)]_CullMode("_CullMode",int) = 0        
     }
-    SubShader
-    {
-        Tags { "RenderType"="Transparent" "Queue"="Transparent"}
-        LOD 100
-        zwrite off
-        ztest always
-        cull off
 
-        Pass
-        {
-            HLSLPROGRAM
-            #pragma vertex vert
-            #pragma fragment frag
-            #pragma shader_feature _NOISE_POLAR_UV
-            #pragma shader_feature _MAIN_TEX_ON
-            #pragma multi_compile_fragment _ _SRGB_TO_LINEAR_CONVERSION _LINEAR_TO_SRGB_CONVERSION
-
-            #include "../../../PowerShaderLib/Lib/UnityLib.hlsl"
+HLSLINCLUDE
+           #include "../../../PowerShaderLib/Lib/UnityLib.hlsl"
             // #include "../../../PowerShaderLib/Lib/PowerUtils.hlsl"
             // #include "../../../PowerShaderLib/Lib/SDF.hlsl"
             // #include "../../../PowerShaderLib/Lib/NoiseLib.hlsl"
             #include "../../../PowerShaderLib/Lib/MathLib.hlsl"
             #include "../../../PowerShaderLib/Lib/CoordinateSystem.hlsl"
             #include "../../../PowerShaderLib/URPLib/URP_Input.hlsl"
+            #include "../../../PowerShaderLib/Lib/ParticleCustomDataLib.hlsl"
 
             // #define USE_SAMPLER2D
             // #include "../../../PowerShaderLib/Lib/TextureLib.hlsl"
@@ -80,6 +77,7 @@ Shader "FX/Others/BoxRadialBlur"
 
             CBUFFER_START(UnityPerMaterial)
             half _FullScreenOn;
+            half4 _MainTex_ST;
             half4 _NoiseTex_ST;
             half _NoiseScale,_NoiseAttenRadius;
             half _NoiseTexOffsetStop;
@@ -104,8 +102,8 @@ Shader "FX/Others/BoxRadialBlur"
             v2f vert (appdata v)
             {
                 v2f o;
-                o.vertex = _FullScreenOn ? float4(v.vertex.xy * 2,0,1) : TransformObjectToHClip(v.vertex.xyz);
-                o.uv = v.uv;
+                o.vertex = _FullScreenOn ? float4(v.vertex.xy * float2(2,2 *_ProjectionParams.x),0,1) : TransformObjectToHClip(v.vertex.xyz);
+                o.uv = v.uv * _MainTex_ST.xy + _MainTex_ST.zw;
                 return o;
             }
 
@@ -188,7 +186,12 @@ Shader "FX/Others/BoxRadialBlur"
             float4 frag (v2f i) : SV_Target
             {
                 float aspect = _ScaledScreenParams.x/_ScaledScreenParams.y;
-                float2 screenUV = i.vertex.xy / _ScaledScreenParams.xy;
+                float2 screenUV = i.uv;
+                // #if !defined(_MAIN_TEX_ON)
+                //     screenUV = i.vertex.xy / _ScaledScreenParams.xy;
+                // #endif
+
+// return tex2D(_CameraOpaqueTexture,screenUV);
 //============== Noise
                 half2 noiseOffset = UVOffset(_NoiseTex_ST.zw, _NoiseTexOffsetStop);
 //============== Polar or Cartesian
@@ -214,6 +217,26 @@ Shader "FX/Others/BoxRadialBlur"
         col = GammaLinearTransfer(col);
                 return col;
             }
+ENDHLSL
+
+    SubShader
+    {
+        Tags { "RenderType"="Transparent" "Queue"="Transparent"}
+        LOD 100
+        zwrite off
+        ztest always
+        cull [_CullMode]
+
+        Pass
+        {
+            HLSLPROGRAM
+            #pragma vertex vert
+            #pragma fragment frag
+            #pragma shader_feature _NOISE_POLAR_UV
+            #pragma shader_feature _MAIN_TEX_ON
+            #pragma multi_compile_fragment _ _SRGB_TO_LINEAR_CONVERSION _LINEAR_TO_SRGB_CONVERSION
+
+ 
             ENDHLSL
         }
     }
