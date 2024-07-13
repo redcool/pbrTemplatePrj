@@ -45,8 +45,8 @@ public class TestCloud : ScriptableRendererFeature
 
             //Blit(cmd, ref renderingData, mat);
 
-            cmd.Blit(renderer.cameraColorTarget, _ResultTex, mat);
-            cmd.Blit(_ResultTex, renderer.cameraColorTarget);
+            // cmd.Blit(renderer.cameraColorTarget, _ResultTex, mat);
+            // cmd.Blit(_ResultTex, renderer.cameraColorTarget);
 
             cmd.EndSample(nameof(TestCloud));
             context.ExecuteCommandBuffer(cmd);
