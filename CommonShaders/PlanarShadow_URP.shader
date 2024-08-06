@@ -11,6 +11,7 @@ Shader "Character/PlanarShadow_URP"
         _Cutoff("_Cutoff (Alpha Cutoff)", Range(0.0, 1.0)) = 0.5 // alpha clip threshold
         
         [Header(Shadow)]
+        _PlayerPos("_PlayerPos",vector) = (0,0,0,0)
         _HeightOffset("_HeightOffset", Float) = 0.5
         _ShadowColor("_ShadowColor", Color) = (0,0,0,1)
 	    _ShadowDistanceAtten("_ShadowDistanceAtten", float) = 2
@@ -30,7 +31,7 @@ Shader "Character/PlanarShadow_URP"
         LOD 300
 
         // ForwardLit pass
-        // USEPASS "Universal Render Pipeline/Lit/ForwardLit"
+        USEPASS "Universal Render Pipeline/Lit/ForwardLit"
         
         // Planar Shadows平面阴影
         Pass
@@ -67,6 +68,7 @@ Shader "Character/PlanarShadow_URP"
             #pragma fragment frag
             
             UNITY_INSTANCING_BUFFER_START(UnityPerMaterial)
+            float3 _PlayerPos;
             float _HeightOffset;
             float4 _ShadowColor;
             float _ShadowDistanceAtten;
@@ -92,17 +94,15 @@ Shader "Character/PlanarShadow_URP"
 
             float3 ShadowProjectPos(float4 vertPos)
             {
-                float3 shadowPos;
-
-                //得到顶点的世界空间坐标
                 float3 worldPos = mul(unity_ObjectToWorld , vertPos).xyz;
 
-                //灯光方向
                 Light mainLight = GetMainLight();
                 float3 lightDir = normalize(mainLight.direction);
 
-                //阴影的世界空间坐标（低于地面的部分不做改变）
-                float y = unity_ObjectToWorld._24 - _HeightOffset;
+                float y = _PlayerPos.y - _HeightOffset;
+                // y= _HeightOffset;
+
+                float3 shadowPos;
                 shadowPos.y = min(worldPos .y , y);
                 shadowPos.xz = worldPos .xz - lightDir.xz * max(0 , worldPos .y - y) / lightDir.y; 
 
@@ -122,10 +122,11 @@ Shader "Character/PlanarShadow_URP"
                 float3 shadowPos = ShadowProjectPos(v.vertex);
                 o.vertex = TransformWorldToHClip(shadowPos);
 
-                float3 shadowStartPos = unity_ObjectToWorld._14_24_34;
-                shadowStartPos.y = _HeightOffset;
+                // float3 shadowStartPos = unity_ObjectToWorld._14_24_34;
+                float3 shadowStartPos = _PlayerPos;
+                shadowStartPos.y = shadowPos.y;
 
-                float distAtten = _ShadowDistanceAtten/distance(shadowPos,shadowStartPos);
+                float distAtten = saturate( _ShadowDistanceAtten -distance(shadowPos,shadowStartPos));
 
 
                 o.color = _ShadowColor;
