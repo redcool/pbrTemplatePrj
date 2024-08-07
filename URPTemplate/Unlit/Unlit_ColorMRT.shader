@@ -12,6 +12,9 @@ Shader "Template/Unlit/Color_MRT"
         [GroupToggle(Fog)]_FogNoiseOn("_FogNoiseOn",int) = 0
         [GroupToggle(Fog)]_DepthFogOn("_DepthFogOn",int) = 1
         [GroupToggle(Fog)]_HeightFogOn("_HeightFogOn",int) = 1
+
+        [Group(Normal)]
+        [GroupToggle(Normal, ,output flat normal)]_NormalUnifiedOn("_NormalUnifiedOn",int) = 0
 // ================================================== stencil settings
         [Group(Stencil)]
         [GroupEnum(Stencil,UnityEngine.Rendering.CompareFunction)]_StencilComp ("Stencil Comparison", Float) = 0
@@ -98,6 +101,7 @@ Shader "Template/Unlit/Color_MRT"
             half4 _Color;
             half _FogOn,_FogNoiseOn,_DepthFogOn,_HeightFogOn;
             half _Cutoff;
+            half _NormalUnifiedOn;
             CBUFFER_END
             
             #include "../../../PowerShaderLib/Lib/FogLib.hlsl"
@@ -111,7 +115,7 @@ Shader "Template/Unlit/Color_MRT"
                 o.worldPos.xyz = TransformObjectToWorld(v.vertex.xyz);
                 o.fogCoord = CalcFogFactor(o.worldPos.xyz,o.vertex.z,_HeightFogOn,_DepthFogOn);
                 o.color = v.color;
-                o.normal.xyz = v.normal;
+                o.normal.xyz = _NormalUnifiedOn ? 0.5 : v.normal;
 
                 CALC_MOTION_POSITIONS(v.prevPos,v.vertex,o,o.vertex);
 
@@ -126,7 +130,6 @@ Shader "Template/Unlit/Color_MRT"
                     clip(col.w - _Cutoff);
                 #endif
                 float3 worldPos = i.worldPos.xyz;
-
                 //-------- output mrt
                 // output world normal
                 outputNormal = half4(i.normal.xyz,0.5);
