@@ -51,6 +51,10 @@ shader "URP/Unlit/Bill"
 
         [GroupVectorSlider(Snow,NoiseTilingX NoiseTilingY,0_10 0_10,,float)]_SnowNoiseTiling("_SnowNoiseTiling",vector) = (1,1,0,0)
         [GroupToggle(Snow,,mainTex.a as snow atten)] _SnowIntensityUseMainTexA("_SnowIntensityUseMainTexA",int) = 0
+
+//=================================================  Settings        
+        [Group(Shadow)]
+        [GroupToggle(,_RECEIVE_SHADOWS_OFF)]_IsReceiveShadowOff("_IsReceiveShadowOff",int) = 0
 //=================================================  Settings
         [Group(Settings)]
         [GroupEnum(Settings,UnityEngine.Rendering.CullMode)]_CullMode("_CullMode",int) = 2
@@ -86,6 +90,10 @@ shader "URP/Unlit/Bill"
             #pragma shader_feature _WIND_ON
             #pragma shader_feature _SNOW_ON
             #pragma shader_feature_vertex _FACE_CAMERA
+
+            #pragma shader_feature_local _RECEIVE_SHADOWS_OFF
+
+            #pragma multi_compile _ _MAIN_LIGHT_SHADOWS //_MAIN_LIGHT_SHADOWS_CASCADE //_MAIN_LIGHT_SHADOWS_SCREEN
 
             #define _DEPTH_FOG_NOISE_ON
             #include "BillLib.hlsl"
@@ -126,7 +134,7 @@ shader "URP/Unlit/Bill"
             }
             
 
-            ENDHLSL
+        ENDHLSL
         }
          Pass{
             Name "Meta"

@@ -10,7 +10,7 @@
 
     #include "../../../PowerShaderLib/Lib/MatCapLib.hlsl"
     #include "../../../PowerShaderLib/URPLib/URP_MotionVectors.hlsl"
-
+    #include "../../../PowerShaderLib/URPLib/Lighting.hlsl"
     // nothing
     // #if defined(INSTANCING_ON)
         // #define UnityPerMaterial _UnityPerMaterial
@@ -196,12 +196,16 @@
         half3 giDiff = CalcGIDiff(n,albedo,lightmapUV);
         half3 col = giDiff;
 
+        //  =========== shadow
+        float4 shadowCoord = TransformWorldToShadowCoord(worldPos);
+        Light mainLight = GetMainLight(shadowCoord,worldPos,1,1);
+
         // =========== direct 
-        half nl = saturate(dot(n,_MainLightPosition.xyz));
+        half nl = saturate(dot(n,mainLight.direction) * mainLight.shadowAttenuation);
         nl = saturate(smoothstep(_DiffuseRange.x,_DiffuseRange.y,nl) + 0);
         nl =lerp(nl,1,_DrawChildrenStaticOn);
 
-        half3 radiance = _MainLightColor.xyz * nl;
+        half3 radiance = mainLight.color * nl;
 
         half3 diffCol = albedo * (1- _Metallic);
         half3 specCol = lerp(0.04,albedo,_Metallic);
