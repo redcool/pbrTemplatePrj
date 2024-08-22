@@ -236,9 +236,7 @@ SubShader {
 			#ifdef OUTLINE_ON
 			float outlineRate = saturate(smoothstep(0.01,0.02,d)*4 );
 			
-			float outline = unity_OrthoParams.w ? input.param.z : _OutlineWidth *_ScaleRatioA *10;
-
-			c = lerp(input.outlineColor, input.faceColor, saturate(d - outline));
+			c = lerp(input.outlineColor, input.faceColor, saturate(d - input.param.z));
 			c *= saturate(d - input.param.y) * outlineRate;
 			#endif
 
