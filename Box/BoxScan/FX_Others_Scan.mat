@@ -9,20 +9,31 @@ Material:
   m_PrefabAsset: {fileID: 0}
   m_Name: FX_Others_Scan
   m_Shader: {fileID: 4800000, guid: 341e410754b3dcc4382b5a135e92eb8a, type: 3}
+  m_Parent: {fileID: 0}
+  m_ModifiedSerializedProperties: 0
   m_ValidKeywords:
   - _NOISE_ON
   m_InvalidKeywords: []
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
-  m_CustomRenderQueue: -1
+  m_CustomRenderQueue: 3000
   stringTagMap: {}
   disabledShaderPasses: []
+  m_LockedProperties: 
   m_SavedProperties:
     serializedVersion: 3
     m_TexEnvs:
     - _BorderNoiseTex:
         m_Texture: {fileID: 2800000, guid: 60e3725ab43054bb69f7864cfb0cd5ce, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _FogDetailTex:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _FogMainTex:
+        m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MainTex:
@@ -40,20 +51,30 @@ Material:
     m_Ints: []
     m_Floats:
     - _BorderNoiseScale: 0.98
-    - _ColorScale: 2.4
+    - _ColorScale: 15.2
+    - _DstMode: 10
+    - _FogDensity: 1
+    - _FogHeight: 10
+    - _FogHeightRange: 1
+    - _FullScreenOn: 1
+    - _HeightNoiseScale: 0.2
     - _InnerDistanceOn: 1
     - _MainTex2OffsetStop: 0
     - _MainTexOffsetStop: 1
     - _NoiseOn: 1
     - _NoiseScale: 1.81
     - _NoiseTexOffsetStop: 0
-    - _Radius: 8.3
+    - _PresetBlendMode: 0
+    - _Radius: 6.86
     - _ReverseTextureOn: 1
+    - _SceneFogOn: 0
+    - _SrcMode: 5
     - _TextureNoiseScale: 0.11
     m_Colors:
-    - _Center: {r: 4.75, g: -1.65, b: -7.73, a: 0}
-    - _Color: {r: 3.5648696, g: 0, b: 0, a: 0}
+    - _Center: {r: 3.06, g: -1.65, b: 2.96, a: 0}
+    - _Color: {r: 3.5648696, g: 0, b: 0, a: 1}
     - _Color2: {r: 0.16386835, g: 1.7411011, b: 0, a: 0}
-    - _InnerRange: {r: -10.72, g: -3, b: 0, a: 0}
+    - _FogColor: {r: 1, g: 1, b: 1, a: 1}
+    - _InnerRange: {r: -9.33, g: 3.12, b: 0, a: 0}
     - _Range: {r: 1.19, g: 1.92, b: -1.58, a: 0.12}
   m_BuildTextureStacks: []
