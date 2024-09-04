@@ -9,7 +9,9 @@ Shader "FX/Others/BoxRadialBlur"
         [Group(MainTex)]
         [GroupToggle(MainTex,_MAIN_TEX_ON)] _MainTexOn("_MainTexOn",int) = 0
         [GroupItem(MainTex)] _MainTex("_MainTex",2d) = ""{}
-        [GroupItem(MainTex)] _Color("_Color",color) = (1,1,1,1)
+
+        [Group(Color)]
+        [GroupItem(Color)] _Color("_Color",color) = (1,1,1,1)
 
         [Group(NoiseTex)]
         [GroupItem(NoiseTex)] _NoiseTex("_NoiseTex",2d) = ""{}
