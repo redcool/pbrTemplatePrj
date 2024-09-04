@@ -2,10 +2,10 @@ Shader "FX/Others/BoxScan"
 {
     Properties
     {
-        [GroupHeader(v0.0.5)]
+        [GroupHeader(v0.0.6)]
         [Group(Base)]
         [GroupToggle(Base)]_FullScreenOn("_FullScreenOn",int) = 1
-
+//=================================
         [Group(Color)]
         [GroupHeader(Color,Edge Textures)]
         [GroupItem(Color)] _MainTex ("Texture 1", 2D) = "white" {}
@@ -15,22 +15,22 @@ Shader "FX/Others/BoxScan"
         [GroupToggle(Color,,stop auto pan)]_MainTex2OffsetStop("_MainTex2 OffsetStop",int) = 0
 
         [GroupHeader(Color,Edge Colors)]
-        [GroupItem(Color)]  [hdr]_Color("_Color",color) = (1,0,0,0)
+        [GroupItem(Color,alpha control boxScan)]  [hdr]_Color("_Color",color) = (1,0,0,0)
         [GroupItem(Color)]  [hdr]_Color2("_Color2",color) = (0,1,0,0)
         [GroupItem(Color)] _ColorScale("_ColorScale",range(1,100)) = 1
-
+//=================================
         [Group(Noise)]
         [GroupToggle(Noise,_NOISE_ON)]_NoiseOn("_NoiseOn",float) = 0
         [GroupItem(Noise)] _NoiseTex("_NoiseTex",2d) = "bump"{}
         [GroupToggle(Noise,,stop auto pan)]_NoiseTexOffsetStop("_NoiseTex OffsetStop",int) = 0
         [GroupItem(Noise)] _TextureNoiseScale("_TextureNoiseScale",float) = 0.2
         [GroupItem(Noise)] _BorderNoiseScale("_BorderNoiseScale",float) = 0.2
-        
+//=================================
         [Group(Distance)]
         [GroupHeader(Distance,Base)]
         [GroupItem(Distance,sphere position)] _Center("_Center",vector) = (0,0,0,0)
         [GroupItem(Distance,sphere radius)] _Radius("_Radius",float) = 1
-
+//=================================
         [Group(Border)]
         [GroupHeader(Border,Border Range)]
         // distance and inner dist
@@ -43,7 +43,7 @@ Shader "FX/Others/BoxScan"
 
         [GroupHeader(Border,Options)]
         [GroupToggle(Border)]_ReverseTextureOn("_ReverseTextureOn",int) = 0
-
+//=================================
         [Group(SceneFogOn)]
         [GroupToggle(SceneFogOn,_SCENE_FOG_ON)] _SceneFogOn("_SceneFogOn",int) = 0
         [GroupItem(SceneFogOn)] _FogMainTex("_FogMainTex",2d) = ""{}
@@ -58,6 +58,13 @@ Shader "FX/Others/BoxScan"
         [GroupItem(SceneFogOn)] _HeightNoiseScale("_HeightNoiseScale",range(0,1)) = 0.2
         
         [GroupItem(SceneFogOn)] _FogDensity("_FogDensity",range(0,1)) = 1
+//=================================
+        [Group(Alpha)]
+        [GroupHeader(Alpha,BlendMode)]
+        [GroupPresetBlendMode(Alpha,,_SrcMode,_DstMode)]_PresetBlendMode("_PresetBlendMode",int)=0
+        // [GroupEnum(Alpha,UnityEngine.Rendering.BlendMode)]
+        [HideInInspector]_SrcMode("_SrcMode",int) = 1
+        [HideInInspector]_DstMode("_DstMode",int) = 0
     }
     SubShader
     {
@@ -65,6 +72,7 @@ Shader "FX/Others/BoxScan"
         LOD 100
         zwrite off
         ztest always
+        blend [_SrcMode] [_DstMode]
 
         Pass
         {
@@ -194,29 +202,33 @@ Shader "FX/Others/BoxScan"
                 // bandDist = smoothstep(0,0.2,saturate(d)); // color blending
                 
 //============Textures
-                half3 tex = 1;
                 half4 tex1 = tex2D(_MainTex,worldPos.xz * _MainTex_ST.xy + UVOffset(_MainTex_ST.zw,_MainTexOffsetStop)+textureNoise);
                 half4 tex2 = tex2D(_MainTex2,worldPos.xz * _MainTex2_ST.xy + UVOffset(_MainTex2_ST.zw,_MainTex2OffsetStop)+textureNoise);
-                tex = tex1.xyz * tex2.xyz;
+                half3 tex = tex1.xyz * tex2.xyz;
 
-                
-                // tex = lerp(tex1,tex2,distSign);
 //============ colors
                 half4 color = lerp(_Color,_Color2,d) * _ColorScale;
                 color = lerp(1,color,bandDist);
+                // return bandDist;
 //============ blends
-                half4 opaqueTex = tex2D(_CameraOpaqueTexture,screenUV);
-#if defined(_SCENE_FOG_ON)                
-                ApplySceneFog(opaqueTex.xyz/**/,worldPos,(1-isFar) * distSign);
-#endif                
-                // opaqueTex *= color;
-
-                half4 col = 1;
                 half texRate = _ReverseTextureOn ? 1 - distSign : distSign;
                 texRate *= d2;
-// return texRate;
+
+                half4 blendCol = half4(tex *texRate * color.xyz,texRate * _Color.w);
+//============ apply scene fog
+#if defined(_SCENE_FOG_ON)                
+                ApplySceneFog(blendCol.xyz/**/,worldPos,(1-isFar) * distSign);
+#endif                
+                return blendCol;
+
+/**
+
+// dont use blend, sample _CameraOpaqueTexture
+                half4 opaqueTex = tex2D(_CameraOpaqueTexture,screenUV);
+                half4 col = 1;
                 col.xyz = lerp(opaqueTex.xyz,tex.xyz,texRate) * color.xyz;
                 return col;
+*/
             }
             ENDHLSL
         }
