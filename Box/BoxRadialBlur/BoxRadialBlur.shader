@@ -2,13 +2,14 @@ Shader "FX/Others/BoxRadialBlur"
 {
     Properties
     {
-        [GroupHeader(v0.0.4)]
+        [GroupHeader(v0.0.5)]
         [Group(Base)]
         [GroupToggle(Base,,show in full screen)] _FullScreenOn("_FullScreenOn",int) = 1
 
         [Group(MainTex)]
         [GroupToggle(MainTex,_MAIN_TEX_ON)] _MainTexOn("_MainTexOn",int) = 0
         [GroupItem(MainTex)] _MainTex("_MainTex",2d) = ""{}
+        [GroupItem(MainTex)] _Color("_Color",color) = (1,1,1,1)
 
         [Group(NoiseTex)]
         [GroupItem(NoiseTex)] _NoiseTex("_NoiseTex",2d) = ""{}
@@ -106,6 +107,7 @@ HLSLINCLUDE
 
     half _BlurSizeCDATAOn, _BlurSizeCDATA;
     half _RadiusCDATAOn,_RadiusCDATA;
+    half4 _Color;
 
     CBUFFER_END
 
@@ -122,7 +124,7 @@ HLSLINCLUDE
     {
         v2f o;
         o.vertex = _FullScreenOn ? float4(v.vertex.xy * float2(2,2 *_ProjectionParams.x),0,1) : TransformObjectToHClip(v.vertex.xyz);
-        o.uv = v.uv * _MainTex_ST.xy + _MainTex_ST.zw;
+        o.uv = v.uv.xy * _MainTex_ST.xy + _MainTex_ST.zw;
 
         CUSTOM_DATA_VERTEX(v,o);
         return o;
@@ -204,12 +206,14 @@ HLSLINCLUDE
         return color;
     }
 
+
     float4 frag (v2f i) : SV_Target
     {
         CUSTOM_DATA_FRAGMENT(i);
 
         float aspect = _ScaledScreenParams.x/_ScaledScreenParams.y;
         float2 screenUV = i.vertex.xy / _ScaledScreenParams.xy;
+        
         float2 uv = i.uv;
 
     //============== Noise
@@ -233,11 +237,12 @@ HLSLINCLUDE
         float radius = _RadiusCDATAOn ? customDatas[_RadiusCDATA] : _Radius;
         float2 uvStepOffset = CalcStepUVOffset(distanceAtten/**/,centerUV,_Center,radius,_SampleCount,_Range,blurSize);
         noise = saturate(noise * (distanceAtten - _NoiseAttenRadius));
-        // return noise;
+        
         // distortion 1 step
         uv += _SampleCount<=2 ? uvStepOffset*0.1 : 0;
         float2 blurUV = _BlurUseScreenUV ? screenUV : uv;
-        float4 col = SampleBlur(blurUV,_SampleCount,uvStepOffset + noise);
+        half4 col = SampleBlur(blurUV,_SampleCount,uvStepOffset + noise);
+        col *= _Color;
         
         col = GammaLinearTransfer(col);
         return col;
