@@ -2,7 +2,9 @@
 Shader "Nature/BoxClouds3"
 {
     /**
-        material values
+        clouds post , look this:
+        https://www.youtube.com/watch?v=4QOcCGI6xOU&t=322s
+
     */
     Properties
     {
