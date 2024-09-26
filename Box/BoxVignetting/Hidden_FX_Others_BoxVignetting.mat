@@ -29,9 +29,16 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
+    - _DstMode: 10
     - _FullScreenOn: 1
+    - _Intensity: 1
+    - _PresetBlendMode: 0
+    - _RoundOn: 0
+    - _SrcMode: 5
     m_Colors:
-    - _Color1: {r: 1, g: 1, b: 1, a: 1}
-    - _Color2: {r: 1, g: 1, b: 1, a: 1}
-    - _VignetRange: {r: 0, g: 1, b: 0, a: 0}
+    - _Center: {r: 0.5, g: 0.5, b: 0, a: 0}
+    - _Color1: {r: 0.4188679, g: 0.4188679, b: 0.4188679, a: 0}
+    - _Color2: {r: 0, g: 0, b: 0, a: 0.6666667}
+    - _Oval: {r: 1, g: 1, b: 0, a: 0}
+    - _VignetRange: {r: 0.298, g: 0.737, b: 0, a: 0}
   m_BuildTextureStacks: []
