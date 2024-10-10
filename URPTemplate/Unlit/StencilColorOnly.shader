@@ -2,7 +2,7 @@ Shader "Template/Unlit/StencilColorOnly"
 {
     Properties
     {
-        [GroupHeader(Main,stencilOutline)]
+        [Group(Main,stencilOutline)]
         [GroupItem(Main)]_StencilOutlineWidth("_StencilOutlineWidth",float) = 1
         [GroupItem(Main)]_StencilOutlineColor("_StencilOutlineColor",color) = (1,1,1,1)
         [GroupItem(Main)]_ZOffset("_ZOffset",float) = 1
@@ -36,6 +36,7 @@ Shader "Template/Unlit/StencilColorOnly"
             zwrite[_ZWriteMode]
             ztest[_ZTestMode]
             cull [_CullMode]
+            // colorMask 0
 
             Stencil
             {
