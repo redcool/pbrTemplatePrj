@@ -7,6 +7,17 @@ Shader "Hidden/FX/Others/Template"
         [GroupToggle(Base)]_FullScreenOn("_FullScreenOn",int) = 1
 
         _MainTex("_MainTex",2d)=""{}
+
+//================================================= Blend
+        // [Header(Blend)]
+        // [Enum(UnityEngine.Rendering.BlendMode)]_SrcMode("_SrcMode",int) = 1
+        // [Enum(UnityEngine.Rendering.BlendMode)]_DstMode("_DstMode",int) = 0
+
+//================================================= settings
+        [Group(Settings)]
+        // [GroupToggle]_ZWriteMode("_ZWriteMode",int) = 1
+        // [Enum(UnityEngine.Rendering.CompareFunction)]_ZTestMode("_ZTestMode",int) = 4
+        [GroupEnum(Settings,UnityEngine.Rendering.CullMode)]_CullMode("_CullMode",int) = 0         
     }
     SubShader
     {
@@ -14,6 +25,7 @@ Shader "Hidden/FX/Others/Template"
         LOD 100
         zwrite off
         ztest always
+        cull [_CullMode]
 
         Pass
         {
