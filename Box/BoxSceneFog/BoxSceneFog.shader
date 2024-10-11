@@ -3,10 +3,14 @@ Shader "Nature/BoxSceneFog"
     Properties
     {
         [GroupHeader(v0.0.1)]
-        
+// ================================================== base        
         [Group(Base)]
         [GroupToggle(Base)]_FullScreenOn("_FullScreenOn",int) = 1
 
+        [GroupHeader(Base,BorderFading)]
+        [GroupItem(Base)] _BorderFadingTex("_BorderFadingTex",2d) = "white"{}
+        [GroupItem(Base)] _BorderFading("_BorderFading",range(0,1)) = 0
+// ================================================== scene fog
         [Group(SceneFog)]
         // [GroupItem(SceneFog)] _SceneFogMap("_SceneFogMap",2d)=""{}
 
@@ -33,11 +37,11 @@ Shader "Nature/BoxSceneFog"
         [GroupItem(HeightFog)]  _CameraFadeDist("_CameraFadeDist",float) = 10
 // ================================================== stencil settings
         [Group(Stencil)]
-        [GroupEnum(Stencil,UnityEngine.Rendering.CompareFunction)]_StencilComp ("Stencil Comparison", Float) = 0
-        [GroupItem(Stencil)]_Stencil ("Stencil ID", int) = 0
-        [GroupEnum(Stencil,UnityEngine.Rendering.StencilOp)]_StencilOp ("Stencil Operation", Float) = 0
-        _StencilWriteMask ("Stencil Write Mask", Float) = 255
-        _StencilReadMask ("Stencil Read Mask", Float) = 255
+        [GroupEnum(Stencil,UnityEngine.Rendering.CompareFunction)] _StencilComp ("Stencil Comparison", Float) = 0
+        [GroupItem(Stencil)] _Stencil ("Stencil ID", int) = 0
+        [GroupEnum(Stencil,UnityEngine.Rendering.StencilOp)] _StencilOp ("Stencil Operation", Float) = 0
+        [GroupItem(Stencil)] _StencilWriteMask ("Stencil Write Mask", Float) = 255
+        [GroupItem(Stencil)] _StencilReadMask ("Stencil Read Mask", Float) = 255
 //================================================= Blend
         // [Header(Blend)]
         // [Enum(UnityEngine.Rendering.BlendMode)]_SrcMode("_SrcMode",int) = 1
@@ -59,9 +63,11 @@ HLSLINCLUDE
     #include "../../../PowerShaderLib/URPLib/URP_Input.hlsl"
 
     sampler2D _FogMainNoiseMap,_FogDetailNoiseMap;
-
+    // 
     sampler2D _HighlightTex;
-    float4 _HighlightColor;
+    // float4 _HighlightColor;
+
+    sampler2D _BorderFadingTex;
 
     CBUFFER_START(UnityPerMaterial)
     float _FullScreenOn;
@@ -82,6 +88,7 @@ HLSLINCLUDE
     */
     float4 _SceneFogColor;
     float _WorldPosScale;
+    float _BorderFading;
     CBUFFER_END
 
     float4 CalcFogFactor(float3 worldPos){
@@ -109,11 +116,11 @@ HLSLINCLUDE
         return sceneFogFactor;
     }
 
-    float4 CaclHighLight(float3 worldPos){
+    float3 CaclHighLight(float3 worldPos,float3 highlightColor){
         // high light
         float4 highlightTex = tex2D(_HighlightTex,worldPos.xz);
         float highlight = abs(sin(_Time.y)) * highlightTex.x;
-        return highlight * _HighlightColor;
+        return highlight * highlightColor;
     }
 
     /**
@@ -194,14 +201,17 @@ ENDHLSL
                 float isFar = IsTooFar(depthTex.x);
                 
                 float3 worldPos = ScreenToWorldPos(screenUV,depthTex,UNITY_MATRIX_I_VP);
-                // return worldPos.y>20;
+//======== border fading
+                float4 fadingTex = tex2D(_BorderFadingTex,i.uv);
 
+//======== scene fog
                 float4 worldUVfogFactor = CalcFogFactor(worldPos);
                 float4 fogColor = CalcFogColor(worldUVfogFactor.xyz);
                 
                 float fogNoise = fogColor.w;
                 float fogFactor = worldUVfogFactor.w * _SceneFogColor.w;
                 fogFactor *= lerp(1,fogNoise,_FogNoiseAtten);
+                fogFactor *= lerp(1,fadingTex.x,_BorderFading); // main texture fading
 
                 return lerp(sceneColor,fogColor,fogFactor * (! isFar));
             }

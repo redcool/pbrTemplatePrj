@@ -16,7 +16,7 @@ Material:
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
-  m_CustomRenderQueue: -1
+  m_CustomRenderQueue: 3001
   stringTagMap: {}
   disabledShaderPasses: []
   m_LockedProperties: 
@@ -24,7 +24,7 @@ Material:
     serializedVersion: 3
     m_TexEnvs:
     - _FogDetailNoiseMap:
-        m_Texture: {fileID: 2800000, guid: 8ce5487a366d8a4488541ebd3fae073c, type: 3}
+        m_Texture: {fileID: 2800000, guid: 0267ab071e41ee44da5d66227ff388e8, type: 3}
         m_Scale: {x: 2.27, y: 2.4}
         m_Offset: {x: 3.52, y: 2.53}
     - _FogMainNoiseMap:
@@ -43,15 +43,21 @@ Material:
     m_Floats:
     - _CameraFadeDist: 0
     - _CullMode: 0
-    - _FullScreenOn: 1
+    - _FogNoiseAtten: 0.522
+    - _FullScreenOn: 0
     - _SceneHeightFogFading: 1
     - _SceneHeightFogOn: 1
+    - _Stencil: 123
+    - _StencilComp: 6
+    - _StencilOp: 0
+    - _StencilReadMask: 255
+    - _StencilWriteMask: 255
     - _WorldPosScale: 0.001
     m_Colors:
     - _DetailFogOffset: {r: 1, g: 1, b: 0.1, a: 0.1}
     - _DetailFogTiling: {r: 5, g: 5, b: 1, a: 1}
     - _FogAreaScale: {r: 0, g: 0.698, b: 0, a: 0}
     - _FogNoiseTilingOffset: {r: 1, g: 1, b: 1, a: 1}
-    - _HeightFogRange: {r: 33, g: 55, b: 0, a: 0}
-    - _SceneFogColor: {r: 0.89433956, g: 0.89433956, b: 0.89433956, a: 0.5}
+    - _HeightFogRange: {r: 51.3, g: 90.1, b: 0, a: 0}
+    - _SceneFogColor: {r: 0.89433956, g: 0.89433956, b: 0.89433956, a: 1}
   m_BuildTextureStacks: []
