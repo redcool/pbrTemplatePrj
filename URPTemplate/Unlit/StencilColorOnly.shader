@@ -24,6 +24,9 @@ Shader "Template/Unlit/StencilColorOnly"
         [GroupToggle]_ZWriteMode("_ZWriteMode",int) = 1
         [Enum(UnityEngine.Rendering.CompareFunction)]_ZTestMode("_ZTestMode",int) = 4
         [Enum(UnityEngine.Rendering.CullMode)]_CullMode("_CullMode",int) = 2
+
+		[Header(Color Mask)]
+		[GroupEnum(_,RGBA 16 RGB 15 RG 12 GB 6 RB 10 R 8 G 4 B 2 A 1 None 0)] _ColorMask("_ColorMask",int) = 15
     }
     SubShader
     {
@@ -36,7 +39,7 @@ Shader "Template/Unlit/StencilColorOnly"
             zwrite[_ZWriteMode]
             ztest[_ZTestMode]
             cull [_CullMode]
-            // colorMask 0
+            colorMask [_ColorMask]
 
             Stencil
             {
