@@ -9,6 +9,7 @@ Shader "Nature/BoxSceneFog"
 
         [Group(SceneFog)]
         // [GroupItem(SceneFog)] _SceneFogMap("_SceneFogMap",2d)=""{}
+
         [GroupHeader(SceneFog,Main NoiseMap)]
         [GroupItem(SceneFog)] [NoScaleOffset] _FogMainNoiseMap("_FogMainNoiseMap",2d)=""{}
         [GroupItem(SceneFog)] _FogNoiseTilingOffset("_FogNoiseTilingOffset",vector) = (3,3,1,1)
@@ -21,8 +22,9 @@ Shader "Nature/BoxSceneFog"
         
         // [GroupVectorSlider(HeightFog,rangeMin rangeMax,0_1 0_1)] _FogAreaScale("_FogAreaScale",vector) = (0,1,0,0)
         [GroupHeader(SceneFog,Others)]
-        [GroupItem(SceneFog)] _SceneFogColor("_SceneFogColor",color) = (.5,.5,.5,.5)
+        [GroupItem(SceneFog,w is fog intensity )] _SceneFogColor("_SceneFogColor",color) = (.5,.5,.5,.5)
         [GroupItem(SceneFog)] _WorldPosScale("_WorldPosScale",float) = 0.001
+        [GroupItem(SceneFog,fog show noise attenuation)] _FogNoiseAtten("_FogNoiseAtten",range(0,1)) = 0
 
         [Group(HeightFog)]
         [GroupToggle(HeightFog)] _SceneHeightFogOn("_SceneHeightFogOn",float) = 1
@@ -35,7 +37,7 @@ Shader "Nature/BoxSceneFog"
         [GroupItem(Stencil)]_Stencil ("Stencil ID", int) = 0
         [GroupEnum(Stencil,UnityEngine.Rendering.StencilOp)]_StencilOp ("Stencil Operation", Float) = 0
         _StencilWriteMask ("Stencil Write Mask", Float) = 255
-        _StencilReadMask ("Stencil Read Mask", Float) = 255        
+        _StencilReadMask ("Stencil Read Mask", Float) = 255
 //================================================= Blend
         // [Header(Blend)]
         // [Enum(UnityEngine.Rendering.BlendMode)]_SrcMode("_SrcMode",int) = 1
@@ -56,7 +58,6 @@ HLSLINCLUDE
     #include "../../../PowerShaderLib/Lib/MathLib.hlsl"
     #include "../../../PowerShaderLib/URPLib/URP_Input.hlsl"
 
-    sampler2D _SceneFogMap;
     sampler2D _FogMainNoiseMap,_FogDetailNoiseMap;
 
     sampler2D _HighlightTex;
@@ -65,18 +66,20 @@ HLSLINCLUDE
     CBUFFER_START(UnityPerMaterial)
     float _FullScreenOn;
 
-
     float3 _SceneMin;
     float3 _SceneMax;
     float4 _FogNoiseTilingOffset;
     float4 _DetailFogTiling,_DetailFogOffset;
 
     float _SceneHeightFogOn;
-    // float _SceneHeightFogFading;
     float2 _HeightFogRange;
+    float _FogNoiseAtten;
 
     float _CameraFadeDist;
-    // float2 _FogAreaScale;
+    /**
+    sampler2D _SceneFogMap; // map for fog hole
+    float2 _FogAreaScale; // map for fog hole
+    */
     float4 _SceneFogColor;
     float _WorldPosScale;
     CBUFFER_END
@@ -85,6 +88,13 @@ HLSLINCLUDE
         float3 worldUV = worldPos * _WorldPosScale;
 
         float fogRate = 1; // sceneFog, dont need depth fog
+        // map for fog hole
+        #if defined(_SCENE_FOG_MAP)
+        half4 fogMap = tex2Dlod(_SceneFogMap,half4(worldUV.xz,0,0));
+        half fogAtten = smoothstep(_FogAreaScale.x,_FogAreaScale.y,fogMap.y);
+        fogRate *= fogAtten;
+        #endif
+
         float heightFogRate = (_HeightFogRange.x - worldPos.y)/(_HeightFogRange.y-_HeightFogRange.x);
         fogRate *= heightFogRate;
 
@@ -106,18 +116,23 @@ HLSLINCLUDE
         return highlight * _HighlightColor;
     }
 
+    /**
+        return float4 ,{ xyz : fog color, w : fogNoise}
+    */
     float4 CalcFogColor(float3 worldUV){
         float4 noiseUV = worldUV.xzxy * _DetailFogTiling + _DetailFogOffset * _Time.xxxx;
         float2 noise = tex2D(_FogDetailNoiseMap,noiseUV.xy);
         noise += tex2D(_FogDetailNoiseMap,noiseUV.zw);
+        noise *= 0.5;
 
         // xz
         float2 mainOffset = _Time.xx * _FogNoiseTilingOffset.zw;
         float4 mainNoiseUV = worldUV.xzyz* _FogNoiseTilingOffset.xyxy + mainOffset.xyxy;
 
         float4 noiseMap = tex2D(_FogMainNoiseMap,mainNoiseUV.xy + noise *0.05);
-        // noiseMap = (pow(noiseMap,5));
-        return noiseMap * _SceneFogColor;
+        float4 c = noiseMap * _SceneFogColor;
+        c.w = noise;
+        return c;
     }
 ENDHLSL
 
@@ -151,14 +166,12 @@ ENDHLSL
 
             struct v2f
             {
-                float2 uv : TEXCOORD0;
                 float4 vertex : SV_POSITION;
+                float2 uv : TEXCOORD0;
             };
 
             sampler2D _CameraOpaqueTexture;
             sampler2D _CameraDepthTexture;
-
-
 
 // #define _CameraDepthTexture _CameraDepthAttachment
 // #define _CameraOpaqueTexture _CameraColorTexture
@@ -185,7 +198,12 @@ ENDHLSL
 
                 float4 worldUVfogFactor = CalcFogFactor(worldPos);
                 float4 fogColor = CalcFogColor(worldUVfogFactor.xyz);
-                return lerp(sceneColor,fogColor,worldUVfogFactor.w * (! isFar));
+                
+                float fogNoise = fogColor.w;
+                float fogFactor = worldUVfogFactor.w * _SceneFogColor.w;
+                fogFactor *= lerp(1,fogNoise,_FogNoiseAtten);
+
+                return lerp(sceneColor,fogColor,fogFactor * (! isFar));
             }
             ENDHLSL
         }
