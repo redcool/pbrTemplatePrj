@@ -2,14 +2,15 @@ Shader "Nature/BoxSceneFog"
 {
     Properties
     {
-        [GroupHeader(v0.0.1)]
+        [GroupHeader(v0.0.2)]
 // ================================================== base        
         [Group(Base)]
         [GroupToggle(Base)]_FullScreenOn("_FullScreenOn",int) = 1
+        [GroupVectorSlider(Base,minX minY maxX maxY,0_1 0_1 0_1 0_1,limit screen range,float)]_ScreenRange("ScreenRange",vector) = (0,0,1,1)
 
-        [GroupHeader(Base,BorderFading)]
-        [GroupItem(Base)] _BorderFadingTex("_BorderFadingTex",2d) = "white"{}
-        [GroupItem(Base)] _BorderFading("_BorderFading",range(0,1)) = 0
+        [GroupHeader(Base,Fog Mask)]
+        [GroupItem(Base)] _MaskTex("_MaskTex(R)",2d) = "white"{}
+        [GroupItem(Base)] _MaskScale("_MaskScale",range(0,1)) = 0
 // ================================================== scene fog
         [Group(SceneFog)]
         // [GroupItem(SceneFog)] _SceneFogMap("_SceneFogMap",2d)=""{}
@@ -60,6 +61,7 @@ HLSLINCLUDE
     #include "../../../PowerShaderLib/Lib/SDF.hlsl"
     #include "../../../PowerShaderLib/Lib/NoiseLib.hlsl"
     #include "../../../PowerShaderLib/Lib/MathLib.hlsl"
+    #include "../../../PowerShaderLib/Lib/FullscreenLib.hlsl"
     #include "../../../PowerShaderLib/URPLib/URP_Input.hlsl"
 
     sampler2D _FogMainNoiseMap,_FogDetailNoiseMap;
@@ -67,7 +69,7 @@ HLSLINCLUDE
     sampler2D _HighlightTex;
     // float4 _HighlightColor;
 
-    sampler2D _BorderFadingTex;
+    sampler2D _MaskTex;
 
     CBUFFER_START(UnityPerMaterial)
     float _FullScreenOn;
@@ -88,7 +90,9 @@ HLSLINCLUDE
     */
     float4 _SceneFogColor;
     float _WorldPosScale;
-    float _BorderFading;
+    float _MaskScale;
+    float4 _MaskTex_ST;
+    float4 _ScreenRange;
     CBUFFER_END
 
     float4 CalcFogFactor(float3 worldPos){
@@ -186,8 +190,11 @@ ENDHLSL
             v2f vert (appdata v)
             {
                 v2f o;
-                o.vertex = _FullScreenOn ? float4(v.vertex.xy * 2,0,1) : TransformObjectToHClip(v.vertex.xyz);
-                o.uv = v.uv;
+                o.vertex = TransformObjectToNdcHClip(v.vertex,_FullScreenOn,_ScreenRange);
+                // o.vertex = _FullScreenOn ? float4(v.vertex.xy * 2,0,1) : TransformObjectToHClip(v.vertex.xyz);
+
+                o.uv = TRANSFORM_TEX(v.uv,_MaskTex);
+                // o.uv = lerp(_ScreenRange.xy,_ScreenRange.zw,o.uv);
                 return o;
             }
 
@@ -202,7 +209,7 @@ ENDHLSL
                 
                 float3 worldPos = ScreenToWorldPos(screenUV,depthTex,UNITY_MATRIX_I_VP);
 //======== border fading
-                float4 fadingTex = tex2D(_BorderFadingTex,i.uv);
+                float4 maskTex = tex2D(_MaskTex, i.uv);
 
 //======== scene fog
                 float4 worldUVfogFactor = CalcFogFactor(worldPos);
@@ -211,7 +218,7 @@ ENDHLSL
                 float fogNoise = fogColor.w;
                 float fogFactor = worldUVfogFactor.w * _SceneFogColor.w;
                 fogFactor *= lerp(1,fogNoise,_FogNoiseAtten);
-                fogFactor *= lerp(1,fadingTex.x,_BorderFading); // main texture fading
+                fogFactor *= lerp(1,maskTex.x,_MaskScale); // main texture fading
 
                 return lerp(sceneColor,fogColor,fogFactor * (! isFar));
             }
