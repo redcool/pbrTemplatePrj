@@ -23,6 +23,14 @@ Material:
   m_SavedProperties:
     serializedVersion: 3
     m_TexEnvs:
+    - _BorderFadingTex:
+        m_Texture: {fileID: 2800000, guid: 6449cd275bde43b4ab6c406536774326, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _FadingTex:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     - _FogDetailNoiseMap:
         m_Texture: {fileID: 2800000, guid: 0267ab071e41ee44da5d66227ff388e8, type: 3}
         m_Scale: {x: 2.27, y: 2.4}
@@ -41,10 +49,11 @@ Material:
         m_Offset: {x: 1.27, y: -2.65}
     m_Ints: []
     m_Floats:
+    - _BorderFading: 0
     - _CameraFadeDist: 0
     - _CullMode: 0
-    - _FogNoiseAtten: 0.522
-    - _FullScreenOn: 0
+    - _FogNoiseAtten: 0
+    - _FullScreenOn: 1
     - _SceneHeightFogFading: 1
     - _SceneHeightFogOn: 1
     - _Stencil: 123
@@ -58,6 +67,6 @@ Material:
     - _DetailFogTiling: {r: 5, g: 5, b: 1, a: 1}
     - _FogAreaScale: {r: 0, g: 0.698, b: 0, a: 0}
     - _FogNoiseTilingOffset: {r: 1, g: 1, b: 1, a: 1}
-    - _HeightFogRange: {r: 51.3, g: 90.1, b: 0, a: 0}
-    - _SceneFogColor: {r: 0.89433956, g: 0.89433956, b: 0.89433956, a: 1}
+    - _HeightFogRange: {r: 38.6, g: 73.6, b: 0, a: 0}
+    - _SceneFogColor: {r: 1, g: 1, b: 1, a: 1}
   m_BuildTextureStacks: []
