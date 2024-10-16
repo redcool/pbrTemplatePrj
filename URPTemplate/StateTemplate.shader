@@ -12,25 +12,30 @@ Shader "Hidden/StateTemplate"
         // [GroupHeader(Alpha,Premultiply)]
         // [GroupToggle(Alpha)]_AlphaPremultiply("_AlphaPremultiply",int) = 0
 
-        [GroupHeader(Alpha,AlphaTest)]
-        [GroupToggle(Alpha,ALPHA_TEST)]_AlphaTestOn("_AlphaTestOn",int) = 0
-        [GroupSlider(Alpha)]_Cutoff("_Cutoff",range(0,1)) = 0.5
-// ================================================== StateSettings
-        [Group(StateSettings)]
-        [GroupEnum(StateSettings,UnityEngine.Rendering.CullMode)]_CullMode("_CullMode",int) = 2
-		[GroupToggle(StateSettings)]_ZWriteMode("ZWriteMode",int) = 0
+        // [GroupHeader(Alpha,AlphaTest)]
+        // [GroupToggle(Alpha,ALPHA_TEST)]_AlphaTestOn("_AlphaTestOn",int) = 0
+        // [GroupSlider(Alpha)]_Cutoff("_Cutoff",range(0,1)) = 0.5
+// ================================================== Settings
+        [Group(Settings)]
+        [GroupEnum(Settings,UnityEngine.Rendering.CullMode)]_CullMode("_CullMode",int) = 2
+		[GroupToggle(Settings)]_ZWriteMode("ZWriteMode",int) = 0
 
 		/*
 		Disabled,Never,Less,Equal,LessEqual,Greater,NotEqual,GreaterEqual,Always
 		*/
-		[GroupEnum(StateSettings,UnityEngine.Rendering.CompareFunction)]_ZTestMode("_ZTestMode",float) = 4
+		[GroupEnum(Settings,UnityEngine.Rendering.CompareFunction)]_ZTestMode("_ZTestMode",float) = 4
+
+        [GroupHeader(Settings,Color Mask)]
+        [GroupEnum(Settings,RGBA 16 RGB 15 RG 12 GB 6 RB 10 R 8 G 4 B 2 A 1 None 0)] _ColorMask("_ColorMask",int) = 15
 // ================================================== stencil settings
         [Group(Stencil)]
 		[GroupEnum(Stencil,UnityEngine.Rendering.CompareFunction)]_StencilComp ("Stencil Comparison", Float) = 0
-        [GroupItem(Stencil)]_Stencil ("Stencil ID", int) = 0
+        [GroupItem(Stencil)] _Stencil ("Stencil ID", int) = 0
         [GroupEnum(Stencil,UnityEngine.Rendering.StencilOp)]_StencilOp ("Stencil Operation", Float) = 0
-        [HideInInspector] _StencilWriteMask ("Stencil Write Mask", Float) = 255
-        [HideInInspector] _StencilReadMask ("Stencil Read Mask", Float) = 255
+        [HideInInspector] 
+        [GroupItem(Stencil)] _StencilWriteMask ("Stencil Write Mask", Float) = 255
+        [HideInInspector] 
+        [GroupItem(Stencil)] _StencilReadMask ("Stencil Read Mask", Float) = 255
     }
 
     SubShader{

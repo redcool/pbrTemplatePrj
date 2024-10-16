@@ -9,11 +9,14 @@ Shader "Template/Unlit/StencilColorOnly"
         
 // ================================================== stencil settings
         [Group(Stencil)]
-        [GroupEnum(Stencil,UnityEngine.Rendering.CompareFunction)]_StencilComp ("Stencil Comparison", Float) = 0
-        [GroupItem(Stencil)]_Stencil ("Stencil ID", int) = 0
-        [GroupEnum(Stencil,UnityEngine.Rendering.StencilOp)]_StencilOp ("Stencil Operation", Float) = 0
-        _StencilWriteMask ("Stencil Write Mask", Float) = 255
-        _StencilReadMask ("Stencil Read Mask", Float) = 255
+        [GroupEnum(Stencil,UnityEngine.Rendering.CompareFunction)] _StencilComp ("Stencil Comparison", Float) = 0
+        [GroupItem(Stencil)] _Stencil ("Stencil ID", int) = 0
+        [GroupEnum(Stencil,UnityEngine.Rendering.StencilOp)] _StencilOp ("Stencil Operation", Float) = 0
+        [GroupHeader(Stencil,)]
+        [GroupEnum(Stencil,UnityEngine.Rendering.StencilOp)] _StencilFailOp ("Stencil Fail Operation", Float) = 0
+        [GroupEnum(Stencil,UnityEngine.Rendering.StencilOp)] _StencilZFailOp ("Stencil zfail Operation", Float) = 0
+        [GroupItem(Stencil)] _StencilWriteMask ("Stencil Write Mask", Float) = 255
+        [GroupItem(Stencil)] _StencilReadMask ("Stencil Read Mask", Float) = 255
 
         [Header(Blend)]
         [Enum(UnityEngine.Rendering.BlendMode)]_SrcMode("_SrcMode",int) = 1
@@ -46,6 +49,8 @@ Shader "Template/Unlit/StencilColorOnly"
                 Ref [_Stencil]
                 Comp [_StencilComp]
                 Pass [_StencilOp]
+                Fail [_StencilFailOp]
+                ZFail [_StencilZFailOp]
                 ReadMask [_StencilReadMask]
                 WriteMask [_StencilWriteMask]
             }
