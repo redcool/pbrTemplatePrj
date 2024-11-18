@@ -12,12 +12,12 @@ Shader "Hidden/GaussianBlur"
 
         Pass
         {
-            CGPROGRAM
+            HLSLPROGRAM
             #pragma vertex vert
             #pragma fragment frag
 
-            #include "UnityCG.cginc"
-            #include "BlurLib.hlsl"
+            #include "../../../../PowerShaderLib/Lib/UnityLib.hlsl"
+            #include "../../../../PowerShaderLib/Lib/BlurLib.hlsl"
 
             struct appdata
             {
@@ -30,10 +30,11 @@ Shader "Hidden/GaussianBlur"
                 float2 uv:TEXCOORD;
                 float4 vertex : SV_POSITION;
             };
-
+            CBUFFER_START(UnityPerMaterial)
             sampler2D _MainTex;
             float4 _MainTex_TexelSize;
             float _Scale;
+            CBUFFER_END
 
             v2f vert (appdata v)
             {
@@ -53,7 +54,7 @@ Shader "Hidden/GaussianBlur"
                 col *= 0.5;
                 return half4(col,1);
             }
-            ENDCG
+            ENDHLSL
         }
 
     }
