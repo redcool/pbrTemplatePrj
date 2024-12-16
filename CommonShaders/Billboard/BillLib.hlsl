@@ -46,6 +46,9 @@
         UNITY_DEFINE_INSTANCED_PROP(half4,_MatCap_ST)
         UNITY_DEFINE_INSTANCED_PROP(half,_MatCapScale)
         UNITY_DEFINE_INSTANCED_PROP(half,_Metallic)
+
+        UNITY_DEFINE_INSTANCED_PROP(half,_TopdownLine)
+        UNITY_DEFINE_INSTANCED_PROP(half,_DiffuseBlend)
         
     UNITY_INSTANCING_BUFFER_END(UnityPerMaterial)
 
@@ -76,7 +79,8 @@
     #define _MatCap_ST UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial,_MatCap_ST)
     #define _MatCapScale UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial,_MatCapScale)
     #define _Metallic UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial,_Metallic)
-    
+    #define _TopdownLine UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial,_TopdownLine)
+    #define _DiffuseBlend UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial,_DiffuseBlend)
 
     // _FogOn,need define first
     #include "../../../PowerShaderLib/Lib/FogLib.hlsl"
@@ -160,10 +164,8 @@
         float3 worldPos = i.worldPos;
 
         // float3 n = CalcSphereWorldNormal(unity_ObjectToWorld,i.worldPos);
-        float3 n = normalize(i.normal);
-
-
-
+        float3 localPos = i.normal;
+        float3 n = normalize(localPos);
 
         // sample the texture
         float4 mainTex = tex2D(_MainTex, mainUV) * _Color;
@@ -200,9 +202,15 @@
         float4 shadowCoord = TransformWorldToShadowCoord(worldPos);
         Light mainLight = GetMainLight(shadowCoord,worldPos,1,1);
 
-        // =========== direct 
+        // =========== direct light (nl)
+        float topdownRate = saturate(localPos.y - _TopdownLine.x);
+
         half nl = saturate(dot(n,mainLight.direction) * mainLight.shadowAttenuation);
+        nl = lerp(nl,topdownRate,_DiffuseBlend);
         nl = saturate(smoothstep(_DiffuseRange.x,_DiffuseRange.y,nl) + 0);
+        // return nl;
+
+        // code control
         nl =lerp(nl,1,_DrawChildrenStaticOn);
 
         half3 radiance = mainLight.color * nl;

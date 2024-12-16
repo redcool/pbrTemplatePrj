@@ -17,7 +17,6 @@ shader "URP/Unlit/Bill"
         [GroupItem(Alpha)]_Cutoff("_Cutoff",range(0,1)) = 0.5
 //=================================================  Lighting
         [Group(Lighting)]
-        
         // [GroupToggle(Lighting)]_ApplyMainLightColor("_ApplyMainLightColor",int) = 1
         [GroupItem(Lighting)]_Metallic("_Metallic",range(0,1)) = 0.5
 
@@ -26,10 +25,13 @@ shader "URP/Unlit/Bill"
 
         [GroupHeader(Lighting,Diffuse)]
         [GroupVectorSlider(Lighting,Min Max,0_1 0_1)] _DiffuseRange("_DiffuseRange",vector) = (0,0.5,0,0)
+        [GroupItem(Lighting,PosRange)] _TopdownLine("_TopdownLine",range(-5,5))= 0
+        [GroupItem(Lighting,Blend)] _DiffuseBlend("_DiffuseBlend",range(0,1)) = 0
 
         [GroupHeader(Lighting,MatCap)]
         [GroupItem(Lighting,specTerm use )] _MatCap("_MatCap",2d)=""{}
         [GroupItem(Lighting)] _MatCapScale("_MatCapScale",float)= 1
+
 //=================================================  weather
         [Group(Fog)]
         [GroupToggle(Fog)]_FogOn("_FogOn",int) = 1
@@ -85,7 +87,7 @@ shader "URP/Unlit/Bill"
             HLSLPROGRAM
             #pragma vertex vertBill
             #pragma fragment fragBill
-            #pragma multi_compile_instancing
+            // #pragma multi_compile_instancing
             #pragma shader_feature ALPHA_TEST
             #pragma shader_feature _WIND_ON
             #pragma shader_feature _SNOW_ON
