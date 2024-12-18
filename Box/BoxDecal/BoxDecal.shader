@@ -1,4 +1,4 @@
-Shader "FX/Others/BoxDecal"
+Shader "FX/Box/BoxDecal"
 {
     Properties
     {

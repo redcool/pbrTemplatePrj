@@ -1,4 +1,4 @@
-Shader "Nature/BoxSceneFog"
+Shader "FX/Box/Nature/BoxSceneFog"
 {
     Properties
     {

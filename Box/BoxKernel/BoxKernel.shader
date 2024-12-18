@@ -1,4 +1,4 @@
-Shader "Hidden/FX/Box/Template"
+Shader "FX/Box/Kernels"
 {
     Properties
     {
@@ -6,7 +6,8 @@ Shader "Hidden/FX/Box/Template"
         [Group(Base)]
         [GroupToggle(Base)]_FullScreenOn("_FullScreenOn",int) = 1
 
-        _MainTex("_MainTex",2d)=""{}
+        [GroupItem(Base)] _MainTex("_MainTex",2d)=""{}
+        [GroupItem(Base)] _TexelSizeScale("_TexelSizeScale",range(0.1,20)) = 1
 
 // ================================================== alpha      
         [Group(Alpha)]
@@ -76,6 +77,7 @@ Shader "Hidden/FX/Box/Template"
             #include "../../../PowerShaderLib/Lib/NoiseLib.hlsl"
             #include "../../../PowerShaderLib/Lib/MathLib.hlsl"
             #include "../../../PowerShaderLib/URPLib/URP_Input.hlsl"
+            #include "../../../PowerShaderLib/Lib/Kernel/KernelDefines.hlsl"
 
             struct appdata
             {
@@ -93,9 +95,12 @@ Shader "Hidden/FX/Box/Template"
             sampler2D _CameraOpaqueTexture;
             sampler2D _CameraDepthTexture;
 
+            float4 _CameraOpaqueTexture_TexelSize;
+
             CBUFFER_START(UnityPerMaterial)
             half _FullScreenOn;
             half4 _MainTex_ST;
+            half _TexelSizeScale;
 
             CBUFFER_END
 
@@ -110,7 +115,10 @@ Shader "Hidden/FX/Box/Template"
                 return o;
             }
 
-
+// ====== variables
+DEF_OFFSETS_3X3(offsets_3x3,_CameraOpaqueTexture_TexelSize.xy);
+DEF_OFFSETS_2X2(offsets_2x2,_CameraOpaqueTexture_TexelSize.xy);
+DEF_OFFSETS_2X2_CROSS(offsets_2x2_cross,_CameraOpaqueTexture_TexelSize.xy);
 
             float4 frag (v2f i) : SV_Target
             {
@@ -121,7 +129,17 @@ Shader "Hidden/FX/Box/Template"
                 half isFar = IsTooFar(depthTex.x);
                 
                 float3 worldPos = ScreenToWorldPos(screenUV,depthTex,UNITY_MATRIX_I_VP);
-                return worldPos.xyzx;
+
+                float4 col = 0;
+                // col = CalcKernel_3x3(_CameraOpaqueTexture,screenUV,_TexelSizeScale,offsets_3x3,kernels_sharpen);
+                // col = CalcKernel_3x3(_CameraOpaqueTexture,screenUV,_TexelSizeScale,offsets_3x3,kernels_blur);
+                // col = CalcKernel_3x3(_CameraOpaqueTexture, screenUV,_TexelSizeScale,offsets_3x3,kernels_edgeDetection);
+                
+                col = CalcKernel_2x2(_CameraOpaqueTexture,screenUV,_TexelSizeScale,offsets_2x2_cross,kernels_sharpen_2x2);
+                col = CalcKernel_2x2(_CameraOpaqueTexture,screenUV,_TexelSizeScale,offsets_2x2_cross,kernels_blur_2x2);
+                col = CalcKernel_2x2(_CameraOpaqueTexture,screenUV,_TexelSizeScale,offsets_2x2_cross,kernels_edgeDetection_2x2);
+                
+                return col;
             }
             ENDHLSL
         }

@@ -1,4 +1,4 @@
-Shader "FX/Others/BoxCloudShadow"
+Shader "FX/Box/BoxCloudShadow"
 {
     Properties
     {
@@ -56,7 +56,7 @@ Shader "FX/Others/BoxCloudShadow"
             };
 
             sampler2D _NoiseTex;
-            sampler2D _CameraColorTexture;
+            sampler2D _CameraOpaqueTexture;
             sampler2D _CameraDepthTexture;
 
             CBUFFER_START(UnityPerMaterial)
@@ -71,7 +71,7 @@ Shader "FX/Others/BoxCloudShadow"
             CBUFFER_END
 
 // #define _CameraDepthTexture _CameraDepthAttachment
-#define _CameraOpaqueTexture _CameraColorTexture
+// #define _CameraOpaqueTexture _CameraColorTexture
 
             v2f vert (appdata v)
             {

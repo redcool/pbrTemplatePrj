@@ -85,6 +85,7 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
+    - _BigShadowOff: 0
     - _DepthFogOn: 1
     - _EnableHeightBlend: 0
     - _EnableInstancedPerPixelNormal: 1

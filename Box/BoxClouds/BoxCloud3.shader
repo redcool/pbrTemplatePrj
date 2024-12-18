@@ -1,5 +1,5 @@
 
-Shader "Nature/BoxClouds3"
+Shader "FX/Box/Nature/BoxClouds3"
 {
     /**
         clouds post , look this:

@@ -1,4 +1,4 @@
-Shader "FX/Others/BoxRadialBlur"
+Shader "FX/Box/BoxRadialBlur"
 {
     Properties
     {
