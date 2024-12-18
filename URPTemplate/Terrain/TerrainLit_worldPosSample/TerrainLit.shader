@@ -47,8 +47,8 @@ Shader "URP/TerrainLit_WorldPosSample"
         [GroupToggle(Fog)]_HeightFogOn("_HeightFogOn",int) = 1
 
         [Group(Shadow)]
-        [GroupHeader(,_BigShadowOff)]
-        [GroupToggle]_BigShadowOff("_BigShadowOff",int) = 0
+        [GroupHeader(Shadow,_BigShadowOff)]
+        [GroupToggle(Shadow)]_BigShadowOff("_BigShadowOff",int) = 0
     }
 
     HLSLINCLUDE
