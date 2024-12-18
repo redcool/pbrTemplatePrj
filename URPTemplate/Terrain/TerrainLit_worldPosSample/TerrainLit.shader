@@ -45,6 +45,10 @@ Shader "URP/TerrainLit_WorldPosSample"
         [GroupToggle(Fog)]_FogNoiseOn("_FogNoiseOn",int) = 0
         [GroupToggle(Fog)]_DepthFogOn("_DepthFogOn",int) = 1
         [GroupToggle(Fog)]_HeightFogOn("_HeightFogOn",int) = 1
+
+        [Group(Shadow)]
+        [GroupHeader(,_BigShadowOff)]
+        [GroupToggle]_BigShadowOff("_BigShadowOff",int) = 0
     }
 
     HLSLINCLUDE

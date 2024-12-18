@@ -6,8 +6,11 @@
 #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/UnityGBuffer.hlsl"
 #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/DBuffer.hlsl"
 
-    // _FogOn,need define first
-    #include "../../../../PowerShaderLib/Lib/FogLib.hlsl"
+// _FogOn,need define first
+#include "../../../../PowerShaderLib/Lib/FogLib.hlsl"
+
+#define USE_URP
+#include "../../../../PowerShaderLib/Lib/BigShadows.hlsl"
 
 struct Attributes
 {
@@ -49,6 +52,7 @@ struct Varyings
 #if defined(DYNAMICLIGHTMAP_ON)
     float2 dynamicLightmapUV        : TEXCOORD9;
 #endif
+    float4 bigShadowCoord:TEXCOORD10;
 
     float4 clipPos                  : SV_POSITION;
     UNITY_VERTEX_OUTPUT_STEREO
@@ -250,10 +254,10 @@ Varyings SplatmapVert(Attributes v)
     o.uvMainAndLM.zw = v.texcoord * unity_LightmapST.xy + unity_LightmapST.zw;
 
     #ifndef TERRAIN_SPLAT_BASEPASS
-        o.uvSplat01.xy = TRANSFORM_TEX(v.texcoord, _Splat0);
-        o.uvSplat01.zw = TRANSFORM_TEX(v.texcoord, _Splat1);
-        o.uvSplat23.xy = TRANSFORM_TEX(v.texcoord, _Splat2);
-        o.uvSplat23.zw = TRANSFORM_TEX(v.texcoord, _Splat3);
+        // o.uvSplat01.xy = TRANSFORM_TEX(v.texcoord, _Splat0);
+        // o.uvSplat01.zw = TRANSFORM_TEX(v.texcoord, _Splat1);
+        // o.uvSplat23.xy = TRANSFORM_TEX(v.texcoord, _Splat2);
+        // o.uvSplat23.zw = TRANSFORM_TEX(v.texcoord, _Splat3);
 
     o.uvSplat01.xy = (Attributes.positionWS.xz)* _Splat0_ST.xy*.001;
     o.uvSplat01.zw = (Attributes.positionWS.xz)* _Splat1_ST.xy*.001;
@@ -297,8 +301,13 @@ Varyings SplatmapVert(Attributes v)
     #if defined(REQUIRES_VERTEX_SHADOW_COORD_INTERPOLATOR)
         o.shadowCoord = GetShadowCoord(Attributes);
     #endif
-
+    //sphere fog
     o.fogFactor = CalcFogFactor(o.positionWS,o.clipPos.z,_HeightFogOn,_DepthFogOn);
+    // bigShadow
+    branch_if(!_BigShadowOff){
+        float3 bigShadowCoord = TransformWorldToBigShadow(o.positionWS);
+        o.bigShadowCoord.xyz = bigShadowCoord;
+    }
 
     return o;
 }
@@ -436,6 +445,14 @@ half4 SplatmapFragment(Varyings IN) : SV_TARGET
     half4 color = UniversalFragmentPBR(inputData, albedo, metallic, /* specular */ half3(0.0h, 0.0h, 0.0h), smoothness, occlusion, /* emission */ half3(0, 0, 0), alpha);
 
     // SplatmapFinalColor(color, inputData.fogCoord);
+    // ========== bigShadow
+    branch_if(!_BigShadowOff)
+    {
+        // i.bigShadowCoord.z += 0.001;
+        float atten = CalcBigShadowAtten(IN.bigShadowCoord.xyz,1);
+        // mainLight.shadowAttenuation = min(mainLight.shadowAttenuation,atten);
+        color.xyz *= atten;
+    }
 
     // =========== fog
     float fogNoise = 0;

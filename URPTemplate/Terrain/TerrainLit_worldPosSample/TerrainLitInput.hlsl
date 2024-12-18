@@ -14,6 +14,8 @@ CBUFFER_START(UnityPerMaterial)
     half _FogNoiseOn;
     half _DepthFogOn;
     half _HeightFogOn;
+
+    half _BigShadowOff;
 CBUFFER_END
 
 #define _Surface 0.0 // Terrain is always opaque
