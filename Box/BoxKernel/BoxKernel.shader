@@ -8,8 +8,8 @@ Shader "FX/Box/Kernels"
 
         [GroupItem(Base)] _MainTex("_MainTex",2d)=""{}
         [GroupItem(Base)] _TexelSizeScale("_TexelSizeScale",range(0.1,20)) = 1
-        [GroupEnum(Base,_OFFSETS_3X3 _OFFSETS_2X2,true)]_OffsetMode("_OffsetMode",float) = 0
-        [GroupEnum(Base,_KERNEL_SHARPEN _KERNEL_BLUR _KERNEL_EDGE_DETICTION,true)]_KernelMode("_KernelMode",float) = 0
+        [GroupEnum(Base,_OFFSETS_3X3 _OFFSETS_2X2,true,samples 3x3 or 2x2 )]_OffsetMode("_OffsetMode",float) = 0
+        [GroupEnum(Base,_SHARPEN _BLUR _DETECTION,true,Kernel functions)]_KernelMode("_KernelMode",float) = 0
 // ================================================== alpha      
         [Group(Alpha)]
         [GroupHeader(Alpha,BlendMode)]
@@ -73,7 +73,7 @@ Shader "FX/Box/Kernels"
             #pragma fragment frag
 
             #pragma multi_compile _OFFSETS_3X3 _OFFSETS_2X2
-            #pragma multi_compile _KERNEL_SHARPEN _KERNEL_BLUR _KERNEL_EDGE_DETICTION
+            #pragma multi_compile _SHARPEN _BLUR _DETECTION
 
             #include "../../../PowerShaderLib/Lib/UnityLib.hlsl"
             #include "../../../PowerShaderLib/Lib/PowerUtils.hlsl"
@@ -136,13 +136,13 @@ DEF_OFFSETS_2X2_CROSS(offsets_2x2_cross,_CameraOpaqueTexture_TexelSize.xy);
                 float3 worldPos = ScreenToWorldPos(screenUV,depthTex,UNITY_MATRIX_I_VP);
   
                 float4 col = 0;
-                #if defined(_KERNEL_SHARPEN)
+                #if defined(_SHARPEN)
                     #if defined(_OFFSETS_3X3)
                     col = CalcKernel_3x3(_CameraOpaqueTexture,screenUV,_TexelSizeScale,offsets_3x3,kernels_sharpen);
                     #else
                     col = CalcKernel_2x2(_CameraOpaqueTexture,screenUV,_TexelSizeScale,offsets_2x2_cross,kernels_sharpen_2x2);
                     #endif
-                #elif defined(_KERNEL_BLUR)
+                #elif defined(_BLUR)
                     #if defined(_OFFSETS_3X3)
                     col = CalcKernel_3x3(_CameraOpaqueTexture,screenUV,_TexelSizeScale,offsets_3x3,kernels_blur);
                     #else
