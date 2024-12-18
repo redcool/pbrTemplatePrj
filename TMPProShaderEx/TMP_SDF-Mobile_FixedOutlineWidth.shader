@@ -1,4 +1,4 @@
-﻿// Simplified SDF shader:
+// Simplified SDF shader:
 // - No Shading Option (bevel / bump / env map)
 // - No Glow Option
 // - Softness is applied on both side of the outline
@@ -54,6 +54,8 @@ Properties {
 
 	[Group(Effects)]
 	[GroupToggle(Effects)]_GrayOn("_GrayOn",int) = 0
+	[GroupToggle(Effects)]_TwoColor("_TwoColor",int) = 0
+
 
 	[Group(Alpha)]
 	[GroupPresetBlendMode(Alpha,,_SrcMode,_DstMode)]_PresetBlendMode("_PresetBlendMode",int)=0
@@ -68,6 +70,7 @@ Properties {
 	*/
 	[GroupEnum(Settings,UnityEngine.Rendering.CompareFunction)]_ZTestMode("_ZTestMode",float) = 8
 	[GroupEnum(Settings,UnityEngine.Rendering.CullMode)]_CullMode("_CullMode",int) = 0
+
 }
 
 SubShader {
@@ -101,8 +104,8 @@ SubShader {
 		HLSLPROGRAM
 		#pragma vertex VertShader
 		#pragma fragment PixShader
-		#pragma shader_feature __ OUTLINE_ON
-		#pragma shader_feature __ UNDERLAY_ON UNDERLAY_INNER
+		#pragma shader_feature OUTLINE_ON
+		#pragma shader_feature UNDERLAY_ON UNDERLAY_INNER
 
 		#pragma multi_compile __ UNITY_UI_CLIP_RECT
 		#pragma multi_compile __ UNITY_UI_ALPHACLIP
@@ -115,6 +118,15 @@ SubShader {
 		#include "TMPro_Properties.cginc"
 
 		#pragma multi_compile_fragment _ _SRGB_TO_LINEAR_CONVERSION _LINEAR_TO_SRGB_CONVERSION
+
+        float2 UnpackUV(float uv)
+		{ 
+			float2 output;
+			output.x = floor(uv / 4096);
+			output.y = uv - 4096 * output.x;
+
+			return output * 0.001953125;
+		}
 
 		struct vertex_t {
 			UNITY_VERTEX_INPUT_INSTANCE_ID
@@ -138,6 +150,9 @@ SubShader {
 			float4	texcoord1		: TEXCOORD3;			// Texture UV, alpha, reserved
 			half2	underlayParam	: TEXCOORD4;			// Scale(x), Bias(y)
 			#endif
+            float4	textureUV		: TEXCOORD5;
+			float4	upCol			: TEXCOORD6;
+			float4	downCol		: TEXCOORD7;
 		};
 
 		pixel_t VertShader(vertex_t input)
@@ -188,7 +203,17 @@ SubShader {
 			opacity = 1.0;
 			#endif
 
-			fixed4 faceColor = fixed4(input.color.rgb, opacity) * _FaceColor;
+            fixed4 faceColor = fixed4(input.color.rgb, opacity) * _FaceColor;
+        
+            float2 textureUV = UnpackUV(input.texcoord1.xy);			
+			fixed4 upColor = float4(0,0,0,1);
+			fixed4 downColor = float4(0,0,0,1);
+            float _Threshold = 0.01;
+            if (abs(textureUV.y) < _Threshold)
+			{downColor.rgb = input.color.rgb;}
+			else
+			{upColor.rgb = input.color.rgb;}
+			
 			faceColor.rgb *= faceColor.a;
 
 			fixed4 outlineColor = _OutlineColor;
@@ -220,6 +245,9 @@ SubShader {
 			output.texcoord1 = float4(input.texcoord0 + layerOffset, input.color.a, 0);
 			output.underlayParam = half2(layerScale, layerBias);
 			#endif
+            output.textureUV = float4(textureUV,textureUV);
+			output.upCol = upColor;
+			output.downCol = downColor;
 
 			return output;
 		}
@@ -228,15 +256,20 @@ SubShader {
 		// PIXEL SHADER
 		fixed4 PixShader(pixel_t input) : SV_Target
 		{
+			#if defined(_TWO_COLOR)
+			return 0;
+			#endif
 			UNITY_SETUP_INSTANCE_ID(input);
 
 			half d = tex2D(_MainTex, input.texcoord0.xy).a * input.param.x;
-			half4 c = input.faceColor * saturate(d - input.param.w);
+			//half4 c = input.faceColor * saturate(d - input.param.w);
+            half4 c = lerp(input.faceColor,_FaceColor *(input.upCol*(input.textureUV.y>0.5)+input.downCol*(input.textureUV.y<0.5)),_TwoColor)* saturate(d - input.param.w);
+
 
 			#ifdef OUTLINE_ON
 			float outlineRate = saturate(smoothstep(0.01,0.02,d)*4 );
-			
-			c = lerp(input.outlineColor, input.faceColor, saturate(d - input.param.z));
+			//c = lerp(input.outlineColor, input.faceColor, saturate(d - input.param.z));
+            c = lerp(input.outlineColor, c, saturate(d - input.param.z));
 			c *= saturate(d - input.param.y) * outlineRate;
 			#endif
 
@@ -267,6 +300,7 @@ SubShader {
 
 			LinearGammaAutoChange(c/**/);
 			c.xyz = lerp(c.xyz,dot(float3(0.2,0.7,0.02),c.xyz),_GrayOn);
+            c.xyz = lerp(c.xyz,c.xyz*1.5,_TwoColor);
 			return c;
 		}
 		ENDHLSL

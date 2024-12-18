@@ -89,4 +89,5 @@ uniform float		_Sharpness;
 float4 _FaceTex_ST;
 float4 _OutlineTex_ST;
 float _GrayOn;
+float _TwoColor;
 CBUFFER_END
