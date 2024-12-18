@@ -1,4 +1,4 @@
-Shader "Universal Render Pipeline/Terrain/Lit WorldPosSample"
+Shader "URP/TerrainLit_WorldPosSample"
 {
     Properties
     {
@@ -38,6 +38,13 @@ Shader "Universal Render Pipeline/Terrain/Lit WorldPosSample"
         [HideInInspector] _TerrainHolesTexture("Holes Map (RGB)", 2D) = "white" {}
 
         [ToggleUI] _EnableInstancedPerPixelNormal("Enable Instanced per-pixel normal", Float) = 1.0
+
+        [Group(Fog)]
+        [GroupToggle(Fog)]_FogOn("_FogOn",int) = 1
+        // [GroupToggle(Fog,SIMPLE_FOG,use simple linear depth height fog)]_SimpleFog("_SimpleFog",int) = 0
+        [GroupToggle(Fog)]_FogNoiseOn("_FogNoiseOn",int) = 0
+        [GroupToggle(Fog)]_DepthFogOn("_DepthFogOn",int) = 1
+        [GroupToggle(Fog)]_HeightFogOn("_HeightFogOn",int) = 1
     }
 
     HLSLINCLUDE
@@ -83,7 +90,7 @@ Shader "Universal Render Pipeline/Terrain/Lit WorldPosSample"
             #pragma multi_compile _ DIRLIGHTMAP_COMBINED
             #pragma multi_compile _ LIGHTMAP_ON
             #pragma multi_compile _ DYNAMICLIGHTMAP_ON
-            #pragma multi_compile_fog
+            // #pragma multi_compile_fog
             #pragma multi_compile_fragment _ DEBUG_DISPLAY
             #pragma multi_compile_instancing
             #pragma instancing_options norenderinglayer assumeuniformscaling nomatrices nolightprobe nolightmap
@@ -122,8 +129,8 @@ Shader "Universal Render Pipeline/Terrain/Lit WorldPosSample"
             // This is used during shadow map generation to differentiate between directional and punctual light shadows, as they use different formulas to apply Normal Bias
             #pragma multi_compile_vertex _ _CASTING_PUNCTUAL_LIGHT_SHADOW
 
-            #include "Packages/com.unity.render-pipelines.universal/Shaders/Terrain/TerrainLitInput.hlsl"
-            #include "Packages/com.unity.render-pipelines.universal/Shaders/Terrain/TerrainLitPasses.hlsl"
+            #include "TerrainLitInput.hlsl"
+            #include "TerrainLitPasses.hlsl"
             ENDHLSL
         }
 
@@ -171,8 +178,8 @@ Shader "Universal Render Pipeline/Terrain/Lit WorldPosSample"
             #pragma shader_feature_local _TERRAIN_INSTANCED_PERPIXEL_NORMAL
             #define TERRAIN_GBUFFER 1
 
-            #include "Packages/com.unity.render-pipelines.universal/Shaders/Terrain/TerrainLitInput.hlsl"
-            #include "Packages/com.unity.render-pipelines.universal/Shaders/Terrain/TerrainLitPasses.hlsl"
+            #include "TerrainLitInput.hlsl"
+            #include "TerrainLitPasses.hlsl"
             ENDHLSL
         }
 
@@ -193,8 +200,8 @@ Shader "Universal Render Pipeline/Terrain/Lit WorldPosSample"
             #pragma multi_compile_instancing
             #pragma instancing_options assumeuniformscaling nomatrices nolightprobe nolightmap
 
-            #include "Packages/com.unity.render-pipelines.universal/Shaders/Terrain/TerrainLitInput.hlsl"
-            #include "Packages/com.unity.render-pipelines.universal/Shaders/Terrain/TerrainLitPasses.hlsl"
+            #include "TerrainLitInput.hlsl"
+            #include "TerrainLitPasses.hlsl"
             ENDHLSL
         }
 
@@ -215,8 +222,8 @@ Shader "Universal Render Pipeline/Terrain/Lit WorldPosSample"
             #pragma multi_compile_instancing
             #pragma instancing_options assumeuniformscaling nomatrices nolightprobe nolightmap
 
-            #include "Packages/com.unity.render-pipelines.universal/Shaders/Terrain/TerrainLitInput.hlsl"
-            #include "Packages/com.unity.render-pipelines.universal/Shaders/Terrain/TerrainLitDepthNormalsPass.hlsl"
+            #include "TerrainLitInput.hlsl"
+            #include "TerrainLitDepthNormalsPass.hlsl"
             ENDHLSL
         }
 
@@ -235,8 +242,8 @@ Shader "Universal Render Pipeline/Terrain/Lit WorldPosSample"
             #pragma instancing_options assumeuniformscaling nomatrices nolightprobe nolightmap
 
             #define SCENESELECTIONPASS
-            #include "Packages/com.unity.render-pipelines.universal/Shaders/Terrain/TerrainLitInput.hlsl"
-            #include "Packages/com.unity.render-pipelines.universal/Shaders/Terrain/TerrainLitPasses.hlsl"
+            #include "TerrainLitInput.hlsl"
+            #include "TerrainLitPasses.hlsl"
             ENDHLSL
         }
 
@@ -258,19 +265,19 @@ Shader "Universal Render Pipeline/Terrain/Lit WorldPosSample"
             #define _METALLICSPECGLOSSMAP 1
             #define _SMOOTHNESS_TEXTURE_ALBEDO_CHANNEL_A 1
 
-            #include "Packages/com.unity.render-pipelines.universal/Shaders/Terrain/TerrainLitInput.hlsl"
-            #include "Packages/com.unity.render-pipelines.universal/Shaders/Terrain/TerrainLitMetaPass.hlsl"
+            #include "TerrainLitInput.hlsl"
+            #include "TerrainLitMetaPass.hlsl"
 
             ENDHLSL
         }
 
         UsePass "Hidden/Nature/Terrain/Utilities/PICKING"
     }
-    Dependency "AddPassShader" = "Hidden/Universal Render Pipeline/Terrain/Lit (Add Pass1)"
-    Dependency "BaseMapShader" = "Hidden/Universal Render Pipeline/Terrain/Lit (Base Pass1)"
-    Dependency "BaseMapGenShader" = "Hidden/Universal Render Pipeline/Terrain/Lit (Basemap Gen1)"
+    Dependency "AddPassShader" = "Hidden/URP/Terrain/Lit (Add Pass)"
+    Dependency "BaseMapShader" = "Hidden/URP/Terrain/Lit (Base Pass)"
+    Dependency "BaseMapGenShader" = "Hidden/URP/Terrain/Lit (Basemap Gen)"
 
-    CustomEditor "UnityEditor.Rendering.Universal.TerrainLitShaderGUI"
+    // CustomEditor "UnityEditor.Rendering.Universal.TerrainLitShaderGUI"
 
     Fallback "Hidden/Universal Render Pipeline/FallbackError"
 }

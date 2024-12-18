@@ -1,4 +1,4 @@
-Shader "Hidden/Universal Render Pipeline/Terrain/Lit (Basemap Gen)"
+Shader "Hidden/URP/Terrain/Lit (Basemap Gen)"
 {
     Properties
     {

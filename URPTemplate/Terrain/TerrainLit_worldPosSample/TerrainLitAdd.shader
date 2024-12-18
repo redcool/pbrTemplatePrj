@@ -1,4 +1,4 @@
-Shader "Hidden/Universal Render Pipeline/Terrain/Lit (Add Pass)"
+Shader "Hidden/URP/Terrain/Lit (Add Pass)"
 {
     Properties
     {
@@ -134,8 +134,8 @@ Shader "Hidden/Universal Render Pipeline/Terrain/Lit (Add Pass)"
             #define TERRAIN_SPLAT_ADDPASS 1
             #define TERRAIN_GBUFFER 1
 
-            #include "Packages/com.unity.render-pipelines.universal/Shaders/Terrain/TerrainLitInput.hlsl"
-            #include "Packages/com.unity.render-pipelines.universal/Shaders/Terrain/TerrainLitPasses.hlsl"
+            #include "TerrainLitInput.hlsl"
+            #include "TerrainLitPasses.hlsl"
             ENDHLSL
         }
     }

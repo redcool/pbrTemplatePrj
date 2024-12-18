@@ -9,6 +9,11 @@ CBUFFER_START(UnityPerMaterial)
     float4 _MainTex_ST;
     half4 _BaseColor;
     half _Cutoff;
+    
+    half _FogOn;
+    half _FogNoiseOn;
+    half _DepthFogOn;
+    half _HeightFogOn;
 CBUFFER_END
 
 #define _Surface 0.0 // Terrain is always opaque
@@ -37,6 +42,7 @@ CBUFFER_START(_Terrain)
     int _ObjectId;
     int _PassValue;
     #endif
+
 CBUFFER_END
 
 

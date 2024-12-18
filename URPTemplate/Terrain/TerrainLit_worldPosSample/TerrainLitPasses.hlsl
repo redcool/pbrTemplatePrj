@@ -6,6 +6,9 @@
 #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/UnityGBuffer.hlsl"
 #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/DBuffer.hlsl"
 
+    // _FogOn,need define first
+    #include "../../../../PowerShaderLib/Lib/FogLib.hlsl"
+
 struct Attributes
 {
     float4 positionOS : POSITION;
@@ -31,11 +34,11 @@ struct Varyings
         half3 vertexSH                  : TEXCOORD4; // SH
     #endif
 
-    #ifdef _ADDITIONAL_LIGHTS_VERTEX
-        half4 fogFactorAndVertexLight   : TEXCOORD6; // x: fogFactor, yzw: vertex light
-    #else
-        half  fogFactor                 : TEXCOORD6;
-    #endif
+    // #ifdef _ADDITIONAL_LIGHTS_VERTEX
+    //     half4 fogFactorAndVertexLight   : TEXCOORD6; // x: fogFactor, yzw: vertex light
+    // #else
+        half2  fogFactor                 : TEXCOORD6;
+    // #endif
 
     float3 positionWS               : TEXCOORD7;
 
@@ -295,6 +298,8 @@ Varyings SplatmapVert(Attributes v)
         o.shadowCoord = GetShadowCoord(Attributes);
     #endif
 
+    o.fogFactor = CalcFogFactor(o.positionWS,o.clipPos.z,_HeightFogOn,_DepthFogOn);
+
     return o;
 }
 
@@ -430,7 +435,19 @@ half4 SplatmapFragment(Varyings IN) : SV_TARGET
 
     half4 color = UniversalFragmentPBR(inputData, albedo, metallic, /* specular */ half3(0.0h, 0.0h, 0.0h), smoothness, occlusion, /* emission */ half3(0, 0, 0), alpha);
 
-    SplatmapFinalColor(color, inputData.fogCoord);
+    // SplatmapFinalColor(color, inputData.fogCoord);
+
+    // =========== fog
+    float fogNoise = 0;
+    #if defined(_DEPTH_FOG_NOISE_ON)
+    branch_if(_FogNoiseOn)
+    {
+        half4 weights=float4(1,.1,.1,1);
+        fogNoise = CalcWorldNoise(worldPos,_FogNoiseTilingOffset,-_GlobalWindDir,weights);
+    }
+    #endif
+
+    BlendFogSphereKeyword(color.rgb/**/,IN.positionWS.xyz,IN.fogFactor.xy,_HeightFogOn,fogNoise,_DepthFogOn); // 2fps
 
     return half4(color.rgb, 1.0h);
 #endif
