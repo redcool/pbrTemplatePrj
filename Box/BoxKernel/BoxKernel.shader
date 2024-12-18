@@ -8,7 +8,8 @@ Shader "FX/Box/Kernels"
 
         [GroupItem(Base)] _MainTex("_MainTex",2d)=""{}
         [GroupItem(Base)] _TexelSizeScale("_TexelSizeScale",range(0.1,20)) = 1
-
+        [GroupEnum(Base,_OFFSETS_3X3 _OFFSETS_2X2,true)]_OffsetMode("_OffsetMode",float) = 0
+        [GroupEnum(Base,_KERNEL_SHARPEN _KERNEL_BLUR _KERNEL_EDGE_DETICTION,true)]_KernelMode("_KernelMode",float) = 0
 // ================================================== alpha      
         [Group(Alpha)]
         [GroupHeader(Alpha,BlendMode)]
@@ -71,6 +72,9 @@ Shader "FX/Box/Kernels"
             #pragma vertex vert
             #pragma fragment frag
 
+            #pragma multi_compile _OFFSETS_3X3 _OFFSETS_2X2
+            #pragma multi_compile _KERNEL_SHARPEN _KERNEL_BLUR _KERNEL_EDGE_DETICTION
+
             #include "../../../PowerShaderLib/Lib/UnityLib.hlsl"
             #include "../../../PowerShaderLib/Lib/PowerUtils.hlsl"
             #include "../../../PowerShaderLib/Lib/SDF.hlsl"
@@ -101,7 +105,8 @@ Shader "FX/Box/Kernels"
             half _FullScreenOn;
             half4 _MainTex_ST;
             half _TexelSizeScale;
-
+            // half _KernelMode;
+            // half _OffsetMode;
             CBUFFER_END
 
 // #define _CameraDepthTexture _CameraDepthAttachment
@@ -129,16 +134,29 @@ DEF_OFFSETS_2X2_CROSS(offsets_2x2_cross,_CameraOpaqueTexture_TexelSize.xy);
                 half isFar = IsTooFar(depthTex.x);
                 
                 float3 worldPos = ScreenToWorldPos(screenUV,depthTex,UNITY_MATRIX_I_VP);
-
+  
                 float4 col = 0;
-                // col = CalcKernel_3x3(_CameraOpaqueTexture,screenUV,_TexelSizeScale,offsets_3x3,kernels_sharpen);
-                // col = CalcKernel_3x3(_CameraOpaqueTexture,screenUV,_TexelSizeScale,offsets_3x3,kernels_blur);
-                // col = CalcKernel_3x3(_CameraOpaqueTexture, screenUV,_TexelSizeScale,offsets_3x3,kernels_edgeDetection);
-                
-                col = CalcKernel_2x2(_CameraOpaqueTexture,screenUV,_TexelSizeScale,offsets_2x2_cross,kernels_sharpen_2x2);
-                col = CalcKernel_2x2(_CameraOpaqueTexture,screenUV,_TexelSizeScale,offsets_2x2_cross,kernels_blur_2x2);
-                col = CalcKernel_2x2(_CameraOpaqueTexture,screenUV,_TexelSizeScale,offsets_2x2_cross,kernels_edgeDetection_2x2);
-                
+                #if defined(_KERNEL_SHARPEN)
+                    #if defined(_OFFSETS_3X3)
+                    col = CalcKernel_3x3(_CameraOpaqueTexture,screenUV,_TexelSizeScale,offsets_3x3,kernels_sharpen);
+                    #else
+                    col = CalcKernel_2x2(_CameraOpaqueTexture,screenUV,_TexelSizeScale,offsets_2x2_cross,kernels_sharpen_2x2);
+                    #endif
+                #elif defined(_KERNEL_BLUR)
+                    #if defined(_OFFSETS_3X3)
+                    col = CalcKernel_3x3(_CameraOpaqueTexture,screenUV,_TexelSizeScale,offsets_3x3,kernels_blur);
+                    #else
+                    col = CalcKernel_2x2(_CameraOpaqueTexture,screenUV,_TexelSizeScale,offsets_2x2_cross,kernels_blur_2x2);
+                    #endif
+
+                #else
+                    #if defined(_OFFSETS_3X3)
+                    col = CalcKernel_3x3(_CameraOpaqueTexture, screenUV,_TexelSizeScale,offsets_3x3,kernels_edgeDetection);
+                    #else
+                    col = CalcKernel_2x2(_CameraOpaqueTexture,screenUV,_TexelSizeScale,offsets_2x2_cross,kernels_edgeDetection_2x2);
+                    #endif 
+                #endif
+
                 return col;
             }
             ENDHLSL
