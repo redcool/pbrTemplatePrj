@@ -21,7 +21,7 @@ shader "URP/Unlit/Bill"
         [GroupItem(Lighting)]_Metallic("_Metallic",range(0,1)) = 0.5
 
         [GroupHeader(Lighting,Shadow)]
-        [GroupToggle(Lighting,shadow caster use matrix _CameraYRot )]_RotateShadow("_RotateShadow",int) = 0
+        [GroupToggle(Lighting,,shadow caster use matrix _CameraYRot )]_RotateShadow("_RotateShadow",int) = 0
 
         [GroupHeader(Lighting,Diffuse)]
         [GroupVectorSlider(Lighting,Min Max,0_1 0_1)] _DiffuseRange("_DiffuseRange",vector) = (0,0.5,0,0)
@@ -41,7 +41,7 @@ shader "URP/Unlit/Bill"
         [GroupToggle(Fog)]_HeightFogOn("_HeightFogOn",int) = 1
 
         [Group(Wind)]
-        [GroupToggle(Wind,_WIND_ON)]_WindOn("_WindOn (need vertex color.r)",float) = 0
+        [GroupToggle(Wind)]_WindOn("_WindOn (need vertex color.r)",float) = 0
         [GroupVectorSlider(Wind,branch edge globalOffset flutterOffset,0_0.4 0_0.5 0_0.6 0_0.06)]_WindAnimParam("_WindAnimParam(x:branch,edge,z : global offset,w:flutter offset)",vector) = (1,1,0.1,0.3)
         [GroupVectorSlider(Wind,WindVector Intensity,0_1)]_WindDir("_WindDir,dir:(xyz),Intensity:(w)",vector) = (1,0.1,0,0.5)
         [GroupItem(Wind)]_WindSpeed("_WindSpeed",range(0,1)) = 0.3
@@ -53,7 +53,18 @@ shader "URP/Unlit/Bill"
 
         [GroupVectorSlider(Snow,NoiseTilingX NoiseTilingY,0_10 0_10,,float)]_SnowNoiseTiling("_SnowNoiseTiling",vector) = (1,1,0,0)
         [GroupToggle(Snow,,mainTex.a as snow atten)] _SnowIntensityUseMainTexA("_SnowIntensityUseMainTexA",int) = 0
+//=================================================  CloudShadow
+        [GroupHeader(CloudShadow)]
+        [GroupToggle(,)]_CloudShadowOn("_CloudShadowOn",int) = 0
+        // [GroupVectorSlider(,TilingX TilingZ OffsetX OffsetZ,m0.0001_10)]
+        _CloudNoiseTilingOffset("_CloudNoiseTilingOffset",vector) = (0.1,0.1,0.1,0.1)
 
+        _CloudNoiseRangeMin("_CloudNoiseRangeMin",range(0,1)) = 0
+        _CloudNoiseRangeMax("_CloudNoiseRangeMax",range(0,1)) = 1
+        [GroupToggle(,)]_CloudNoiseOffsetStop("_CloudNoiseOffsetStop",float) = 0
+        _CloudShadowColor("_CloudShadowColor",color) = (0,0,0,0)
+        _CloudShadowIntensity("_CloudShadowIntensity",range(0,1)) = 0.5
+        _CloudBaseShadowIntensity("_CloudBaseShadowIntensity",range(0,1)) =0.02
 //=================================================  Settings        
         [Group(Shadow)]
         [GroupToggle(Shadow,_RECEIVE_SHADOWS_OFF)]_IsReceiveShadowOff("_IsReceiveShadowOff",int) = 0
@@ -89,7 +100,7 @@ shader "URP/Unlit/Bill"
             #pragma fragment fragBill
             // #pragma multi_compile_instancing
             #pragma shader_feature ALPHA_TEST
-            #pragma shader_feature _WIND_ON
+            #define _WIND_ON //#pragma shader_feature _WIND_ON
             #pragma shader_feature _SNOW_ON
             #pragma shader_feature_vertex _FACE_CAMERA
 
@@ -116,7 +127,7 @@ shader "URP/Unlit/Bill"
 
             // This is used during shadow map generation to differentiate between directional and punctual light shadows, as they use different formulas to apply Normal Bias
             #pragma multi_compile_vertex _ _CASTING_PUNCTUAL_LIGHT_SHADOW
-
+            #define _WIND_ON //#pragma shader_feature _WIND_ON
             #pragma shader_feature_fragment ALPHA_TEST
 
             #define _DEPTH_FOG_NOISE_ON
@@ -136,7 +147,7 @@ shader "URP/Unlit/Bill"
             }
             
 
-        ENDHLSL
+            ENDHLSL
         }
          Pass{
             Name "Meta"

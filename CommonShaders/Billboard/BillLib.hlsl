@@ -1,7 +1,5 @@
 #if !defined(BILL_LIB_HLSL)
 #define BILL_LIB_HLSL
-
-
     #include "../../../PowerShaderLib/Lib/UnityLib.hlsl"
     #include "../../../PowerShaderLib/UrpLib/URP_GI.hlsl"
     #include "../../../PowerShaderLib/Lib/BillboardLib.hlsl"
@@ -11,6 +9,7 @@
     #include "../../../PowerShaderLib/Lib/MatCapLib.hlsl"
     #include "../../../PowerShaderLib/URPLib/URP_MotionVectors.hlsl"
     #include "../../../PowerShaderLib/URPLib/Lighting.hlsl"
+    
     // nothing
     // #if defined(INSTANCING_ON)
         // #define UnityPerMaterial _UnityPerMaterial
@@ -25,6 +24,7 @@
         UNITY_DEFINE_INSTANCED_PROP(half,_Cutoff)
         UNITY_DEFINE_INSTANCED_PROP(half,_RotateShadow)
 
+        UNITY_DEFINE_INSTANCED_PROP(half,_WindOn)
         UNITY_DEFINE_INSTANCED_PROP(half4,_WindAnimParam)
         UNITY_DEFINE_INSTANCED_PROP(half4,_WindDir)
         UNITY_DEFINE_INSTANCED_PROP(half,_WindSpeed)
@@ -50,6 +50,24 @@
         UNITY_DEFINE_INSTANCED_PROP(half,_TopdownLine)
         UNITY_DEFINE_INSTANCED_PROP(half,_DiffuseBlend)
         
+    //---------Cloud shadows
+        UNITY_DEFINE_INSTANCED_PROP(half,_CloudShadowOn)
+        UNITY_DEFINE_INSTANCED_PROP(half4,_CloudNoiseTilingOffset)
+        UNITY_DEFINE_INSTANCED_PROP(half,_CloudNoiseRangeMin)
+        UNITY_DEFINE_INSTANCED_PROP(half,_CloudNoiseRangeMax)
+        UNITY_DEFINE_INSTANCED_PROP(half,_CloudNoiseOffsetStop)
+        UNITY_DEFINE_INSTANCED_PROP(half4,_CloudShadowColor)
+        UNITY_DEFINE_INSTANCED_PROP(half,_CloudBaseShadowIntensity)
+        UNITY_DEFINE_INSTANCED_PROP(half,_CloudShadowIntensity)
+    // half _CloudShadowOn;
+    // half4 _CloudNoiseTilingOffset;
+    // half _CloudNoiseRangeMin;
+    // half _CloudNoiseRangeMax;
+    // half _CloudNoiseOffsetStop;
+
+    // half4 _CloudShadowColor;
+    // half _CloudBaseShadowIntensity;
+    // half _CloudShadowIntensity;
     UNITY_INSTANCING_BUFFER_END(UnityPerMaterial)
 
     // define shortcot getters
@@ -59,6 +77,7 @@
     #define _Cutoff UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial,_Cutoff)
     #define _RotateShadow UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial,_RotateShadow)
 
+    #define _WindOn UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial,_WindOn)
     #define _WindAnimParam UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial,_WindAnimParam)
     #define _WindDir UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial,_WindDir)
     #define _WindSpeed UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial,_WindSpeed)
@@ -81,6 +100,26 @@
     #define _Metallic UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial,_Metallic)
     #define _TopdownLine UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial,_TopdownLine)
     #define _DiffuseBlend UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial,_DiffuseBlend)
+    // cloud shadow
+    #define _DiffuseBlend UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial,_DiffuseBlend)
+    #define _CloudNoiseTilingOffset UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial,_CloudNoiseTilingOffset)
+    #define _CloudNoiseRangeMin UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial,_CloudNoiseRangeMin)
+    #define _CloudNoiseRangeMax UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial,_CloudNoiseRangeMax)
+    #define _CloudNoiseOffsetStop UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial,_CloudNoiseOffsetStop)
+    #define _CloudShadowColor UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial,_CloudShadowColor)
+    #define _CloudBaseShadowIntensity UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial,_CloudBaseShadowIntensity)
+    #define _CloudShadowIntensity UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial,_CloudShadowIntensity)
+    
+
+        // half _CloudShadowOn;
+    // half4 _CloudNoiseTilingOffset;
+    // half _CloudNoiseRangeMin;
+    // half _CloudNoiseRangeMax;
+    // half _CloudNoiseOffsetStop;
+
+    // half4 _CloudShadowColor;
+    // half _CloudBaseShadowIntensity;
+    // half _CloudShadowIntensity;
 
     // _FogOn,need define first
     #include "../../../PowerShaderLib/Lib/FogLib.hlsl"
@@ -226,6 +265,13 @@
         half3 directColor = (diffCol + specCol * specTerm) * radiance;
         col += directColor;
 
+        branch_if(_CloudShadowOn)
+        {
+            half3 cloudNoise = CalcCloudShadow(TEXTURE2D_ARGS(_WeatherNoiseTexture,sampler_WeatherNoiseTexture),worldPos,_CloudNoiseTilingOffset,_CloudNoiseOffsetStop,
+            _CloudNoiseRangeMin,_CloudNoiseRangeMax,_CloudShadowColor,_CloudShadowIntensity,_CloudBaseShadowIntensity);
+            col.xyz *= lerp(1,cloudNoise,nl);
+            // return cloudNoise.xyzx;
+        }
         // =========== fog
         float fogNoise = 0;
         #if defined(_DEPTH_FOG_NOISE_ON)
