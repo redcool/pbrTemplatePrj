@@ -9,7 +9,12 @@ Shader "FX/Box/Kernels"
         [GroupItem(Base)] _MainTex("_MainTex",2d)=""{}
         [GroupItem(Base)] _TexelSizeScale("_TexelSizeScale",range(0.1,20)) = 1
         [GroupEnum(Base,_OFFSETS_3X3 _OFFSETS_2X2,true,samples 3x3 or 2x2 )]_OffsetMode("_OffsetMode",float) = 0
-        [GroupEnum(Base,_SHARPEN _BLUR _DETECTION,true,Kernel functions)]_KernelMode("_KernelMode",float) = 0
+        [GroupEnum(Base,_SHARPEN _BLUR _DETECTION _CUSTOM,true,Kernel functions)]_KernelMode("_KernelMode",float) = 0
+
+        [GroupHeader(Kernels)]
+        _Item123("_Item123",vector) = (0,0,0,-1)
+        _Item456("_Item456",vector) = (0,0,0,1)
+        _Item789("_Item789",vector) = (0,0,0,1)
 // ================================================== alpha      
         [Group(Alpha)]
         [GroupHeader(Alpha,BlendMode)]
@@ -73,7 +78,7 @@ Shader "FX/Box/Kernels"
             #pragma fragment frag
 
             #pragma multi_compile _OFFSETS_3X3 _OFFSETS_2X2
-            #pragma multi_compile _SHARPEN _BLUR _DETECTION
+            #pragma multi_compile _SHARPEN _BLUR _DETECTION _CUSTOM
 
             #include "../../../PowerShaderLib/Lib/UnityLib.hlsl"
             #include "../../../PowerShaderLib/Lib/PowerUtils.hlsl"
@@ -82,6 +87,7 @@ Shader "FX/Box/Kernels"
             #include "../../../PowerShaderLib/Lib/MathLib.hlsl"
             #include "../../../PowerShaderLib/URPLib/URP_Input.hlsl"
             #include "../../../PowerShaderLib/Lib/Kernel/KernelDefines.hlsl"
+            #include "../../../PowerShaderLib/Lib/SampleStates.hlsl"
 
             struct appdata
             {
@@ -96,8 +102,12 @@ Shader "FX/Box/Kernels"
             };
 
             sampler2D _MainTex;
-            sampler2D _CameraOpaqueTexture;
+            // sampler2D _CameraOpaqueTexture;
             sampler2D _CameraDepthTexture;
+
+            TEXTURE2D(_CameraOpaqueTexture);
+
+
 
             float4 _CameraOpaqueTexture_TexelSize;
 
@@ -105,8 +115,10 @@ Shader "FX/Box/Kernels"
             half _FullScreenOn;
             half4 _MainTex_ST;
             half _TexelSizeScale;
-            // half _KernelMode;
-            // half _OffsetMode;
+
+            half3 _Item123;
+            half3 _Item456;
+            half3 _Item789;
             CBUFFER_END
 
 // #define _CameraDepthTexture _CameraDepthAttachment
@@ -125,6 +137,27 @@ DEF_OFFSETS_3X3(offsets_3x3,_CameraOpaqueTexture_TexelSize.xy);
 DEF_OFFSETS_2X2(offsets_2x2,_CameraOpaqueTexture_TexelSize.xy);
 DEF_OFFSETS_2X2_CROSS(offsets_2x2_cross,_CameraOpaqueTexture_TexelSize.xy);
 
+/**
+    Calc kernels
+*/
+
+void CalcKernel_3x3(out float kernels[9]){
+    float arr[9] = {_Item123,_Item456,_Item789};
+    kernels = arr;
+}
+void CalcKernel_2x2(out float kernels[5]){
+    float arr[5] = {_Item123,_Item456.xy};
+    kernels = arr;
+}
+
+#define CALC_KERNEL_3X3(varName)\
+float varName[9];\
+CalcKernel_3x3(varName)
+
+#define CALC_KERNEL_2X2(varName)\
+float varName[5];\
+CalcKernel_2x2(varName)
+
             float4 frag (v2f i) : SV_Target
             {
                 float2 screenUV = i.vertex.xy / _ScaledScreenParams.xy;
@@ -138,23 +171,31 @@ DEF_OFFSETS_2X2_CROSS(offsets_2x2_cross,_CameraOpaqueTexture_TexelSize.xy);
                 float4 col = 0;
                 #if defined(_SHARPEN)
                     #if defined(_OFFSETS_3X3)
-                    col = CalcKernel_3x3(_CameraOpaqueTexture,screenUV,_TexelSizeScale,offsets_3x3,kernels_sharpen);
+                    col = CalcKernelTexture_3x3(_CameraOpaqueTexture,SAMPLE_STATE,screenUV,_TexelSizeScale,offsets_3x3,kernels_sharpen);
                     #else
-                    col = CalcKernel_2x2(_CameraOpaqueTexture,screenUV,_TexelSizeScale,offsets_2x2_cross,kernels_sharpen_2x2);
+                    col = CalcKernelTexture_2x2(_CameraOpaqueTexture,SAMPLE_STATE,screenUV,_TexelSizeScale,offsets_2x2_cross,kernels_sharpen_2x2);
                     #endif
                 #elif defined(_BLUR)
                     #if defined(_OFFSETS_3X3)
-                    col = CalcKernel_3x3(_CameraOpaqueTexture,screenUV,_TexelSizeScale,offsets_3x3,kernels_blur);
+                    col = CalcKernelTexture_3x3(_CameraOpaqueTexture,SAMPLE_STATE,screenUV,_TexelSizeScale,offsets_3x3,kernels_blur);
                     #else
-                    col = CalcKernel_2x2(_CameraOpaqueTexture,screenUV,_TexelSizeScale,offsets_2x2_cross,kernels_blur_2x2);
+                    col = CalcKernelTexture_2x2(_CameraOpaqueTexture,SAMPLE_STATE,screenUV,_TexelSizeScale,offsets_2x2_cross,kernels_blur_2x2);
                     #endif
-
-                #else
+                #elif defined(_DETECTION)
                     #if defined(_OFFSETS_3X3)
-                    col = CalcKernel_3x3(_CameraOpaqueTexture, screenUV,_TexelSizeScale,offsets_3x3,kernels_edgeDetection);
+                    col = CalcKernelTexture_3x3(_CameraOpaqueTexture,SAMPLE_STATE, screenUV,_TexelSizeScale,offsets_3x3,kernels_edgeDetection);
                     #else
-                    col = CalcKernel_2x2(_CameraOpaqueTexture,screenUV,_TexelSizeScale,offsets_2x2_cross,kernels_edgeDetection_2x2);
-                    #endif 
+                    col = CalcKernelTexture_2x2(_CameraOpaqueTexture,SAMPLE_STATE,screenUV,_TexelSizeScale,offsets_2x2_cross,kernels_edgeDetection_2x2);
+                    #endif
+                    
+                #else // custom calc kernel
+                    #if defined(_OFFSETS_3X3)
+                    CALC_KERNEL_3X3(kernel_3x3);
+                    col = CalcKernelTexture_3x3(_CameraOpaqueTexture,SAMPLE_STATE,screenUV,_TexelSizeScale,offsets_3x3,kernel_3x3);
+                    #else
+                    CALC_KERNEL_2X2(kernel_2x2);
+                    col = CalcKernelTexture_2x2(_CameraOpaqueTexture,SAMPLE_STATE,screenUV,_TexelSizeScale,offsets_2x2_cross,kernel_2x2);
+                    #endif
                 #endif
 
                 return col;
