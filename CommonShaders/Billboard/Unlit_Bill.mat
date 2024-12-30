@@ -15,10 +15,12 @@ Material:
   - ALPHA_TEST
   m_InvalidKeywords:
   - _ALPHA_TEST_ON
+  - _WIND_ON
+  - shadow caster use matrix _CameraYRot
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
-  m_CustomRenderQueue: -1
+  m_CustomRenderQueue: 3000
   stringTagMap: {}
   disabledShaderPasses: []
   m_LockedProperties: 
@@ -38,10 +40,16 @@ Material:
     - _ApplyEdgeOn: 1
     - _ApplyMainLightColor: 1
     - _ClipOn: 1
+    - _CloudBaseShadowIntensity: 0.048
+    - _CloudNoiseOffsetStop: 1
+    - _CloudNoiseRangeMax: 0.392
+    - _CloudNoiseRangeMin: 0.199
+    - _CloudShadowIntensity: 1
+    - _CloudShadowOn: 0
     - _CullMode: 0
     - _Cutoff: 0.306
     - _DepthFogOn: 1
-    - _DiffuseBlend: 0.737
+    - _DiffuseBlend: 1
     - _DstMode: 0
     - _FaceCamera: 0
     - _FogNoiseOn: 0
@@ -58,12 +66,16 @@ Material:
     - _SnowIntensityUseMainTexA: 0
     - _SnowOn: 0
     - _SrcMode: 1
-    - _TopdownLine: -0.19
-    - _WindOn: 0
+    - _TopdownLine: -0.35
+    - _WindOn: 1
     - _WindSpeed: 0.3
     - _ZTestMode: 4
-    - _ZWriteMode: 1
+    - _ZWriteMode: 0
     m_Colors:
+    - _CloudNoiseTilingOffset: {r: 0.1, g: 0.1, b: 1.42, a: -0.09}
+    - _CloudShadowColor: {r: 0, g: 0, b: 0, a: 0.99607843}
+    - _CloudShadowIntensityInfo: {r: 1.81, g: 0.428, b: 0, a: 0}
+    - _CloudShadowTilingOffset: {r: 1, g: 1, b: 1, a: 1}
     - _Color: {r: 2, g: 2, b: 2, a: 1}
     - _DiffuseRange: {r: 0.253, g: 0.374, b: 0, a: 0}
     - _PosSplit: {r: -0.25000006, g: 3.19, b: 0, a: 0}

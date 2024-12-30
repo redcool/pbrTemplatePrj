@@ -54,17 +54,17 @@ shader "URP/Unlit/Bill"
         [GroupVectorSlider(Snow,NoiseTilingX NoiseTilingY,0_10 0_10,,float)]_SnowNoiseTiling("_SnowNoiseTiling",vector) = (1,1,0,0)
         [GroupToggle(Snow,,mainTex.a as snow atten)] _SnowIntensityUseMainTexA("_SnowIntensityUseMainTexA",int) = 0
 //=================================================  CloudShadow
-        [GroupHeader(CloudShadow)]
-        [GroupToggle(,)]_CloudShadowOn("_CloudShadowOn",int) = 0
+        [Group(CloudShadow)]
+        [GroupToggle(CloudShadow,)]_CloudShadowOn("_CloudShadowOn",int) = 0
         // [GroupVectorSlider(,TilingX TilingZ OffsetX OffsetZ,m0.0001_10)]
-        _CloudNoiseTilingOffset("_CloudNoiseTilingOffset",vector) = (0.1,0.1,0.1,0.1)
+        [GroupItem(CloudShadow)] _CloudNoiseTilingOffset("_CloudNoiseTilingOffset",vector) = (0.1,0.1,0.1,0.1)
 
-        _CloudNoiseRangeMin("_CloudNoiseRangeMin",range(0,1)) = 0
-        _CloudNoiseRangeMax("_CloudNoiseRangeMax",range(0,1)) = 1
-        [GroupToggle(,)]_CloudNoiseOffsetStop("_CloudNoiseOffsetStop",float) = 0
-        _CloudShadowColor("_CloudShadowColor",color) = (0,0,0,0)
-        _CloudShadowIntensity("_CloudShadowIntensity",range(0,1)) = 0.5
-        _CloudBaseShadowIntensity("_CloudBaseShadowIntensity",range(0,1)) =0.02
+        [GroupItem(CloudShadow)] _CloudNoiseRangeMin("_CloudNoiseRangeMin",range(0,1)) = 0
+        [GroupItem(CloudShadow)] _CloudNoiseRangeMax("_CloudNoiseRangeMax",range(0,1)) = 1
+        [GroupToggle(CloudShadow,)] _CloudNoiseOffsetStop("_CloudNoiseOffsetStop",float) = 0
+        [GroupItem(CloudShadow)] _CloudShadowColor("_CloudShadowColor",color) = (0,0,0,0)
+        [GroupItem(CloudShadow)] _CloudShadowIntensity("_CloudShadowIntensity",range(0,1)) = 0.5
+        [GroupItem(CloudShadow)] _CloudBaseShadowIntensity("_CloudBaseShadowIntensity",range(0,1)) =0.02
 //=================================================  Settings        
         [Group(Shadow)]
         [GroupToggle(Shadow,_RECEIVE_SHADOWS_OFF)]_IsReceiveShadowOff("_IsReceiveShadowOff",int) = 0
