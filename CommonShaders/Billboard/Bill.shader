@@ -7,21 +7,13 @@ shader "URP/Unlit/Bill"
         [GroupItem(Main)] _MainTex ("Texture", 2D) = "white" {}
         [GroupItem(Main)] [hdr]_Color("_Color",color) = (1,1,1,1)
         [GroupToggle(Main,_FACE_CAMERA)]_FullFaceCamera("_FullFaceCamera",int) = 0
-//=================================================  Lighting
-        [Group(Alpha)]
-        [GroupHeader(Alpha,Blend)]
-        [GroupPresetBlendMode(Alpha,blend mode,_SrcMode,_DstMode)]_PresetBlendMode("_PresetBlendMode",int)=0
 
-        [GroupHeader(Alpha,Clip)]
-        [GroupToggle(Alpha,ALPHA_TEST)]_ClipOn("_ClipOn",int) = 0
-        [GroupItem(Alpha)]_Cutoff("_Cutoff",range(0,1)) = 0.5
 //=================================================  Lighting
         [Group(Lighting)]
         // [GroupToggle(Lighting)]_ApplyMainLightColor("_ApplyMainLightColor",int) = 1
         [GroupItem(Lighting)]_Metallic("_Metallic",range(0,1)) = 0.5
 
-        [GroupHeader(Lighting,Shadow)]
-        [GroupToggle(Lighting,,shadow caster use matrix _CameraYRot )]_RotateShadow("_RotateShadow",int) = 0
+
 
         [GroupHeader(Lighting,Diffuse)]
         [GroupVectorSlider(Lighting,Min Max,0_1 0_1)] _DiffuseRange("_DiffuseRange",vector) = (0,0.5,0,0)
@@ -55,30 +47,49 @@ shader "URP/Unlit/Bill"
         [GroupToggle(Snow,,mainTex.a as snow atten)] _SnowIntensityUseMainTexA("_SnowIntensityUseMainTexA",int) = 0
 //=================================================  CloudShadow
         [Group(CloudShadow)]
-        [GroupToggle(CloudShadow,)]_CloudShadowOn("_CloudShadowOn",int) = 0
-        // [GroupVectorSlider(,TilingX TilingZ OffsetX OffsetZ,m0.0001_10)]
-        [GroupItem(CloudShadow)] _CloudNoiseTilingOffset("_CloudNoiseTilingOffset",vector) = (0.1,0.1,0.1,0.1)
-
-        [GroupItem(CloudShadow)] _CloudNoiseRangeMin("_CloudNoiseRangeMin",range(0,1)) = 0
-        [GroupItem(CloudShadow)] _CloudNoiseRangeMax("_CloudNoiseRangeMax",range(0,1)) = 1
-        [GroupToggle(CloudShadow,)] _CloudNoiseOffsetStop("_CloudNoiseOffsetStop",float) = 0
-        [GroupItem(CloudShadow)] _CloudShadowColor("_CloudShadowColor",color) = (0,0,0,0)
-        [GroupItem(CloudShadow)] _CloudShadowIntensity("_CloudShadowIntensity",range(0,1)) = 0.5
-        [GroupItem(CloudShadow)] _CloudBaseShadowIntensity("_CloudBaseShadowIntensity",range(0,1)) =0.02
-//=================================================  Settings        
+        // [GroupToggle(CloudShadow,)]_CloudShadowOn("_CloudShadowOn",int) = 0
+        // // [GroupVectorSlider(,TilingX TilingZ OffsetX OffsetZ,m0.0001_10)]
+        // [GroupItem(CloudShadow)] _CloudNoiseTilingOffset("_CloudNoiseTilingOffset",vector) = (0.1,0.1,0.1,0.1)
+        // [GroupItem(CloudShadow)] _CloudNoiseRangeMin("_CloudNoiseRangeMin",range(0,1)) = 0
+        // [GroupItem(CloudShadow)] _CloudNoiseRangeMax("_CloudNoiseRangeMax",range(0,1)) = 1
+        // [GroupToggle(CloudShadow,)] _CloudNoiseOffsetStop("_CloudNoiseOffsetStop",float) = 0
+        // [GroupItem(CloudShadow)] _CloudShadowColor("_CloudShadowColor",color) = (0,0,0,0)
+        // [GroupItem(CloudShadow)] _CloudShadowIntensity("_CloudShadowIntensity",range(0,1)) = 0.5
+        // [GroupItem(CloudShadow)] _CloudBaseShadowIntensity("_CloudBaseShadowIntensity",range(0,1)) =0.02
+//=================================================  Shadow
         [Group(Shadow)]
+        [GroupToggle(Shadow,,shadow caster use matrix _CameraYRot )]_RotateShadow("_RotateShadow",int) = 0
+        
         [GroupToggle(Shadow,_RECEIVE_SHADOWS_OFF)]_IsReceiveShadowOff("_IsReceiveShadowOff",int) = 0
-//=================================================  Settings
+//=================================================  alpha
+        [Group(Alpha)]
+        [GroupHeader(Alpha,Blend)]
+        [GroupPresetBlendMode(Alpha,blend mode,_SrcMode,_DstMode)]_PresetBlendMode("_PresetBlendMode",int)=0
+        [HideInInspector][GroupEnum(Alpha,UnityEngine.Rendering.BlendMode)]_SrcMode("_SrcMode",int) = 1
+        [HideInInspector][GroupEnum(Alpha,UnityEngine.Rendering.BlendMode)]_DstMode("_DstMode",int) = 0
+
+        [GroupHeader(Alpha,Clip)]
+        [GroupToggle(Alpha,ALPHA_TEST)]_ClipOn("_ClipOn",int) = 0
+        [GroupItem(Alpha)]_Cutoff("_Cutoff",range(0,1)) = 0.5        
+//================================================= Settings
         [Group(Settings)]
-        [GroupEnum(Settings,UnityEngine.Rendering.CullMode)]_CullMode("_CullMode",int) = 2
 		[GroupToggle(Settings)]_ZWriteMode("ZWriteMode",int) = 1
 		/*
 		Disabled,Never,Less,Equal,LessEqual,Greater,NotEqual,GreaterEqual,Always
 		*/
 		[GroupEnum(Settings,UnityEngine.Rendering.CompareFunction)]_ZTestMode("_ZTestMode",float) = 4
+        [GroupEnum(Settings,UnityEngine.Rendering.CullMode)]_CullMode("_CullMode",int) = 2
+        [GroupHeader(Settings,Color Mask)]
+        [GroupEnum(Settings,RGBA 16 RGB 15 RG 12 GB 6 RB 10 R 8 G 4 B 2 A 1 None 0)] _ColorMask("_ColorMask",int) = 15
+// ================================================== stencil settings
+        [Group(Stencil)]
+        [GroupEnum(Stencil,UnityEngine.Rendering.CompareFunction)] _StencilComp ("Stencil Comparison", Float) = 0
+        [GroupItem(Stencil)] _Stencil ("Stencil ID", int) = 0
+        [GroupEnum(Stencil,UnityEngine.Rendering.StencilOp)] _StencilOp ("Stencil Operation", Float) = 0
+        [GroupItem(Stencil)] _StencilWriteMask ("Stencil Write Mask", Float) = 255
+        [GroupItem(Stencil)] _StencilReadMask ("Stencil Read Mask", Float) = 255
 
-        [HideInInspector][GroupEnum(Alpha,UnityEngine.Rendering.BlendMode)]_SrcMode("_SrcMode",int) = 1
-        [HideInInspector][GroupEnum(Alpha,UnityEngine.Rendering.BlendMode)]_DstMode("_DstMode",int) = 0
+
     }
 
     SubShader
@@ -94,6 +105,15 @@ shader "URP/Unlit/Bill"
 			// BlendOp[_BlendOp]
 			Cull[_CullMode]
 			ztest[_ZTestMode]
+
+            Stencil
+            {
+                Ref [_Stencil]
+                Comp [_StencilComp]
+                Pass [_StencilOp]
+                ReadMask [_StencilReadMask]
+                WriteMask [_StencilWriteMask]
+            }            
 
             HLSLPROGRAM
             #pragma vertex vertBill
@@ -140,9 +160,13 @@ shader "URP/Unlit/Bill"
             #define _CustomShadowDepthBias 0
             #include "../../../PowerShaderLib/URPLib/ShadowCasterPass.hlsl"
 
+            // rotate by Mainlight
+            float4x4 _MainLightYRot;
+            // #define _MainLightYRot _CameraYRot
+
             shadow_v2f vertBillShadow(shadow_appdata input){
-                if(_RotateShadow)
-                    input.vertex.xyz = mul(_CameraYRot,input.vertex).xyz;
+                input.vertex.xyz = _RotateShadow ? mul(_MainLightYRot,input.vertex).xyz : input.vertex.xyz;
+
                 return vert(input);
             }
             

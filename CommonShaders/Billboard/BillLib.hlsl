@@ -51,23 +51,15 @@
         UNITY_DEFINE_INSTANCED_PROP(half,_DiffuseBlend)
         
     //---------Cloud shadows
-        UNITY_DEFINE_INSTANCED_PROP(half,_CloudShadowOn)
-        UNITY_DEFINE_INSTANCED_PROP(half4,_CloudNoiseTilingOffset)
-        UNITY_DEFINE_INSTANCED_PROP(half,_CloudNoiseRangeMin)
-        UNITY_DEFINE_INSTANCED_PROP(half,_CloudNoiseRangeMax)
-        UNITY_DEFINE_INSTANCED_PROP(half,_CloudNoiseOffsetStop)
-        UNITY_DEFINE_INSTANCED_PROP(half4,_CloudShadowColor)
-        UNITY_DEFINE_INSTANCED_PROP(half,_CloudBaseShadowIntensity)
-        UNITY_DEFINE_INSTANCED_PROP(half,_CloudShadowIntensity)
-    // half _CloudShadowOn;
-    // half4 _CloudNoiseTilingOffset;
-    // half _CloudNoiseRangeMin;
-    // half _CloudNoiseRangeMax;
-    // half _CloudNoiseOffsetStop;
+        // UNITY_DEFINE_INSTANCED_PROP(half,_CloudShadowOn)
+        // UNITY_DEFINE_INSTANCED_PROP(half4,_CloudNoiseTilingOffset)
+        // UNITY_DEFINE_INSTANCED_PROP(half,_CloudNoiseRangeMin)
+        // UNITY_DEFINE_INSTANCED_PROP(half,_CloudNoiseRangeMax)
+        // UNITY_DEFINE_INSTANCED_PROP(half,_CloudNoiseOffsetStop)
+        // UNITY_DEFINE_INSTANCED_PROP(half4,_CloudShadowColor)
+        // UNITY_DEFINE_INSTANCED_PROP(half,_CloudBaseShadowIntensity)
+        // UNITY_DEFINE_INSTANCED_PROP(half,_CloudShadowIntensity)
 
-    // half4 _CloudShadowColor;
-    // half _CloudBaseShadowIntensity;
-    // half _CloudShadowIntensity;
     UNITY_INSTANCING_BUFFER_END(UnityPerMaterial)
 
     // define shortcot getters
@@ -161,7 +153,7 @@
         UNITY_SETUP_INSTANCE_ID(v);
         UNITY_TRANSFER_INSTANCE_ID(v, o);
 
-        v.vertex.xyz = mul((_CameraYRot),v.vertex).xyz;
+        v.vertex.xyz = mul(_CameraYRot,v.vertex).xyz;
         float3 worldPos = TransformObjectToWorld(v.vertex.xyz);
         float3 n = v.vertex.xyz;
         o.normal = n;
@@ -265,13 +257,13 @@
         half3 directColor = (diffCol + specCol * specTerm) * radiance;
         col += directColor;
 
-        branch_if(_CloudShadowOn)
-        {
-            half3 cloudNoise = CalcCloudShadow(TEXTURE2D_ARGS(_WeatherNoiseTexture,sampler_WeatherNoiseTexture),worldPos,_CloudNoiseTilingOffset,_CloudNoiseOffsetStop,
-            _CloudNoiseRangeMin,_CloudNoiseRangeMax,_CloudShadowColor,_CloudShadowIntensity,_CloudBaseShadowIntensity);
-            col.xyz *= lerp(1,cloudNoise,nl);
-            // return cloudNoise.xyzx;
-        }
+        // branch_if(_CloudShadowOn)
+        // {
+        //     half3 cloudNoise = CalcCloudShadow(TEXTURE2D_ARGS(_WeatherNoiseTexture,sampler_WeatherNoiseTexture),worldPos,_CloudNoiseTilingOffset,_CloudNoiseOffsetStop,
+        //     _CloudNoiseRangeMin,_CloudNoiseRangeMax,_CloudShadowColor,_CloudShadowIntensity,_CloudBaseShadowIntensity);
+        //     col.xyz *= lerp(1,cloudNoise,nl);
+        //     // return cloudNoise.xyzx;
+        // }
         // =========== fog
         float fogNoise = 0;
         #if defined(_DEPTH_FOG_NOISE_ON)
