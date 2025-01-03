@@ -15,6 +15,9 @@ Shader "FX/Box/Kernels"
         _Item123("_Item123",vector) = (0,0,0,-1)
         _Item456("_Item456",vector) = (0,0,0,1)
         _Item789("_Item789",vector) = (0,0,0,1)
+
+        [GroupHeader(BlendLayer)]
+        _BlendOpaqueTex("_BlendOpaqueTex",range(0,1)) = 0
 // ================================================== alpha      
         [Group(Alpha)]
         [GroupHeader(Alpha,BlendMode)]
@@ -119,6 +122,8 @@ Shader "FX/Box/Kernels"
             half3 _Item123;
             half3 _Item456;
             half3 _Item789;
+
+            half _BlendOpaqueTex;
             CBUFFER_END
 
 // #define _CameraDepthTexture _CameraDepthAttachment
@@ -197,6 +202,11 @@ CalcKernel_2x2(varName)
                     col = CalcKernelTexture_2x2(_CameraOpaqueTexture,SAMPLE_STATE,screenUV,_TexelSizeScale,offsets_2x2_cross,kernel_2x2);
                     #endif
                 #endif
+                col = saturate(col);
+// return col;
+                half4 opaqueTex = SAMPLE_TEXTURE2D(_CameraOpaqueTexture,SAMPLE_STATE,screenUV);
+                col = lerp(col,opaqueTex, _BlendOpaqueTex);
+                // col = max(opaqueTex , col);
 
                 return col;
             }
