@@ -77,7 +77,7 @@ Shader "FX/Box/BoxCloudShadow"
             {
                 v2f o;
                 
-                o.vertex = _FullScreenOn ? float4(v.vertex.xy * 2,0,1) : TransformObjectToHClip(v.vertex.xyz);
+                o.vertex = _FullScreenOn ? float4(v.vertex.xy * 2,UNITY_NEAR_CLIP_VALUE,1) : TransformObjectToHClip(v.vertex.xyz);
                 o.uv = v.uv;
                 return o;
             }

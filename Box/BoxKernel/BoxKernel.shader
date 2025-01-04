@@ -91,6 +91,7 @@ Shader "FX/Box/Kernels"
             #include "../../../PowerShaderLib/URPLib/URP_Input.hlsl"
             #include "../../../PowerShaderLib/Lib/Kernel/KernelDefines.hlsl"
             #include "../../../PowerShaderLib/Lib/SampleStates.hlsl"
+            #include "../../../PowerShaderLib/Lib/ScreenTextures.hlsl"
 
             struct appdata
             {
@@ -105,13 +106,6 @@ Shader "FX/Box/Kernels"
             };
 
             sampler2D _MainTex;
-            // sampler2D _CameraOpaqueTexture;
-            sampler2D _CameraDepthTexture;
-
-            TEXTURE2D(_CameraOpaqueTexture);
-
-
-
             float4 _CameraOpaqueTexture_TexelSize;
 
             CBUFFER_START(UnityPerMaterial)
@@ -132,7 +126,7 @@ Shader "FX/Box/Kernels"
             v2f vert (appdata v)
             {
                 v2f o;
-                o.vertex = _FullScreenOn ? float4(v.vertex.xy * 2,0,1) : TransformObjectToHClip(v.vertex.xyz);
+                o.vertex = _FullScreenOn ? float4(v.vertex.xy * 2,UNITY_NEAR_CLIP_VALUE,1) : TransformObjectToHClip(v.vertex.xyz);
                 o.uv = v.uv;
                 return o;
             }
@@ -168,10 +162,10 @@ CalcKernel_2x2(varName)
                 float2 screenUV = i.vertex.xy / _ScaledScreenParams.xy;
 
 //============ world pos
-                float depthTex = tex2D(_CameraDepthTexture,screenUV).x;
-                half isFar = IsTooFar(depthTex.x);
+                float depth = GetScreenDepth(screenUV);
+                half isFar = IsTooFar(depth);
                 
-                float3 worldPos = ScreenToWorldPos(screenUV,depthTex,UNITY_MATRIX_I_VP);
+                float3 worldPos = ScreenToWorldPos(screenUV,depth,UNITY_MATRIX_I_VP);
   
                 float4 col = 0;
                 #if defined(_SHARPEN)

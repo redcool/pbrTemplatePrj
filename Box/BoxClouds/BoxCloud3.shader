@@ -47,24 +47,11 @@ Shader "FX/Box/Nature/BoxClouds3"
         _ColA("_ColA",color) = (1,1,1,1)
         _ColB("_ColB",color) = (0,0,0.7,1)
     }
-    SubShader
-    {
-        
-        // No culling or depth
-        Cull Off ZWrite Off ZTest Always
-        blend srcAlpha oneMinusSrcAlpha
-        Tags{"Queue"="Transparent"}
 
-        Pass
-        {
-
-            CGPROGRAM
-
-            #pragma vertex vert
-            #pragma fragment frag
-
-            #include "UnityCG.cginc"
-#include "CloudLib.hlsl"
+HLSLINCLUDE
+            #include "../../../PowerShaderLib/Lib/UnityLib.hlsl"
+            #include "../../../PowerShaderLib/Lib/ScreenTextures.hlsl"            
+            #include "CloudLib.hlsl"
 
             struct appdata {
                 float4 vertex : POSITION;
@@ -84,7 +71,7 @@ Shader "FX/Box/Nature/BoxClouds3"
                 #endif
 
                 #if defined(FULL_SCREEN)
-                output.pos = float4(v.vertex.xy*2,0,1);
+                output.pos = float4(v.vertex.xy*2,UNITY_NEAR_CLIP_VALUE,1);
                 // Camera space matches OpenGL convention where cam forward is -z. In unity forward is positive z.
                 // (https://docs.unity3d.com/ScriptReference/Camera-cameraToWorldMatrix.html)
                 float2 dirScale = float2(1,1);
@@ -97,15 +84,15 @@ Shader "FX/Box/Nature/BoxClouds3"
 
                 return output;
             }
-CBUFFER_START(UnityPerMaterial)
+
+            CBUFFER_START(UnityPerMaterial)
             // Textures
             sampler3D _NoiseTex;
             sampler3D _DetailNoiseTex;
             sampler2D _WeatherMap;
             sampler2D _BlueNoise;
-            
+
             sampler2D _MainTex;
-            sampler2D _CameraDepthTexture;
 
             // Shape settings
             float _DensityMultiplier;
@@ -135,7 +122,8 @@ CBUFFER_START(UnityPerMaterial)
 
             //-----
             float3 _WindDir;
-CBUFFER_END
+            CBUFFER_END
+
             float4 _LightColor0;
 
             
@@ -232,7 +220,7 @@ CBUFFER_END
 
             // Calculate proportion of light that reaches the given point from the lightsource
             float lightmarch(float3 position) {
-                float3 dirToLight = _WorldSpaceLightPos0.xyz;
+                float3 dirToLight = _MainLightPosition.xyz;
                 float dstInsideBox = rayBoxDst(_BoundsMin, _BoundsMax, position, 1/dirToLight).y;
                 
                 float stepSize = dstInsideBox/_NumStepsLight;
@@ -248,13 +236,13 @@ CBUFFER_END
             }
 
             float4 frag(v2f i):SV_TARGET{
-                float2 screenUV = i.pos.xy / _ScreenParams.xy;
+                float2 screenUV = i.pos.xy / _ScaledScreenParams.xy;
                 float3 rayPos = _WorldSpaceCameraPos;
                 float viewLength = length(i.viewVector);
                 float3 rayDir = i.viewVector / viewLength;
 
                 // float3 rayDir = normalize(i.viewVector);
-                float rawDepth = tex2D(_CameraDepthTexture,screenUV);
+                float rawDepth = GetScreenDepth(screenUV);
                 float depth = LinearEyeDepth(rawDepth);
 
                 float2 boxDst = rayBoxDst(_BoundsMin,_BoundsMax,rayPos,1/rayDir);
@@ -264,7 +252,7 @@ CBUFFER_END
                 float3 entryPoint = rayPos + rayDir * dstToBox;
                 float randomOffset = tex2Dlod(_BlueNoise,float4(squareUV(screenUV * 3),0,0)) * _RayOffsetStrength;
 
-                float cosAngle = dot(rayDir,_WorldSpaceLightPos0);
+                float cosAngle = dot(rayDir,_MainLightPosition.xyz);
                 float phaseVal = phase(cosAngle,_PhaseParams);
 
                 float curDist = randomOffset;
@@ -311,7 +299,7 @@ CBUFFER_END
                 float3 rayDir = i.viewVector / viewLength;
 
                 // Depth and cloud container intersection info:
-                float nonlin_depth = SAMPLE_DEPTH_TEXTURE(_CameraDepthTexture, screenUV);
+                float nonlin_depth = GetScreenDepth(screenUV);
                 float depth = LinearEyeDepth(nonlin_depth);
                 
                 float2 rayToContainerInfo = rayBoxDst(_BoundsMin, _BoundsMax, rayPos, 1/rayDir);
@@ -326,7 +314,7 @@ CBUFFER_END
                 randomOffset *= _RayOffsetStrength;
                 
                 // Phase function makes clouds brighter around sun
-                float cosAngle = dot(rayDir, _WorldSpaceLightPos0.xyz);
+                float cosAngle = dot(rayDir, _MainLightPosition.xyz);
                 float phaseVal = phase(cosAngle,_PhaseParams);
 
                 float dstTravelled = randomOffset;
@@ -361,8 +349,22 @@ CBUFFER_END
                 float alpha = saturate(0.8-transmittance);
                 return float4(cloudCol,alpha);
             }
+ENDHLSL
 
-            ENDCG
+    SubShader
+    {
+        
+        // No culling or depth
+        Cull Off ZWrite Off ZTest Always
+        blend srcAlpha oneMinusSrcAlpha
+        Tags{"Queue"="Transparent"}
+
+        Pass
+        {
+            HLSLPROGRAM
+            #pragma vertex vert
+            #pragma fragment frag
+            ENDHLSL
         }
     }
 }

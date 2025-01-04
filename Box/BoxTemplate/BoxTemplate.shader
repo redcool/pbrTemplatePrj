@@ -5,6 +5,7 @@ Shader "Hidden/FX/Box/Template"
         [GroupHeader(v0.0.1)]
         [Group(Base)]
         [GroupToggle(Base)]_FullScreenOn("_FullScreenOn",int) = 1
+        [GroupVectorSlider(Base,minX minY maxX maxY,0_1 0_1 0_1 0_1,limit screen range,float)]_ScreenRange("ScreenRange",vector) = (0,0,1,1)
 
         _MainTex("_MainTex",2d)=""{}
 
@@ -75,6 +76,7 @@ Shader "Hidden/FX/Box/Template"
             #include "../../../PowerShaderLib/Lib/SDF.hlsl"
             #include "../../../PowerShaderLib/Lib/NoiseLib.hlsl"
             #include "../../../PowerShaderLib/Lib/MathLib.hlsl"
+            #include "../../../PowerShaderLib/Lib/FullscreenLib.hlsl"
             #include "../../../PowerShaderLib/URPLib/URP_Input.hlsl"
 
             struct appdata
@@ -96,6 +98,7 @@ Shader "Hidden/FX/Box/Template"
             CBUFFER_START(UnityPerMaterial)
             half _FullScreenOn;
             half4 _MainTex_ST;
+            half4 _ScreenRange;
 
             CBUFFER_END
 
@@ -105,7 +108,7 @@ Shader "Hidden/FX/Box/Template"
             v2f vert (appdata v)
             {
                 v2f o;
-                o.vertex = _FullScreenOn ? float4(v.vertex.xy * 2,0,1) : TransformObjectToHClip(v.vertex.xyz);
+                o.vertex = TransformObjectToNdcHClip(v.vertex,_FullScreenOn,_ScreenRange);
                 o.uv = v.uv;
                 return o;
             }

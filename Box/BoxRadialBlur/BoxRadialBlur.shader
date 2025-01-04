@@ -125,7 +125,7 @@ HLSLINCLUDE
     v2f vert (appdata v)
     {
         v2f o;
-        o.vertex = _FullScreenOn ? float4(v.vertex.xy * float2(2,2 *_ProjectionParams.x),0,1) : TransformObjectToHClip(v.vertex.xyz);
+        o.vertex = _FullScreenOn ? float4(v.vertex.xy * float2(2,2 *_ProjectionParams.x),UNITY_NEAR_CLIP_VALUE,1) : TransformObjectToHClip(v.vertex.xyz);
         o.uv = v.uv.xy * _MainTex_ST.xy + _MainTex_ST.zw;
 
         CUSTOM_DATA_VERTEX(v,o);
