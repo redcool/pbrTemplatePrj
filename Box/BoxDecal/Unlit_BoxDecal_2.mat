@@ -2,20 +2,27 @@
 %TAG !u! tag:unity3d.com,2011:
 --- !u!21 &2100000
 Material:
-  serializedVersion: 6
+  serializedVersion: 8
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: Unlit_BoxDecal
+  m_Name: Unlit_BoxDecal_2
   m_Shader: {fileID: 4800000, guid: c40981d807de22647883e1492a723316, type: 3}
-  m_ShaderKeywords: _BOXUPCLIP_ON _GENERATEWORLDNORMAL_ON
+  m_Parent: {fileID: 0}
+  m_ModifiedSerializedProperties: 0
+  m_ValidKeywords:
+  - _NOISE_ON
+  m_InvalidKeywords:
+  - _BOXUPCLIP_ON
+  - _GENERATEWORLDNORMAL_ON
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
   m_CustomRenderQueue: 3000
   stringTagMap: {}
   disabledShaderPasses: []
+  m_LockedProperties: 
   m_SavedProperties:
     serializedVersion: 3
     m_TexEnvs:
@@ -30,7 +37,24 @@ Material:
     m_Ints: []
     m_Floats:
     - _BoxUpClip: 1
+    - _ClipOn: 0
+    - _ColorMask: 15
+    - _CullMode: 1
+    - _Cutoff: 0.439
+    - _DepthFogOn: 1
+    - _DstMode: 10
+    - _FogNoiseOn: 0
+    - _FogOn: 1
     - _GenerateWorldNormal: 1
+    - _HeightFogOn: 1
+    - _NoiseIntensity: 0.2
+    - _NoiseOn: 1
+    - _NoiseScale: 0.082
+    - _PresetBlendMode: 0
+    - _SrcMode: 5
     - _StepSize: 0.0001
-    m_Colors: []
+    - _ZTestMode: 8
+    - _ZWriteMode: 0
+    m_Colors:
+    - _NoiseScaleOffset: {r: 0.068, g: 0.034, b: 8.569999, a: -28.2}
   m_BuildTextureStacks: []
