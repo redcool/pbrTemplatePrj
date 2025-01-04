@@ -270,7 +270,7 @@
         branch_if(_FogNoiseOn)
         {
             half4 weights=float4(1,.1,.1,1);
-            fogNoise = CalcWorldNoise(worldPos,_FogNoiseTilingOffset,-_GlobalWindDir,weights);
+            fogNoise = CalcWorldNoise(i.worldPos,_FogNoiseTilingOffset,-_GlobalWindDir,weights);
         }
         #endif
 

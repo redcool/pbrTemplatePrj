@@ -46,7 +46,7 @@ shader "URP/Unlit/Bill"
         [GroupVectorSlider(Snow,NoiseTilingX NoiseTilingY,0_10 0_10,,float)]_SnowNoiseTiling("_SnowNoiseTiling",vector) = (1,1,0,0)
         [GroupToggle(Snow,,mainTex.a as snow atten)] _SnowIntensityUseMainTexA("_SnowIntensityUseMainTexA",int) = 0
 //=================================================  CloudShadow
-        [Group(CloudShadow)]
+        // [Group(CloudShadow)]
         // [GroupToggle(CloudShadow,)]_CloudShadowOn("_CloudShadowOn",int) = 0
         // // [GroupVectorSlider(,TilingX TilingZ OffsetX OffsetZ,m0.0001_10)]
         // [GroupItem(CloudShadow)] _CloudNoiseTilingOffset("_CloudNoiseTilingOffset",vector) = (0.1,0.1,0.1,0.1)
