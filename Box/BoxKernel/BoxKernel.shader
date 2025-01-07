@@ -196,11 +196,10 @@ CalcKernel_2x2(varName)
                     col = CalcKernelTexture_2x2(_CameraOpaqueTexture,SAMPLE_STATE,screenUV,_TexelSizeScale,offsets_2x2_cross,kernel_2x2);
                     #endif
                 #endif
-                col = saturate(col);
-// return col;
+                
+                // blend screen
                 half4 opaqueTex = SAMPLE_TEXTURE2D(_CameraOpaqueTexture,SAMPLE_STATE,screenUV);
                 col = lerp(col,opaqueTex, _BlendOpaqueTex);
-                // col = max(opaqueTex , col);
 
                 return col;
             }
