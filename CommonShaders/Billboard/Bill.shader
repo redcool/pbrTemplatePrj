@@ -58,7 +58,7 @@ shader "URP/Unlit/Bill"
         // [GroupItem(CloudShadow)] _CloudBaseShadowIntensity("_CloudBaseShadowIntensity",range(0,1)) =0.02
 //=================================================  Shadow
         [Group(Shadow)]
-        [GroupToggle(Shadow,,shadow caster use matrix _CameraYRot )]_RotateShadow("_RotateShadow",int) = 0
+        [GroupToggle(Shadow,,shadow caster use matrix _CameraYRot or _MainLightYRot )]_RotateShadow("_RotateShadow",int) = 0
         
         [GroupToggle(Shadow,_RECEIVE_SHADOWS_OFF)]_IsReceiveShadowOff("_IsReceiveShadowOff",int) = 0
 //=================================================  alpha
