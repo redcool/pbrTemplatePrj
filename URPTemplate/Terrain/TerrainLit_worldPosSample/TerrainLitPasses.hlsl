@@ -10,7 +10,6 @@
 #include "../../../../PowerShaderLib/Lib/FogLib.hlsl"
 #define USE_URP
 #include "../../../../PowerShaderLib/Lib/BigShadows.hlsl"
-#include "../../../../PowerShaderLib/Lib/TerrainLib.hlsl"
 
 struct Attributes
 {
