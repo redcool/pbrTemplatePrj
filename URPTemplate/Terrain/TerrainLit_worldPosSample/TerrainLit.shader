@@ -1,8 +1,9 @@
-Shader "URP/TerrainLit_WorldPosSample"
+Shader "URP/Terrain/Lit_WorldSample"
 {
     Properties
     {
-        [HideInInspector] [ToggleUI] _EnableHeightBlend("EnableHeightBlend", Float) = 0.0
+        // [HideInInspector] 
+        [ToggleUI] _EnableHeightBlend("EnableHeightBlend", Float) = 0.0
         _HeightTransition("Height Transition", Range(0, 1.0)) = 0.0
         // Layer count is passed down to guide height-blend enable/disable, due
         // to the fact that heigh-based blend will be broken with multipass.
@@ -39,6 +40,10 @@ Shader "URP/TerrainLit_WorldPosSample"
 
         [ToggleUI] _EnableInstancedPerPixelNormal("Enable Instanced per-pixel normal", Float) = 1.0
 
+        [Group(Splat)]
+        [GroupVectorSlider(Splat,edgeMin edgeMax,0_1 0_1,splat map blend size)]
+        _SplatEdgeRange("_SplatEdgeRange",vector) = (0,1,0,0)
+
         [Group(Fog)]
         [GroupToggle(Fog)]_FogOn("_FogOn",int) = 1
         // [GroupToggle(Fog,SIMPLE_FOG,use simple linear depth height fog)]_SimpleFog("_SimpleFog",int) = 0
@@ -48,7 +53,7 @@ Shader "URP/TerrainLit_WorldPosSample"
 
         [Group(Shadow)]
         [GroupHeader(Shadow,_BigShadowOff)]
-        [GroupToggle(Shadow)]_BigShadowOff("_BigShadowOff",int) = 0
+        [GroupToggle(Shadow)]_BigShadowOff("_BigShadowOff",int) = 0        
     }
 
     HLSLINCLUDE
@@ -78,26 +83,30 @@ Shader "URP/TerrainLit_WorldPosSample"
             // Universal Pipeline keywords
             #pragma multi_compile _ _MAIN_LIGHT_SHADOWS _MAIN_LIGHT_SHADOWS_CASCADE _MAIN_LIGHT_SHADOWS_SCREEN
             #pragma multi_compile _ _ADDITIONAL_LIGHTS_VERTEX _ADDITIONAL_LIGHTS
-            #pragma multi_compile_fragment _ _ADDITIONAL_LIGHT_SHADOWS
-            #pragma multi_compile_fragment _ _REFLECTION_PROBE_BLENDING
-            #pragma multi_compile_fragment _ _SHADOWS_SOFT
             #pragma multi_compile _ LIGHTMAP_SHADOW_MIXING
             #pragma multi_compile _ SHADOWS_SHADOWMASK
+            #pragma multi_compile _ _LIGHT_LAYERS
+            #pragma multi_compile _ _FORWARD_PLUS
+            #pragma multi_compile _ EVALUATE_SH_MIXED EVALUATE_SH_VERTEX
+            #pragma multi_compile_fragment _ _ADDITIONAL_LIGHT_SHADOWS
+            #pragma multi_compile_fragment _ _REFLECTION_PROBE_BLENDING
+            #pragma multi_compile_fragment _ _SHADOWS_SOFT _SHADOWS_SOFT_LOW _SHADOWS_SOFT_MEDIUM _SHADOWS_SOFT_HIGH
             #pragma multi_compile_fragment _ _SCREEN_SPACE_OCCLUSION
             #pragma multi_compile_fragment _ _DBUFFER_MRT1 _DBUFFER_MRT2 _DBUFFER_MRT3
-            #pragma multi_compile_fragment _ _LIGHT_LAYERS
             #pragma multi_compile_fragment _ _LIGHT_COOKIES
-            #pragma multi_compile _ _CLUSTERED_RENDERING
+            #pragma multi_compile_fragment _ _SHADOWS_SOFT_LOW _SHADOWS_SOFT_MEDIUM _SHADOWS_SOFT_HIGH
+            #include_with_pragmas "Packages/com.unity.render-pipelines.core/ShaderLibrary/FoveatedRenderingKeywords.hlsl"
+            #include_with_pragmas "Packages/com.unity.render-pipelines.universal/ShaderLibrary/RenderingLayers.hlsl"
 
             // -------------------------------------
             // Unity defined keywords
             #pragma multi_compile _ DIRLIGHTMAP_COMBINED
             #pragma multi_compile _ LIGHTMAP_ON
             #pragma multi_compile _ DYNAMICLIGHTMAP_ON
-            // #pragma multi_compile_fog
+            #pragma multi_compile_fog
             #pragma multi_compile_fragment _ DEBUG_DISPLAY
             #pragma multi_compile_instancing
-            #pragma instancing_options norenderinglayer assumeuniformscaling nomatrices nolightprobe nolightmap
+            #pragma instancing_options assumeuniformscaling nomatrices nolightprobe nolightmap
 
             #pragma shader_feature_local_fragment _TERRAIN_BLEND_HEIGHT
             #pragma shader_feature_local _NORMALMAP
@@ -144,8 +153,12 @@ Shader "URP/TerrainLit_WorldPosSample"
             Tags{"LightMode" = "UniversalGBuffer"}
 
             HLSLPROGRAM
-            #pragma exclude_renderers gles
-            #pragma target 3.0
+            #pragma target 4.5
+
+            // Deferred Rendering Path does not support the OpenGL-based graphics API:
+            // Desktop OpenGL, OpenGL ES 3.0, WebGL 2.0.
+            #pragma exclude_renderers gles3 glcore
+
             #pragma vertex SplatmapVert
             #pragma fragment SplatmapFragment
 
@@ -158,13 +171,15 @@ Shader "URP/TerrainLit_WorldPosSample"
             //#pragma multi_compile _ _ADDITIONAL_LIGHTS_VERTEX _ADDITIONAL_LIGHTS
             //#pragma multi_compile _ _ADDITIONAL_LIGHT_SHADOWS
             #pragma multi_compile_fragment _ _REFLECTION_PROBE_BLENDING
-            #pragma multi_compile_fragment _ _SHADOWS_SOFT
+            #pragma multi_compile_fragment _ _SHADOWS_SOFT _SHADOWS_SOFT_LOW _SHADOWS_SOFT_MEDIUM _SHADOWS_SOFT_HIGH
             #pragma multi_compile _ _MIXED_LIGHTING_SUBTRACTIVE
             #pragma multi_compile_fragment _ _DBUFFER_MRT1 _DBUFFER_MRT2 _DBUFFER_MRT3
-            #pragma multi_compile_fragment _ _LIGHT_LAYERS
+            #include_with_pragmas "Packages/com.unity.render-pipelines.universal/ShaderLibrary/RenderingLayers.hlsl"
 
             // -------------------------------------
             // Unity defined keywords
+            #pragma multi_compile _ LIGHTMAP_SHADOW_MIXING
+            #pragma multi_compile _ SHADOWS_SHADOWMASK
             #pragma multi_compile _ DIRLIGHTMAP_COMBINED
             #pragma multi_compile _ LIGHTMAP_ON
             #pragma multi_compile _ DYNAMICLIGHTMAP_ON
@@ -173,7 +188,7 @@ Shader "URP/TerrainLit_WorldPosSample"
 
             //#pragma multi_compile_fog
             #pragma multi_compile_instancing
-            #pragma instancing_options norenderinglayer assumeuniformscaling nomatrices nolightprobe nolightmap
+            #pragma instancing_options assumeuniformscaling nomatrices nolightprobe nolightmap
 
             #pragma shader_feature_local _TERRAIN_BLEND_HEIGHT
             #pragma shader_feature_local _NORMALMAP
@@ -193,7 +208,7 @@ Shader "URP/TerrainLit_WorldPosSample"
             Tags{"LightMode" = "DepthOnly"}
 
             ZWrite On
-            ColorMask 0
+            ColorMask R
 
             HLSLPROGRAM
             #pragma target 2.0
@@ -223,6 +238,8 @@ Shader "URP/TerrainLit_WorldPosSample"
             #pragma fragment DepthNormalOnlyFragment
 
             #pragma shader_feature_local _NORMALMAP
+            #include_with_pragmas "Packages/com.unity.render-pipelines.universal/ShaderLibrary/RenderingLayers.hlsl"
+
             #pragma multi_compile_instancing
             #pragma instancing_options assumeuniformscaling nomatrices nolightprobe nolightmap
 
@@ -281,7 +298,7 @@ Shader "URP/TerrainLit_WorldPosSample"
     Dependency "BaseMapShader" = "Hidden/URP/Terrain/Lit (Base Pass)"
     Dependency "BaseMapGenShader" = "Hidden/URP/Terrain/Lit (Basemap Gen)"
 
-    // CustomEditor "UnityEditor.Rendering.Universal.TerrainLitShaderGUI"
+    CustomEditor "UnityEditor.Rendering.Universal.TerrainLitShaderGUIEx"
 
-    Fallback "Hidden/Universal Render Pipeline/FallbackError"
+    Fallback "Hidden/URP/FallbackError"
 }

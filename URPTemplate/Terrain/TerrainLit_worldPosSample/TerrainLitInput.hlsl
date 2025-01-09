@@ -9,7 +9,6 @@ CBUFFER_START(UnityPerMaterial)
     float4 _MainTex_ST;
     half4 _BaseColor;
     half _Cutoff;
-    
     half _FogOn;
     half _FogNoiseOn;
     half _DepthFogOn;
@@ -44,7 +43,7 @@ CBUFFER_START(_Terrain)
     int _ObjectId;
     int _PassValue;
     #endif
-
+    half2 _SplatEdgeRange;
 CBUFFER_END
 
 
@@ -93,7 +92,9 @@ SAMPLER(sampler_TerrainHolesTexture);
 void ClipHoles(float2 uv)
 {
     float hole = SAMPLE_TEXTURE2D(_TerrainHolesTexture, sampler_TerrainHolesTexture, uv).r;
-    clip(hole == 0.0f ? -1 : 1);
+    // Fixes bug where compression is enabled and 0 isn't actually 0 but low like 1/2047. (UUM-61913)
+    float epsilon = 0.0005f;
+    clip(hole < epsilon ? -1 : 1);
 }
 #endif
 

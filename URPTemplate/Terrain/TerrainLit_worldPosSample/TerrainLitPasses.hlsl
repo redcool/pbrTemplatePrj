@@ -8,9 +8,9 @@
 
 // _FogOn,need define first
 #include "../../../../PowerShaderLib/Lib/FogLib.hlsl"
-
 #define USE_URP
 #include "../../../../PowerShaderLib/Lib/BigShadows.hlsl"
+#include "../../../../PowerShaderLib/Lib/TerrainLib.hlsl"
 
 struct Attributes
 {
@@ -40,8 +40,9 @@ struct Varyings
     // #ifdef _ADDITIONAL_LIGHTS_VERTEX
     //     half4 fogFactorAndVertexLight   : TEXCOORD6; // x: fogFactor, yzw: vertex light
     // #else
-        half2  fogFactor                 : TEXCOORD6;
+    //     half  fogFactor                 : TEXCOORD6;
     // #endif
+    half2  fogFactor                 : TEXCOORD6;
 
     float3 positionWS               : TEXCOORD7;
 
@@ -76,7 +77,7 @@ void InitializeInputData(Varyings IN, half3 normalTS, out InputData inputData)
         half3 normalWS = TransformObjectToWorldNormal(normalize(SAMPLE_TEXTURE2D(_TerrainNormalmapTexture, sampler_TerrainNormalmapTexture, sampleCoords).rgb * 2 - 1));
         half3 tangentWS = cross(GetObjectToWorldMatrix()._13_23_33, normalWS);
         inputData.normalWS = TransformTangentToWorld(normalTS, half3x3(-tangentWS, cross(normalWS, tangentWS), normalWS));
-        half3 SH = 0;
+        half3 SH = IN.vertexSH;
     #else
         half3 viewDirWS = GetWorldSpaceNormalizeViewDir(IN.positionWS);
         inputData.normalWS = IN.normal;
@@ -263,7 +264,7 @@ Varyings SplatmapVert(Attributes v)
     o.uvSplat01.zw = (Attributes.positionWS.xz)* _Splat1_ST.xy*.001;
     o.uvSplat23.xy = (Attributes.positionWS.xz)* _Splat2_ST.xy*.001;
     o.uvSplat23.zw = (Attributes.positionWS.xz)* _Splat3_ST.xy*.001;
-    
+
     #endif
 
 #if defined(DYNAMICLIGHTMAP_ON)
@@ -301,7 +302,7 @@ Varyings SplatmapVert(Attributes v)
     #if defined(REQUIRES_VERTEX_SHADOW_COORD_INTERPOLATOR)
         o.shadowCoord = GetShadowCoord(Attributes);
     #endif
-    //sphere fog
+        //sphere fog
     o.fogFactor = CalcFogFactor(o.positionWS,o.clipPos.z,_HeightFogOn,_DepthFogOn);
     // bigShadow
     branch_if(!_BigShadowOff){
@@ -340,14 +341,19 @@ void ComputeMasks(out half4 masks[4], half4 hasMask, Varyings IN)
 #ifdef TERRAIN_GBUFFER
 FragmentOutput SplatmapFragment(Varyings IN)
 #else
-half4 SplatmapFragment(Varyings IN) : SV_TARGET
+void SplatmapFragment(
+    Varyings IN
+    , out half4 outColor : SV_Target0
+#ifdef _WRITE_RENDERING_LAYERS
+    , out float4 outRenderingLayers : SV_Target1
+#endif
+    )
 #endif
 {
     UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(IN);
 #ifdef _ALPHATEST_ON
     ClipHoles(IN.uvMainAndLM.xy);
 #endif
-
 
     half3 normalTS = half3(0.0h, 0.0h, 1.0h);
 #ifdef TERRAIN_SPLAT_BASEPASS
@@ -370,18 +376,17 @@ half4 SplatmapFragment(Varyings IN) : SV_TARGET
     // disable Height Based blend when there are more than 4 layers (multi-pass breaks the normalization)
     if (_NumLayersCount <= 4)
         HeightBasedSplatModify(splatControl, masks);
+
+    
 #endif
+    // update edge blend size
+    splatControl = smoothstep(_SplatEdgeRange.x,_SplatEdgeRange.y,splatControl);
 
     half weight;
     half4 mixedDiffuse;
     half4 defaultSmoothness;
     SplatmapMix(IN.uvMainAndLM, IN.uvSplat01, IN.uvSplat23, splatControl, weight, mixedDiffuse, defaultSmoothness, normalTS);
     half3 albedo = mixedDiffuse.rgb;
-// return albedo.xyzx;
-
-    float4 tex1 = SAMPLE_TEXTURE2D(_Splat0, sampler_Splat0, IN.uvSplat01.zw);
-    // return float4(frac(IN.positionWS.xz),0,0);
-    // return float4(frac(IN.uvSplat01.xy),0,1);
 
     half4 defaultMetallic = half4(_Metallic0, _Metallic1, _Metallic2, _Metallic3);
     half4 defaultOcclusion = half4(_MaskMapRemapScale0.g, _MaskMapRemapScale1.g, _MaskMapRemapScale2.g, _MaskMapRemapScale3.g) +
@@ -443,7 +448,7 @@ half4 SplatmapFragment(Varyings IN) : SV_TARGET
 #else
 
     half4 color = UniversalFragmentPBR(inputData, albedo, metallic, /* specular */ half3(0.0h, 0.0h, 0.0h), smoothness, occlusion, /* emission */ half3(0, 0, 0), alpha);
-
+    color.xyz *= color.a;
     // SplatmapFinalColor(color, inputData.fogCoord);
     // ========== bigShadow
     branch_if(!_BigShadowOff)
@@ -455,6 +460,7 @@ half4 SplatmapFragment(Varyings IN) : SV_TARGET
     }
 
     // =========== fog
+    #if defined(TERRAIN_SPLAT_BASEPASS)
     float fogNoise = 0;
     #if defined(_DEPTH_FOG_NOISE_ON)
     branch_if(_FogNoiseOn)
@@ -465,8 +471,14 @@ half4 SplatmapFragment(Varyings IN) : SV_TARGET
     #endif
 
     BlendFogSphereKeyword(color.rgb/**/,IN.positionWS.xyz,IN.fogFactor.xy,_HeightFogOn,fogNoise,_DepthFogOn); // 2fps
+    #endif //TERRAIN_SPLAT_BASEPASS
 
-    return half4(color.rgb, 1.0h);
+    outColor = half4(color.rgb, 1.0h);
+
+#ifdef _WRITE_RENDERING_LAYERS
+    uint renderingLayers = GetMeshRenderingLayer();
+    outRenderingLayers = float4(EncodeMeshRenderingLayer(renderingLayers), 0, 0, 0);
+#endif
 #endif
 }
 
@@ -553,7 +565,7 @@ half4 DepthOnlyFragment(VaryingsLean IN) : SV_TARGET
     // We use depth prepass for scene selection in the editor, this code allow to output the outline correctly
     return half4(_ObjectId, _PassValue, 1.0, 1.0);
 #endif
-    return 0;
+    return IN.clipPos.z;
 }
 
 #endif
