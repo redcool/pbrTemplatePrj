@@ -3,7 +3,7 @@ Shader "URP/Terrain/Lit_WorldSample"
     Properties
     {
         // [HideInInspector] 
-        [ToggleUI] _EnableHeightBlend("EnableHeightBlend", Float) = 0.0
+        [GroupToggle(,_TERRAIN_BLEND_HEIGHT)]_EnableHeightBlend("EnableHeightBlend", Float) = 0.0
         _HeightTransition("Height Transition", Range(0, 1.0)) = 0.0
         // Layer count is passed down to guide height-blend enable/disable, due
         // to the fact that heigh-based blend will be broken with multipass.
@@ -38,7 +38,7 @@ Shader "URP/Terrain/Lit_WorldSample"
 
         [HideInInspector] _TerrainHolesTexture("Holes Map (RGB)", 2D) = "white" {}
 
-        [ToggleUI] _EnableInstancedPerPixelNormal("Enable Instanced per-pixel normal", Float) = 1.0
+        [GroupToggle(,_TERRAIN_INSTANCED_PERPIXEL_NORMAL)]_EnableInstancedPerPixelNormal("Enable Instanced per-pixel normal", Float) = 1.0
 
         [Group(Splat)]
         [GroupVectorSlider(Splat,edgeMin edgeMax,0_1 0_1,splat map blend size)]
@@ -86,7 +86,7 @@ Shader "URP/Terrain/Lit_WorldSample"
             #pragma multi_compile _ LIGHTMAP_SHADOW_MIXING
             #pragma multi_compile _ SHADOWS_SHADOWMASK
             #pragma multi_compile _ _LIGHT_LAYERS
-            #pragma multi_compile _ _FORWARD_PLUS
+            // #pragma multi_compile _ _FORWARD_PLUS
             #pragma multi_compile _ EVALUATE_SH_MIXED EVALUATE_SH_VERTEX
             #pragma multi_compile_fragment _ _ADDITIONAL_LIGHT_SHADOWS
             #pragma multi_compile_fragment _ _REFLECTION_PROBE_BLENDING
