@@ -32,6 +32,15 @@ Shader "URP/Terrain/Lit_WorldSample"
         [HideInInspector] _Smoothness2("Smoothness 2", Range(0.0, 1.0)) = 0.5
         [HideInInspector] _Smoothness3("Smoothness 3", Range(0.0, 1.0)) = 0.5
 
+        // [GroupVectorSlider(,x y z w,0_1 0_1 0_1 0_1)]
+        // _DiffuseRemapScale0("_DiffuseRemapScale0",vector) = (1,1,1,1)
+        // [GroupVectorSlider(,x y z w,0_1 0_1 0_1 0_1)]
+        // _DiffuseRemapScale1("_DiffuseRemapScale1",vector) = (1,1,1,1)
+        // [GroupVectorSlider(,x y z w,0_1 0_1 0_1 0_1)]
+        // _DiffuseRemapScale2("_DiffuseRemapScale2",vector) = (1,1,1,1)
+        // [GroupVectorSlider(,x y z w,0_1 0_1 0_1 0_1)]
+        // _DiffuseRemapScale3("_DiffuseRemapScale3",vector) = (1,1,1,1)
+
         // used in fallback on old cards & base map
         [HideInInspector] _MainTex("BaseMap (RGB)", 2D) = "grey" {}
         [HideInInspector] _BaseColor("Main Color", Color) = (1,1,1,1)
@@ -114,6 +123,7 @@ Shader "URP/Terrain/Lit_WorldSample"
             // Sample normal in pixel shader when doing instancing
             #pragma shader_feature_local _TERRAIN_INSTANCED_PERPIXEL_NORMAL
 
+            #define SPLAT_UV_WORLD_POS
             #include "TerrainLitInput.hlsl"
             #include "TerrainLitPasses.hlsl"
             ENDHLSL

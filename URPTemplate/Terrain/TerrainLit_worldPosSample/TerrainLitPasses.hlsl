@@ -254,16 +254,17 @@ Varyings SplatmapVert(Attributes v)
     o.uvMainAndLM.zw = v.texcoord * unity_LightmapST.xy + unity_LightmapST.zw;
 
     #ifndef TERRAIN_SPLAT_BASEPASS
-        // o.uvSplat01.xy = TRANSFORM_TEX(v.texcoord, _Splat0);
-        // o.uvSplat01.zw = TRANSFORM_TEX(v.texcoord, _Splat1);
-        // o.uvSplat23.xy = TRANSFORM_TEX(v.texcoord, _Splat2);
-        // o.uvSplat23.zw = TRANSFORM_TEX(v.texcoord, _Splat3);
-
-    o.uvSplat01.xy = (Attributes.positionWS.xz)* _Splat0_ST.xy*.001;
-    o.uvSplat01.zw = (Attributes.positionWS.xz)* _Splat1_ST.xy*.001;
-    o.uvSplat23.xy = (Attributes.positionWS.xz)* _Splat2_ST.xy*.001;
-    o.uvSplat23.zw = (Attributes.positionWS.xz)* _Splat3_ST.xy*.001;
-
+        #if defined(SPLAT_UV_WORLD_POS)
+            o.uvSplat01.xy = (Attributes.positionWS.xz)* _Splat0_ST.xy*.001;
+            o.uvSplat01.zw = (Attributes.positionWS.xz)* _Splat1_ST.xy*.001;
+            o.uvSplat23.xy = (Attributes.positionWS.xz)* _Splat2_ST.xy*.001;
+            o.uvSplat23.zw = (Attributes.positionWS.xz)* _Splat3_ST.xy*.001;
+        #else
+            o.uvSplat01.xy = TRANSFORM_TEX(v.texcoord, _Splat0);
+            o.uvSplat01.zw = TRANSFORM_TEX(v.texcoord, _Splat1);
+            o.uvSplat23.xy = TRANSFORM_TEX(v.texcoord, _Splat2);
+            o.uvSplat23.zw = TRANSFORM_TEX(v.texcoord, _Splat3);
+        #endif
     #endif
 
 #if defined(DYNAMICLIGHTMAP_ON)
@@ -376,7 +377,6 @@ void SplatmapFragment(
     if (_NumLayersCount <= 4)
         HeightBasedSplatModify(splatControl, masks);
 
-    
 #endif
     // update edge blend size
     splatControl = smoothstep(_SplatEdgeRange.x,_SplatEdgeRange.y,splatControl);
