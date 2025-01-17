@@ -4,7 +4,7 @@ Shader "Hidden/Blur/GaussianBlur"
     {
         _MainTex("_MainTex",2d) = ""{}
         _Scale("_Scale",range(1,10)) = 1
-        _IsBlitTriangle("_IsBlitTriangle",float) = 0
+        [GroupToggle]_IsBlitTriangle("_IsBlitTriangle",float) = 0
     }
     HLSLINCLUDE
     #include "../../../../PowerShaderLib/Lib/UnityLib.hlsl"
@@ -57,7 +57,6 @@ Shader "Hidden/Blur/GaussianBlur"
             HLSLPROGRAM
             #pragma vertex vert
             #pragma fragment frag
-            #pragma multi_compile_fragment _ _SRGB_TO_LINEAR_CONVERSION _LINEAR_TO_SRGB_CONVERSION
 
             half4 frag (v2f i) : SV_Target
             {
@@ -71,37 +70,6 @@ Shader "Hidden/Blur/GaussianBlur"
             }
             ENDHLSL
         }
-//1
-        Pass
-        {
-            HLSLPROGRAM
-            #pragma vertex vert
-            #pragma fragment frag
-            #pragma multi_compile_fragment _ _SRGB_TO_LINEAR_CONVERSION _LINEAR_TO_SRGB_CONVERSION
 
-            half4 frag (v2f i) : SV_Target
-            {
-                half2 uv = i.uv;
-                half3 col = Gaussian7(_MainTex,uv, _MainTex_TexelSize.xy * _Scale * half2(1,0));
-                return half4(col,1);
-            }
-            ENDHLSL
-        }        
-//2
-        Pass
-        {
-            HLSLPROGRAM
-            #pragma vertex vert
-            #pragma fragment frag
-            #pragma multi_compile_fragment _ _SRGB_TO_LINEAR_CONVERSION _LINEAR_TO_SRGB_CONVERSION
-
-            half4 frag (v2f i) : SV_Target
-            {
-                half2 uv = i.uv;
-                half3 col = Gaussian7(_MainTex,uv, _MainTex_TexelSize.xy * _Scale * half2(0,1));
-                return half4(col,1);
-            }
-            ENDHLSL
-        }
     }
 }
