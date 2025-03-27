@@ -84,7 +84,7 @@ shader "URP/Unlit/Bill"
 // ================================================== stencil settings
         [Group(Stencil)]
         [GroupEnum(Stencil,UnityEngine.Rendering.CompareFunction)] _StencilComp ("Stencil Comparison", Float) = 0
-        [GroupItem(Stencil)] _Stencil ("Stencil ID", int) = 0
+        [GroupStencil(Stencil)] _Stencil ("Stencil ID", int) = 0
         [GroupEnum(Stencil,UnityEngine.Rendering.StencilOp)] _StencilOp ("Stencil Operation", Float) = 0
         [GroupItem(Stencil)] _StencilWriteMask ("Stencil Write Mask", Float) = 255
         [GroupItem(Stencil)] _StencilReadMask ("Stencil Read Mask", Float) = 255
