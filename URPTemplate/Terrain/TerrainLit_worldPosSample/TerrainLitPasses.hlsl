@@ -11,6 +11,10 @@
 #define USE_URP
 #include "../../../../PowerShaderLib/Lib/BigShadows.hlsl"
 
+#if UNITY_VERSION >= 60000000
+    #define SETUP_DEBUG_TEXTURE_DATA(inputData,uv,tex) SETUP_DEBUG_TEXTURE_DATA_FOR_TEX(inputData,uv,tex)
+#endif
+
 struct Attributes
 {
     float4 positionOS : POSITION;
