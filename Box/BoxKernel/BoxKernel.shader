@@ -7,17 +7,20 @@ Shader "FX/Box/Kernels"
         [GroupToggle(Base)]_FullScreenOn("_FullScreenOn",int) = 1
 
         [GroupItem(Base)] _MainTex("_MainTex",2d)=""{}
+        [GroupItem(Base)] [hdr]_KernelColor("_KernelColor",color)=(1,1,1,1)
         [GroupItem(Base)] _TexelSizeScale("_TexelSizeScale",range(0.1,20)) = 1
         [GroupEnum(Base,_OFFSETS_3X3 _OFFSETS_2X2,true,samples 3x3 or 2x2 )]_OffsetMode("_OffsetMode",float) = 0
         [GroupEnum(Base,_SHARPEN _BLUR _DETECTION _CUSTOM,true,Kernel functions)]_KernelMode("_KernelMode",float) = 0
 
-        [GroupHeader(Kernels)]
-        _Item123("_Item123",vector) = (0,0,0,-1)
-        _Item456("_Item456",vector) = (0,0,0,1)
-        _Item789("_Item789",vector) = (0,0,0,1)
+        [Group(Kernel)]
+        [GroupHeader(Kernel,KernelMatrix)]
+        [GroupItem(Kernel)]_Item123("_Item123",vector) = (0,0,0,-1)
+        [GroupItem(Kernel,2x2 mode only use 4 5)]_Item456("_Item456",vector) = (0,0,0,1)
+        [GroupItem(Kernel)]_Item789("_Item789",vector) = (0,0,0,1)
 
-        [GroupHeader(BlendLayer)]
-        _BlendOpaqueTex("_BlendOpaqueTex",range(0,1)) = 0
+        [GroupToggle(Kernel,,_DETECTION mode keep edge color)] _KeepEdgeColor("_KeepEdgeColor",float) = 1
+
+        [GroupItem(Kernel,lerp kernelColor to screenColor)] _BlendOpaqueTex("_BlendOpaqueTex",range(0,1)) = 0
 // ================================================== alpha      
         [Group(Alpha)]
         [GroupHeader(Alpha,BlendMode)]
@@ -111,6 +114,7 @@ Shader "FX/Box/Kernels"
             CBUFFER_START(UnityPerMaterial)
             half _FullScreenOn;
             half4 _MainTex_ST;
+            half4 _KernelColor;
             half _TexelSizeScale;
 
             half3 _Item123;
@@ -118,6 +122,7 @@ Shader "FX/Box/Kernels"
             half3 _Item789;
 
             half _BlendOpaqueTex;
+            half _KeepEdgeColor;
             CBUFFER_END
 
 // #define _CameraDepthTexture _CameraDepthAttachment
@@ -157,16 +162,22 @@ CalcKernel_3x3(varName)
 float varName[5];\
 CalcKernel_2x2(varName)
 
+// #define _CameraOpaqueTexture _CameraDepthTexture
             float4 frag (v2f i) : SV_Target
             {
                 float2 screenUV = i.vertex.xy / _ScaledScreenParams.xy;
+                // screenUV += N21(screenUV)*0.01;
 
 //============ world pos
                 float depth = GetScreenDepth(screenUV);
                 half isFar = IsTooFar(depth);
                 
                 float3 worldPos = ScreenToWorldPos(screenUV,depth,UNITY_MATRIX_I_VP);
-  
+
+                // blend screen
+                half4 opaqueTex = SAMPLE_TEXTURE2D(_CameraOpaqueTexture,SAMPLE_STATE,screenUV);
+                float blendRate = _BlendOpaqueTex;
+
                 float4 col = 0;
                 #if defined(_SHARPEN)
                     #if defined(_OFFSETS_3X3)
@@ -182,10 +193,11 @@ CalcKernel_2x2(varName)
                     #endif
                 #elif defined(_DETECTION)
                     #if defined(_OFFSETS_3X3)
-                    col = CalcKernelTexture_3x3(_CameraOpaqueTexture,SAMPLE_STATE, screenUV,_TexelSizeScale,offsets_3x3,kernels_edgeDetection);
+                    col = CalcKernelTexture_3x3(_CameraOpaqueTexture,SAMPLE_STATE, screenUV,_TexelSizeScale,offsets_3x3,kernels_edgeDetection_noCenter);
                     #else
-                    col = CalcKernelTexture_2x2(_CameraOpaqueTexture,SAMPLE_STATE,screenUV,_TexelSizeScale,offsets_2x2_cross,kernels_edgeDetection_2x2);
+                    col = CalcKernelTexture_2x2(_CameraOpaqueTexture,SAMPLE_STATE,screenUV,_TexelSizeScale,offsets_2x2_cross,kernels_edgeDetection_2x2_noCenter);
                     #endif
+                    // show opaque with edgeKernelColor
                     
                 #else // custom calc kernel
                     #if defined(_OFFSETS_3X3)
@@ -196,9 +208,13 @@ CalcKernel_2x2(varName)
                     col = CalcKernelTexture_2x2(_CameraOpaqueTexture,SAMPLE_STATE,screenUV,_TexelSizeScale,offsets_2x2_cross,kernel_2x2);
                     #endif
                 #endif
-                
-                // blend screen
-                half4 opaqueTex = SAMPLE_TEXTURE2D(_CameraOpaqueTexture,SAMPLE_STATE,screenUV);
+
+                col = saturate(col * _KernelColor);
+                // only keep edge detection color
+                #if defined(_DETECTION)
+                col = _KeepEdgeColor ? max(col,opaqueTex) : col;
+                #endif
+
                 col = lerp(col,opaqueTex, _BlendOpaqueTex);
 
                 return col;
