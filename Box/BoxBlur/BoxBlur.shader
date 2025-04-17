@@ -6,7 +6,7 @@ Shader "FX/Box/Blur/BoxBlur"
         [Group(Base)]
         [GroupToggle(Base)]_FullScreenOn("_FullScreenOn",int) = 1
         [GroupVectorSlider(Base,minX minY maxX maxY,0_1 0_1 0_1 0_1,limit screen range,float)]_ScreenRange("ScreenRange",vector) = (0,0,1,1)
-        [GroupItem(Base)] _MainTex("_MainTex",2d)=""{}
+        // [GroupItem(Base)] _MainTex("_MainTex",2d)=""{}
         [GroupToggle(Base,_CAMERA_OPAQUE_TEXTURE_ON,mainTexture use _CameraOpaqueTexture)]_CameraOpaqueTextureOn("_CameraOpaqueTextureOn",float) = 0
 // ================================================== blur
         [Group(Blur)]
@@ -17,8 +17,8 @@ Shader "FX/Box/Blur/BoxBlur"
 // ================================================== chromatic aberration
         [Group(ChromaticAberration)]
         [GroupToggle(ChromaticAberration,_CHROMATIC_ABERRATION,multi samples show chromatic aberration)]_ChromaticAberrationOn("_ChromaticAberrationOn",float) = 0
-        
-        [GroupItem(ChromaticAberration)] _ChromaticIntensity("_ChromaticIntensity",range(0,1)) = 0
+        [GroupVectorSlider(ChromaticAberration,centerX centerY,0_1 0_1)] _ChromaticCenter("_ChromaticCenter",vector) = (0.5,0.5,0,0)
+        [GroupItem(ChromaticAberration)] _ChromaticScale("_ChromaticScale",range(-1,1)) = 0
 // ================================================== alpha      
         [Group(Alpha)]
         [GroupHeader(Alpha,BlendMode)]
@@ -111,7 +111,7 @@ Shader "FX/Box/Blur/BoxBlur"
                 float4 vertex : SV_POSITION;
             };
 
-            TEXTURE2D(_MainTex);SAMPLER(sampler_MainTex);
+            // TEXTURE2D(_MainTex);SAMPLER(sampler_MainTex);
             TEXTURE2D(_CameraOpaqueTexture);SAMPLER(sampler_CameraOpaqueTexture);
 
             CBUFFER_START(UnityPerMaterial)
@@ -122,14 +122,15 @@ Shader "FX/Box/Blur/BoxBlur"
             half _BlurSize;
             half _StepCount;
 
-            half _ChromaticIntensity;
+            half _ChromaticScale;
+            half2 _ChromaticCenter;
             CBUFFER_END
 
             v2f vert (appdata v)
             {
                 v2f o;
                 o.vertex = TransformObjectToNdcHClip(v.vertex,_FullScreenOn,_ScreenRange);
-                o.uv = TRANSFORM_TEX(v.uv, _MainTex);
+                o.uv = v.uv;
                 return o;
             }
 
@@ -146,28 +147,22 @@ Shader "FX/Box/Blur/BoxBlur"
             {
                 float4 c = float4(0,0,0,1);
                 float2 screenUV = i.vertex.xy / _ScaledScreenParams.xy;
-                float2 mainUV = _FullScreenOn?screenUV:i.uv;
 
-                #if defined(_CAMERA_OPAQUE_TEXTURE_ON)
                 TEXTURE2D(tex) = _CameraOpaqueTexture;
                 SAMPLER(texSampler) = sampler_CameraOpaqueTexture;
-                #else
-                TEXTURE2D(tex) = _MainTex;
-                SAMPLER(texSampler) = sampler_MainTex;
-                #endif
 
                 #if defined(_BLUR)
-                c = SampleTextureApplyBoxBlur(tex,texSampler,mainUV,_MainTex_TexelSize);
+                c = SampleTextureApplyBoxBlur(tex,texSampler,screenUV,_MainTex_TexelSize);
                 #endif //BLUR
                 
                 #if defined(_CHROMATIC_ABERRATION)
-                float2 uvDir = mainUV - 0.5;
+                float2 uvDir = screenUV - _ChromaticCenter;
                 float dist2 = dot(uvDir,uvDir);
                 // return dist2;
-                float2 uvOffset = uvDir * dist2 * _ChromaticIntensity;
-                c.x = SAMPLE_TEXTURE2D(tex,texSampler,mainUV).x;
-                c.y = SAMPLE_TEXTURE2D(tex,texSampler,mainUV + uvOffset).y;
-                c.z = SAMPLE_TEXTURE2D(tex,texSampler,mainUV + uvOffset * 2).z;
+                float2 uvOffset = uvDir * dist2 * _ChromaticScale;
+                c.x = SAMPLE_TEXTURE2D(tex,texSampler,screenUV).x;
+                c.y = SAMPLE_TEXTURE2D(tex,texSampler,screenUV + uvOffset).y;
+                c.z = SAMPLE_TEXTURE2D(tex,texSampler,screenUV + uvOffset * 2).z;
 
                 #endif // _CHROMATIC_ABERRATION
                 
