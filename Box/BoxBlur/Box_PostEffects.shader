@@ -1,4 +1,9 @@
-Shader "FX/Box/Blur/BoxBlur"
+/**
+    Blur
+    ChromationAberration
+    Vignette
+*/
+Shader "FX/Box/Blur/Box_PostEffects"
 {
     Properties
     {
@@ -6,19 +11,38 @@ Shader "FX/Box/Blur/BoxBlur"
         [Group(Base)]
         [GroupToggle(Base)]_FullScreenOn("_FullScreenOn",int) = 1
         [GroupVectorSlider(Base,minX minY maxX maxY,0_1 0_1 0_1 0_1,limit screen range,float)]_ScreenRange("ScreenRange",vector) = (0,0,1,1)
-        // [GroupItem(Base)] _MainTex("_MainTex",2d)=""{}
-        [GroupToggle(Base,_CAMERA_OPAQUE_TEXTURE_ON,mainTexture use _CameraOpaqueTexture)]_CameraOpaqueTextureOn("_CameraOpaqueTextureOn",float) = 0
+
+        [Group(Noise)]
+        [GroupToggle(Noise,_NOISE_ON)] _NoiseOn("_NoiseOn",float)= 0
+        [GroupItem(Noise)] _WeatherNoiseTexture("_WeatherNoiseTexture",2d)=""{}
+        [GroupItem(Noise)] _NoiseUVTexelSize("_NoiseUVTexelSize",float)= 100
+        [GroupVectorSlider(Noise,dirU dirV,m1_1 m1_1)] _NoiseDir("_NoiseDir",vector)= (1,1,0,0)
+        [GroupItem(Noise)] _NoiseSpeed("_NoiseSpeed",float)= 1
+        [GroupItem(Noise)] _NoiseScale("_NoiseScale",range(0,1))= 1
+        
 // ================================================== blur
         [Group(Blur)]
         [GroupToggle(Blur,_BLUR,use blur)]_BlurOn("_BlurOn",float) = 0
-        [GroupItem(Blur)] _BlurSize("_BlurSize",range(0,1)) = 1
+        [GroupItem(Blur)] _BlurSize("_BlurSize",range(0,3)) = 1
         [GroupItem(Blur)] _StepCount("_StepCount",range(1,10)) = 4
 
 // ================================================== chromatic aberration
         [Group(ChromaticAberration)]
         [GroupToggle(ChromaticAberration,_CHROMATIC_ABERRATION,multi samples show chromatic aberration)]_ChromaticAberrationOn("_ChromaticAberrationOn",float) = 0
         [GroupVectorSlider(ChromaticAberration,centerX centerY,0_1 0_1)] _ChromaticCenter("_ChromaticCenter",vector) = (0.5,0.5,0,0)
-        [GroupItem(ChromaticAberration)] _ChromaticScale("_ChromaticScale",range(-1,1)) = 0
+        [GroupItem(ChromaticAberration)] _ChromaticScale("_ChromaticScale",range(-.2,.2)) = 0
+
+// ================================================== vignette
+        [Group(Vignette)]
+        [GroupToggle(Blur,_VIGNETTE,use vignette)]_VignetteOn("_VignetteOn",float) = 0
+        [GroupToggle(Vignette)]_RoundOn("_RoundOn",float) = 0
+        [GroupItem(Vignette)]_Intensity("_Intensity",range(0,1)) = 1
+        [GroupVectorSlider(Vignette,centerX centerY,0_1 0_1,position)] _Center("_Center",vector) = (0.5,0.5,0,0)
+        [GroupVectorSlider(Vignette,min max,0_1 0_1,vignet range smooth )] _VignetRange("_VignetRange",vector) = (0,1,0,0)        
+        [GroupVectorSlider(Vignette,min max,0_1 0_1,blick eyes)] _Oval("_Oval",vector) = (1,1,0,0)
+
+        [GroupItem(Vignette)] _Color1("_Color1",color) = (1,1,1,1)
+        [GroupItem(Vignette)] _Color2("_Color2",color) = (1,1,1,1)
 // ================================================== alpha      
         [Group(Alpha)]
         [GroupHeader(Alpha,BlendMode)]
@@ -87,9 +111,10 @@ Shader "FX/Box/Blur/BoxBlur"
             HLSLPROGRAM
             #pragma vertex vert
             #pragma fragment frag
-            #pragma shader_feature _CAMERA_OPAQUE_TEXTURE_ON
             #pragma shader_feature _CHROMATIC_ABERRATION
             #pragma shader_feature _BLUR
+            #pragma shader_feature _VIGNETTE
+            #pragma shader_feature _NOISE_ON
 
             #include "../../../PowerShaderLib/Lib/UnityLib.hlsl"
             #include "../../../PowerShaderLib/Lib/PowerUtils.hlsl"
@@ -99,6 +124,9 @@ Shader "FX/Box/Blur/BoxBlur"
             #include "../../../PowerShaderLib/Lib/FullscreenLib.hlsl"
             #include "../../../PowerShaderLib/URPLib/URP_Input.hlsl"
             #include "../../../PowerShaderLib/Lib/BlurLib.hlsl"
+            #include "../../../PowerShaderLib/Lib/WeatherNoiseTexture.hlsl"
+            #include "../../../PowerShaderLib/Lib/Colors.hlsl"
+
             struct appdata
             {
                 float4 vertex : POSITION;
@@ -116,7 +144,7 @@ Shader "FX/Box/Blur/BoxBlur"
 
             CBUFFER_START(UnityPerMaterial)
             half _FullScreenOn;
-            half4 _MainTex_ST;
+            half4 _WeatherNoiseTexture_ST;
             half4 _ScreenRange;            
             float4 _MainTex_TexelSize;
             half _BlurSize;
@@ -124,6 +152,18 @@ Shader "FX/Box/Blur/BoxBlur"
 
             half _ChromaticScale;
             half2 _ChromaticCenter;
+            // vignette
+            half4 _Color1,_Color2;
+            half2 _VignetRange;
+            float2 _Center;
+            half2 _Oval;
+            half _RoundOn;
+            half _Intensity;
+            // noise
+            half _NoiseUVTexelSize;
+            half _NoiseSpeed;
+            half _NoiseScale;
+            half2 _NoiseDir;
             CBUFFER_END
 
             v2f vert (appdata v)
@@ -145,27 +185,42 @@ Shader "FX/Box/Blur/BoxBlur"
 
             half4 frag (v2f i) : SV_Target
             {
-                float4 c = float4(0,0,0,1);
                 float2 screenUV = i.vertex.xy / _ScaledScreenParams.xy;
+                
+                float noise = 0;
+                #if defined(_NOISE_ON)
+                float2 noiseUV = screenUV * _NoiseUVTexelSize + _NoiseDir * _Time.x*_NoiseSpeed;
+                noise = SampleWeatherNoise(noiseUV ) * _NoiseScale;
+// return noise;
+                #endif
+
+                screenUV += noise * 0.2;
 
                 TEXTURE2D(tex) = _CameraOpaqueTexture;
                 SAMPLER(texSampler) = sampler_CameraOpaqueTexture;
-
+                float4 c = SAMPLE_TEXTURE2D(tex,texSampler,screenUV);
+                
                 #if defined(_BLUR)
                 c = SampleTextureApplyBoxBlur(tex,texSampler,screenUV,_MainTex_TexelSize);
                 #endif //BLUR
-                
+
                 #if defined(_CHROMATIC_ABERRATION)
                 float2 uvDir = screenUV - _ChromaticCenter;
                 float dist2 = dot(uvDir,uvDir);
                 // return dist2;
                 float2 uvOffset = uvDir * dist2 * _ChromaticScale;
-                c.x = SAMPLE_TEXTURE2D(tex,texSampler,screenUV).x;
-                c.y = SAMPLE_TEXTURE2D(tex,texSampler,screenUV + uvOffset).y;
-                c.z = SAMPLE_TEXTURE2D(tex,texSampler,screenUV + uvOffset * 2).z;
-
+                half3 chromaCol=0;
+                chromaCol.x = SAMPLE_TEXTURE2D(tex,texSampler,screenUV).x;
+                chromaCol.y = SAMPLE_TEXTURE2D(tex,texSampler,screenUV + uvOffset).y;
+                chromaCol.z = SAMPLE_TEXTURE2D(tex,texSampler,screenUV + uvOffset * 2).z;
+                c.xyz = lerp(c.xyz,chromaCol,0.3);
                 #endif // _CHROMATIC_ABERRATION
-                
+
+
+                #if defined(_VIGNETTE)
+                half4 vignetteColor = CalcVignette(screenUV,_Center,_RoundOn,_Oval,_VignetRange,_Color1,_Color2,_Intensity);
+                c = lerp(c,vignetteColor,vignetteColor.a);
+                #endif  //VIGNETTE
 
                 return c;
             }

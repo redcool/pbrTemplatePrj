@@ -22,23 +22,19 @@ Material:
   m_LockedProperties: 
   m_SavedProperties:
     serializedVersion: 3
-    m_TexEnvs:
-    - _MainTex:
-        m_Texture: {fileID: 0}
-        m_Scale: {x: 1, y: 1}
-        m_Offset: {x: 0, y: 0}
+    m_TexEnvs: []
     m_Ints: []
     m_Floats:
     - _DstMode: 10
     - _FullScreenOn: 1
     - _Intensity: 1
-    - _PresetBlendMode: 0
+    - _PresetBlendMode: 1
     - _RoundOn: 0
     - _SrcMode: 5
     m_Colors:
     - _Center: {r: 0.5, g: 0.5, b: 0, a: 0}
-    - _Color1: {r: 0.4188679, g: 0.4188679, b: 0.4188679, a: 0}
-    - _Color2: {r: 0, g: 0, b: 0, a: 0.6666667}
+    - _Color1: {r: 0, g: 0, b: 0, a: 0}
+    - _Color2: {r: 0, g: 0, b: 0, a: 1}
     - _Oval: {r: 1, g: 1, b: 0, a: 0}
-    - _VignetRange: {r: 0.298, g: 0.737, b: 0, a: 0}
+    - _VignetRange: {r: 0.5, g: 0.7, b: 0, a: 0}
   m_BuildTextureStacks: []

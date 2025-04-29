@@ -6,21 +6,20 @@ Shader "Hidden/FX/Others/BoxVignetting"
         [Group(Base)]
         [GroupToggle(Base)]_FullScreenOn("_FullScreenOn",int) = 1
 
-        [Group(Base)]
-        [GroupToggle(Base)]_RoundOn("_RoundOn",float) = 0
-        _Intensity("_Intensity",range(0,1)) = 1
-        [GroupVectorSlider(Base,centerX centerY,0_1 0_1,position)] _Center("_Center",vector) = (0.5,0.5,0,0)
-        [GroupVectorSlider(Base,min max,0_1 0_1,vignet range smooth )] _VignetRange("_VignetRange",vector) = (0,1,0,0)        
-        [GroupVectorSlider(Base,min max,0_1 0_1,blick eyes)] _Oval("_Oval",vector) = (1,1,0,0)
+        [Group(Vignette)]
+        [GroupToggle(Vignette)]_RoundOn("_RoundOn",float) = 0
+        [GroupItem(Vignette)]_Intensity("_Intensity",range(0,1)) = 1
+        [GroupVectorSlider(Vignette,centerX centerY,0_1 0_1,position)] _Center("_Center",vector) = (0.5,0.5,0,0)
+        [GroupVectorSlider(Vignette,min max,0_1 0_1,vignet range smooth )] _VignetRange("_VignetRange",vector) = (0.5,0.7,0,0)        
+        [GroupVectorSlider(Vignette,min max,0_1 0_1,blink eye)] _Oval("_Oval",vector) = (1,1,0,0)
 
-        [Group(Vignet Color)]
-        [GroupItem(Vignet Color)] _Color1("_Color1",color) = (1,1,1,1)
-        [GroupItem(Vignet Color)] _Color2("_Color2",color) = (1,1,1,1)
+        [GroupItem(Vignette)] _Color1("_Color1",color) = (0,0,0,0)
+        [GroupItem(Vignette)] _Color2("_Color2",color) = (0,0,0,1)
 
         //=================================
         [Group(Alpha)]
         [GroupHeader(Alpha,BlendMode)]
-        [GroupPresetBlendMode(Alpha,,_SrcMode,_DstMode)]_PresetBlendMode("_PresetBlendMode",int)=0
+        [GroupPresetBlendMode(Alpha,,_SrcMode,_DstMode)]_PresetBlendMode("_PresetBlendMode",int)=1
         // [GroupEnum(Alpha,UnityEngine.Rendering.BlendMode)]
         [HideInInspector]_SrcMode("_SrcMode",int) = 1
         [HideInInspector]_DstMode("_DstMode",int) = 0
@@ -44,6 +43,7 @@ Shader "Hidden/FX/Others/BoxVignetting"
             #include "../../../PowerShaderLib/Lib/SDF.hlsl"
             #include "../../../PowerShaderLib/Lib/NoiseLib.hlsl"
             #include "../../../PowerShaderLib/Lib/MathLib.hlsl"
+            #include "../../../PowerShaderLib/Lib/Colors.hlsl"
             #include "../../../PowerShaderLib/URPLib/URP_Input.hlsl"
 
             struct appdata
@@ -86,19 +86,11 @@ Shader "Hidden/FX/Others/BoxVignetting"
                 return o;
             }
 
+
             float4 frag (v2f i) : SV_Target
             {
                 float2 screenUV = i.vertex.xy / _ScaledScreenParams.xy;
-                float aspect = _ScaledScreenParams.x/_ScaledScreenParams.y;
-                float2 dir = (screenUV - _Center) ;
-                dir.x *= _RoundOn ? aspect : 1;
-                dir /= _Oval;
-
-                float dist = length(dir) ;
-                float atten = smoothstep(_VignetRange.x,_VignetRange.y,dist);
-                // return _Color1 * atten * _Intensity;
-
-                half4 col = lerp(_Color1,_Color2,atten)* _Intensity;
+                half4 col = CalcVignette(screenUV,_Center,_RoundOn,_Oval,_VignetRange,_Color1,_Color2,_Intensity);
                 return col;
                 
             }
