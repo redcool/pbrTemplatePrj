@@ -30,6 +30,10 @@ Material:
         m_Texture: {fileID: 2800000, guid: 6c29801c26ec12f40be314ebe5c92733, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
+    - _NoiseTex:
+        m_Texture: {fileID: 2800000, guid: 85598720260c8f74ab3ca663c9c29fe6, type: 3}
+        m_Scale: {x: 0.1, y: 0.1}
+        m_Offset: {x: 0.1, y: 0.1}
     - _Tex3D:
         m_Texture: {fileID: 11700000, guid: ad9005ab78823294e904ea661ebe0bb7, type: 2}
         m_Scale: {x: 1, y: 1}
@@ -39,7 +43,7 @@ Material:
     - _BoxUpClip: 1
     - _ClipOn: 0
     - _ColorMask: 15
-    - _CullMode: 1
+    - _CullMode: 2
     - _Cutoff: 0.439
     - _DepthFogOn: 1
     - _DstMode: 10
@@ -47,14 +51,22 @@ Material:
     - _FogOn: 1
     - _GenerateWorldNormal: 1
     - _HeightFogOn: 1
-    - _NoiseIntensity: 0.2
+    - _NoiseIntensity: 2.84
     - _NoiseOn: 1
     - _NoiseScale: 0.082
     - _PresetBlendMode: 0
     - _SrcMode: 5
+    - _Stencil: 0
+    - _StencilComp: 0
+    - _StencilFailOp: 0
+    - _StencilOp: 0
+    - _StencilReadMask: 255
+    - _StencilWriteMask: 255
+    - _StencilZFailOp: 0
     - _StepSize: 0.0001
-    - _ZTestMode: 8
+    - _ZTestMode: 4
     - _ZWriteMode: 0
     m_Colors:
-    - _NoiseScaleOffset: {r: 0.068, g: 0.034, b: 8.569999, a: -28.2}
+    - _NoiseColor: {r: 0.25033462, g: 1, b: 0, a: 1}
+    - _NoiseScaleOffset: {r: 0.0495, g: -0.0003, b: 0, a: 0.94}
   m_BuildTextureStacks: []

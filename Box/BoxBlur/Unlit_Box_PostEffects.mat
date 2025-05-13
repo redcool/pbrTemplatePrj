@@ -14,6 +14,7 @@ Material:
   m_ValidKeywords:
   - _BLUR
   - _CHROMATIC_ABERRATION
+  - _NOISE_ON
   - _VIGNETTE
   m_InvalidKeywords:
   - _CAMERA_OPAQUE_TEXTURE_ON
@@ -33,26 +34,26 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _WeatherNoiseTexture:
-        m_Texture: {fileID: 2800000, guid: fc9cf78cac97fef499dc465111c19968, type: 3}
+        m_Texture: {fileID: 2800000, guid: 56dc1f3a5605bd942aabb5e0a765836f, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
     - _BlurOn: 1
-    - _BlurSize: 1.23
+    - _BlurSize: 1.55
     - _CameraOpaqueTextureOn: 1
     - _ChromaticAberrationOn: 1
-    - _ChromaticScale: 0.029
+    - _ChromaticScale: 0.2
     - _ColorMask: 16
     - _CullMode: 2
     - _DstMode: 10
     - _FullScreenOn: 1
     - _Intensity: 1
     - _IsCameraOpaqueTexture: 1
-    - _NoiseOn: 0
-    - _NoiseScale: 0.021
-    - _NoiseSpeed: 72.37
-    - _NoiseUVTexelSize: 39.9
+    - _NoiseOn: 1
+    - _NoiseScale: 0.192
+    - _NoiseSpeed: 25.1
+    - _NoiseUVTexelSize: 10
     - _PresetBlendMode: 0
     - _RoundOn: 0
     - _SrcMode: 5
@@ -63,17 +64,17 @@ Material:
     - _StencilReadMask: 255
     - _StencilWriteMask: 255
     - _StencilZFailOp: 0
-    - _StepCount: 10
+    - _StepCount: 4.46
     - _VignetteOn: 1
     - _ZTestMode: 4
     - _ZWriteMode: 0
     m_Colors:
     - _Center: {r: 0.5, g: 0.5, b: 0, a: 0}
-    - _ChromaticCenter: {r: 0.483, g: 0.5, b: 0, a: 0}
-    - _Color1: {r: 0.02641511, g: 0.02641511, b: 0.02641511, a: 0}
+    - _ChromaticCenter: {r: 0.519, g: 0.501, b: 0, a: 0}
+    - _Color1: {r: 0, g: 0, b: 0, a: 0}
     - _Color2: {r: 0, g: 0, b: 0, a: 1}
-    - _NoiseDir: {r: 0.31200004, g: -1, b: 0, a: 0}
+    - _NoiseDir: {r: -1, g: 1, b: 0, a: 0}
     - _Oval: {r: 1, g: 1, b: 0, a: 0}
     - _ScreenRange: {r: 0, g: 0, b: 1, a: 1}
-    - _VignetRange: {r: 0.286, g: 0.381, b: 0, a: 0}
+    - _VignetRange: {r: 0.412, g: 0.591, b: 0, a: 0}
   m_BuildTextureStacks: []

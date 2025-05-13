@@ -28,8 +28,12 @@ Material:
     serializedVersion: 3
     m_TexEnvs:
     - _MainTex:
-        m_Texture: {fileID: 2800000, guid: 6449cd275bde43b4ab6c406536774326, type: 3}
+        m_Texture: {fileID: 2800000, guid: dca2576bde783f540b8ba73f9ed5008d, type: 3}
         m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _NoiseTex:
+        m_Texture: {fileID: 2800000, guid: 85598720260c8f74ab3ca663c9c29fe6, type: 3}
+        m_Scale: {x: 0.1, y: 0.1}
         m_Offset: {x: 0, y: 0}
     - _Tex3D:
         m_Texture: {fileID: 11700000, guid: ad9005ab78823294e904ea661ebe0bb7, type: 2}
@@ -39,23 +43,30 @@ Material:
     m_Floats:
     - _BoxUpClip: 1
     - _ClipOn: 1
-    - _ColorMask: 15
-    - _CullMode: 2
+    - _ColorMask: 16
+    - _CullMode: 1
     - _Cutoff: 0.473
     - _DepthFogOn: 1
-    - _DstMode: 0
+    - _DstMode: 10
     - _FogNoiseOn: 0
     - _FogOn: 1
     - _GenerateWorldNormal: 1
     - _HeightFogOn: 1
-    - _NoiseIntensity: 4
+    - _NoiseIntensity: 0.71
     - _NoiseOn: 1
     - _PresetBlendMode: 0
-    - _SrcMode: 1
+    - _SrcMode: 5
+    - _Stencil: 0
+    - _StencilComp: 0
+    - _StencilFailOp: 0
+    - _StencilOp: 0
+    - _StencilReadMask: 255
+    - _StencilWriteMask: 255
+    - _StencilZFailOp: 0
     - _StepSize: 0.0001
-    - _ZTestMode: 8
-    - _ZWriteMode: 1
+    - _ZTestMode: 0
+    - _ZWriteMode: 0
     m_Colors:
-    - _NoiseColor: {r: 1, g: 0, b: 0, a: 1}
-    - _NoiseScaleOffset: {r: 1, g: -0.018, b: 0, a: 1.63}
+    - _NoiseColor: {r: 1, g: 1, b: 1, a: 1}
+    - _NoiseScaleOffset: {r: 0.0051, g: 0.0063, b: 0, a: 0.97}
   m_BuildTextureStacks: []

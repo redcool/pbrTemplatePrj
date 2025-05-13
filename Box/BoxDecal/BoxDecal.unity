@@ -136,7 +136,7 @@ GameObject:
   - component: {fileID: 229688515}
   - component: {fileID: 229688514}
   m_Layer: 0
-  m_Name: BoxDecal (1)
+  m_Name: BoxDecal
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -212,7 +212,7 @@ MeshFilter:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 229688513}
-  m_Mesh: {fileID: 10207, guid: 0000000000000000e000000000000000, type: 0}
+  m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
 --- !u!4 &229688517
 Transform:
   m_ObjectHideFlags: 0
@@ -693,7 +693,7 @@ GameObject:
   - component: {fileID: 1763326555}
   - component: {fileID: 1763326554}
   m_Layer: 0
-  m_Name: BoxDecal
+  m_Name: SphereBoxDecal
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -779,7 +779,7 @@ Transform:
   m_GameObject: {fileID: 1763326553}
   serializedVersion: 2
   m_LocalRotation: {x: 0.06686749, y: 0.019050369, z: -0.11853076, w: -0.9905132}
-  m_LocalPosition: {x: 0.45, y: 2.86, z: -1.14}
+  m_LocalPosition: {x: -0.73, y: 3.67, z: -0.67}
   m_LocalScale: {x: 3.3338227, y: 13.834464, z: 3.1605015}
   m_ConstrainProportionsScale: 0
   m_Children: []

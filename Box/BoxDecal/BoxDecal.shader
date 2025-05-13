@@ -2,12 +2,15 @@ Shader "FX/Box/BoxDecal"
 {
     Properties
     {
+        [GroupHeader(v0.0.2)]
         _MainTex ("Texture", 2D) = "white" {}
         [GroupToggle]_BoxUpClip("_BoxUpClip",int) = 0
 
         [Group(Noise)]
         [GroupToggle(Noise,_NOISE_ON)]_NoiseOn("_NoiseOn",float) = 0
-        [GroupVectorSlider(Noise,scaleX scaleY offsetX offsetY,m1_1 m1_1 0_10 0_10,noise generato,float)]
+        [GroupItem(Noise)]_NoiseTex("_NoiseTex",2d) = ""{}
+
+        [GroupVectorSlider(Noise,scaleX scaleY offsetX offsetY,m.1_.1 m.1_.1 0_10 0_10,noise generato,float)]
         _NoiseScaleOffset("_NoiseScaleOffset",vector) = (1,1,0,0)
 
         [GroupItem(Noise)]_NoiseIntensity("_NoiseIntensity",range(0,4)) = 0.2
@@ -19,7 +22,41 @@ Shader "FX/Box/BoxDecal"
         [GroupToggle(Fog)]_FogNoiseOn("_FogNoiseOn",int) = 0
         [GroupToggle(Fog)]_DepthFogOn("_DepthFogOn",int) = 1
         [GroupToggle(Fog)]_HeightFogOn("_HeightFogOn",int) = 1
+// ================================================== alpha      
+        [Group(Alpha)]
+        [GroupHeader(Alpha,BlendMode)]
+        [GroupPresetBlendMode(Alpha,,_SrcMode,_DstMode)]_PresetBlendMode("_PresetBlendMode",int)=0
+        [HideInInspector]_SrcMode("_SrcMode",int) = 1
+        [HideInInspector]_DstMode("_DstMode",int) = 0
 
+        // [GroupHeader(Alpha,Premultiply)]
+        // [GroupToggle(Alpha)]_AlphaPremultiply("_AlphaPremultiply",int) = 0
+
+        // [GroupHeader(Alpha,AlphaTest)]
+        // [GroupToggle(Alpha,ALPHA_TEST)]_AlphaTestOn("_AlphaTestOn",int) = 0
+        // [GroupSlider(Alpha)]_Cutoff("_Cutoff",range(0,1)) = 0.5
+// ================================================== Settings
+        [Group(Settings)]
+        [GroupEnum(Settings,UnityEngine.Rendering.CullMode)]_CullMode("_CullMode",int) = 2
+		[GroupToggle(Settings)]_ZWriteMode("ZWriteMode",int) = 0
+
+		/*
+		Disabled,Never,Less,Equal,LessEqual,Greater,NotEqual,GreaterEqual,Always
+		*/
+		[GroupEnum(Settings,UnityEngine.Rendering.CompareFunction)]_ZTestMode("_ZTestMode",float) = 4
+
+        [GroupHeader(Settings,Color Mask)]
+        [GroupEnum(Settings,RGBA 16 RGB 15 RG 12 GB 6 RB 10 R 8 G 4 B 2 A 1 None 0)] _ColorMask("_ColorMask",int) = 15
+// ================================================== stencil settings
+        [Group(Stencil)]
+        [GroupEnum(Stencil,UnityEngine.Rendering.CompareFunction)] _StencilComp ("Stencil Comparison", Float) = 0
+        [GroupStencil(Stencil)] _Stencil ("Stencil ID", int) = 0
+        [GroupEnum(Stencil,UnityEngine.Rendering.StencilOp)] _StencilOp ("Stencil Operation", Float) = 0
+        [GroupHeader(Stencil,)]
+        [GroupEnum(Stencil,UnityEngine.Rendering.StencilOp)] _StencilFailOp ("Stencil Fail Operation", Float) = 0
+        [GroupEnum(Stencil,UnityEngine.Rendering.StencilOp)] _StencilZFailOp ("Stencil zfail Operation", Float) = 0
+        [GroupItem(Stencil)] _StencilWriteMask ("Stencil Write Mask", Float) = 255
+        [GroupItem(Stencil)] _StencilReadMask ("Stencil Read Mask", Float) = 255
     }
     HLSLINCLUDE
         #include "../../../PowerShaderLib/Lib/UnityLib.hlsl"
@@ -27,6 +64,7 @@ Shader "FX/Box/BoxDecal"
         #include "../../../PowerShaderLib/Lib/ScreenTextures.hlsl"
         #include "../../../PowerShaderLib/Lib/NatureLib.hlsl"
         #include "../../../PowerShaderLib/Lib/Common/Randoms.hlsl"
+        #include "../../../PowerShaderLib/Lib/NodeLib.hlsl"
 
         /**
             Decal in Box
@@ -62,13 +100,24 @@ Shader "FX/Box/BoxDecal"
     ENDHLSL
     SubShader
     {
-        Tags { "RenderType"="Opaque" "Queue"="Transparent"}
-        LOD 100
+        Tags { "Queue"="Transparent"}
+        ZWrite[_ZWriteMode]
+        Blend [_SrcMode][_DstMode]
+        // BlendOp[_BlendOp]
+        Cull [_CullMode]
+        ztest [_ZTestMode]
+        ColorMask [_ColorMask]
 
-        zwrite off
-        blend srcAlpha oneMinusSrcAlpha
-        cull front
-        ztest always
+        Stencil
+        {
+            Ref [_Stencil]
+            Comp [_StencilComp]
+            Pass [_StencilOp]
+            Fail [_StencilFailOp]
+            ZFail [_StencilZFailOp]
+            ReadMask [_StencilReadMask]
+            WriteMask [_StencilWriteMask]
+        }
 
         Pass
         {
@@ -98,8 +147,10 @@ Shader "FX/Box/BoxDecal"
             };
 
             sampler2D _MainTex;
-            
             float4 _MainTex_ST;
+
+            sampler2D _NoiseTex;
+            float4 _NoiseTex_ST;
             float4 _CameraDepthTexture_TexelSize;
 
             CBUFFER_START(UnityPerMaterial)
@@ -154,7 +205,17 @@ Shader "FX/Box/BoxDecal"
                 float2 noise = 0;
                 float3 screenCol = 0;
                 #if defined(_NOISE_ON)
-                    noise = GetNoise(pcg2d(i.vertex.xy* _NoiseScaleOffset.xy + _Time.zz* _NoiseScaleOffset.zw) ) * _NoiseIntensity;
+                    // noiseTex
+                    float2 noiseTexUV = screenUV * _NoiseTex_ST.xy + _NoiseTex_ST.zw *_Time.x;
+                    float4 noiseTex = tex2D(_NoiseTex,noiseTexUV) * 2-1;
+                    
+                    // white noise
+                    // float2 noiseUV = GetNoise(pcg2d(i.vertex.xy* _NoiseScaleOffset.xy + _Time.zz* _NoiseScaleOffset.zw) ) * _NoiseIntensity;
+                    // gradient Noise
+                    float2 noiseUV = i.vertex.xy* _NoiseScaleOffset.xy + _Time.zz* _NoiseScaleOffset.zw;
+                    noiseUV += noiseTex.xy;
+
+                    noise = Unity_GradientNoise(noiseUV,1) * _NoiseIntensity;
                     screenCol = GetScreenColor(screenUV + noise) * _NoiseColor;
                 #endif
                 // update with noise
