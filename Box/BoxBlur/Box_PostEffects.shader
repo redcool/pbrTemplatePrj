@@ -34,7 +34,7 @@ Shader "FX/Box/Blur/Box_PostEffects"
 
 // ================================================== vignette
         [Group(Vignette)]
-        [GroupToggle(Blur,_VIGNETTE,use vignette)]_VignetteOn("_VignetteOn",float) = 0
+        [GroupToggle(Vignette,_VIGNETTE,use vignette)]_VignetteOn("_VignetteOn",float) = 0
         [GroupToggle(Vignette)]_RoundOn("_RoundOn",float) = 0
         [GroupItem(Vignette)]_Intensity("_Intensity",range(0,1)) = 1
         [GroupVectorSlider(Vignette,centerX centerY,0_1 0_1,position)] _Center("_Center",vector) = (0.5,0.5,0,0)
