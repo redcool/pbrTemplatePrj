@@ -32,7 +32,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _WeatherNoiseTexture:
-        m_Texture: {fileID: 2800000, guid: 56dc1f3a5605bd942aabb5e0a765836f, type: 3}
+        m_Texture: {fileID: 2800000, guid: 044e3d322e348c34d8e409df582d315e, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     m_Ints: []
@@ -46,17 +46,17 @@ Material:
     - _CullMode: 2
     - _DstMode: 10
     - _FullScreenOn: 1
-    - _Intensity: 0.608
+    - _Intensity: 1
     - _IsCameraOpaqueTexture: 1
     - _NoiseOn: 1
-    - _NoiseScale: 0.451
-    - _NoiseSpeed: 10
+    - _NoiseScale: 0.141
+    - _NoiseSpeed: 8.18
     - _NoiseUVTexelSize: 2
     - _PresetBlendMode: 0
     - _RoundOn: 0
     - _SrcMode: 5
     - _Stencil: 1
-    - _StencilComp: 3
+    - _StencilComp: 0
     - _StencilFailOp: 0
     - _StencilOp: 0
     - _StencilReadMask: 255
@@ -69,10 +69,10 @@ Material:
     m_Colors:
     - _Center: {r: 0.5, g: 0.5, b: 0, a: 0}
     - _ChromaticCenter: {r: 0.5, g: 0.5, b: 0, a: 0}
-    - _Color1: {r: 0, g: 0.305546, b: 0.6301887, a: 0.3764706}
-    - _Color2: {r: 0.14509805, g: 0.27058825, b: 0.40000004, a: 1}
+    - _Color1: {r: 0, g: 0, b: 0, a: 0.3764706}
+    - _Color2: {r: 0, g: 0, b: 0, a: 1}
     - _NoiseDir: {r: -1, g: 1, b: 0, a: 0}
-    - _Oval: {r: 0.587, g: 1, b: 0, a: 0}
+    - _Oval: {r: 0.72, g: 0.758, b: 0, a: 0}
     - _ScreenRange: {r: 0, g: 0, b: 1, a: 1}
     - _VignetRange: {r: 0.493, g: 0.891, b: 0, a: 0}
   m_BuildTextureStacks: []

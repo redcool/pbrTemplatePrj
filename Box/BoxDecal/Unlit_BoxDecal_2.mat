@@ -51,7 +51,7 @@ Material:
     - _FogOn: 1
     - _GenerateWorldNormal: 1
     - _HeightFogOn: 1
-    - _NoiseIntensity: 2.84
+    - _NoiseIntensity: 0.32
     - _NoiseOn: 1
     - _NoiseScale: 0.082
     - _PresetBlendMode: 0
@@ -68,5 +68,5 @@ Material:
     - _ZWriteMode: 0
     m_Colors:
     - _NoiseColor: {r: 0.25033462, g: 1, b: 0, a: 1}
-    - _NoiseScaleOffset: {r: 0.0495, g: -0.0003, b: 0, a: 0.94}
+    - _NoiseScaleOffset: {r: 0.0208, g: 0.0022, b: 0, a: 0.94}
   m_BuildTextureStacks: []

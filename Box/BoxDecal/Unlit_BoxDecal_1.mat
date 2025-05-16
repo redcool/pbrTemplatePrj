@@ -44,7 +44,7 @@ Material:
     - _BoxUpClip: 1
     - _ClipOn: 1
     - _ColorMask: 16
-    - _CullMode: 1
+    - _CullMode: 0
     - _Cutoff: 0.473
     - _DepthFogOn: 1
     - _DstMode: 10
@@ -68,5 +68,5 @@ Material:
     - _ZWriteMode: 0
     m_Colors:
     - _NoiseColor: {r: 1, g: 1, b: 1, a: 1}
-    - _NoiseScaleOffset: {r: 0.0051, g: 0.0063, b: 0, a: 0.97}
+    - _NoiseScaleOffset: {r: 0.0051, g: 0.0063, b: 0, a: 0.84}
   m_BuildTextureStacks: []
