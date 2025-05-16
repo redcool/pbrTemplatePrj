@@ -12,8 +12,8 @@ Shader "FX/Box/AO"
         [GroupItem(HBAO)] _AORangeMax("_AORangeMax",range(0,1)) = 1
         [GroupItem(HBAO)] _StepScale("_StepScale",range(0.02,.2)) = 0.1
 
-        [GroupItem(HBAO)] _DirCount("_DirCount",range(4,20)) = 10
-        [GroupItem(HBAO)] _StepCount("_StepCount",range(4,20)) = 4
+        [GroupSlider(HBAO,direction count ,int)] _DirCount("_DirCount",range(4,20)) = 10
+        [GroupSlider(HBAO,calc times a count,int)] _StepCount("_StepCount",range(4,20)) = 4
         
         [GroupToggle((HBAO),_NORMAL_FROM_DEPTH)] _NormalFromDepth("_NormalFromDepth",float) = 0
 // ================================================== alpha      
