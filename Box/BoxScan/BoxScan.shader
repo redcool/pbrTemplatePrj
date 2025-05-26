@@ -28,7 +28,10 @@ Shader "FX/Box/BoxScan"
 //=================================
         [Group(Distance)]
         [GroupHeader(Distance,Base)]
-        [GroupItem(Distance,sphere position)] _Center("_Center",vector) = (0,0,0,0)
+        [GroupToggle(Distance,,use transform position)] _UseTransformPos("_UseTransformPos",float) = 0
+
+        // [GroupDisableGroup(_UseTransformPos,reversed)]
+        [GroupItem(Distance,sphere world position)] _Center("_Center",vector) = (0,0,0,0)
         [GroupItem(Distance,sphere radius)] _Radius("_Radius",float) = 1
 //=================================
         [Group(Border)]
@@ -58,21 +61,63 @@ Shader "FX/Box/BoxScan"
         [GroupItem(SceneFogOn)] _HeightNoiseScale("_HeightNoiseScale",range(0,1)) = 0.2
         
         [GroupItem(SceneFogOn)] _FogDensity("_FogDensity",range(0,1)) = 1
-//=================================
+// ================================================== alpha      
         [Group(Alpha)]
         [GroupHeader(Alpha,BlendMode)]
         [GroupPresetBlendMode(Alpha,,_SrcMode,_DstMode)]_PresetBlendMode("_PresetBlendMode",int)=0
-        // [GroupEnum(Alpha,UnityEngine.Rendering.BlendMode)]
         [HideInInspector]_SrcMode("_SrcMode",int) = 1
         [HideInInspector]_DstMode("_DstMode",int) = 0
+
+        // [GroupHeader(Alpha,Premultiply)]
+        // [GroupToggle(Alpha)]_AlphaPremultiply("_AlphaPremultiply",int) = 0
+
+        // [GroupHeader(Alpha,AlphaTest)]
+        // [GroupToggle(Alpha,ALPHA_TEST)]_AlphaTestOn("_AlphaTestOn",int) = 0
+        // [GroupSlider(Alpha)]_Cutoff("_Cutoff",range(0,1)) = 0.5
+// ================================================== Settings
+        [Group(Settings)]
+        [GroupEnum(Settings,UnityEngine.Rendering.CullMode)]_CullMode("_CullMode",int) = 2
+		[GroupToggle(Settings)]_ZWriteMode("ZWriteMode",int) = 0
+
+		/*
+		Disabled,Never,Less,Equal,LessEqual,Greater,NotEqual,GreaterEqual,Always
+		*/
+		[GroupEnum(Settings,UnityEngine.Rendering.CompareFunction)]_ZTestMode("_ZTestMode",float) = 4
+
+        [GroupHeader(Settings,Color Mask)]
+        [GroupEnum(Settings,RGBA 16 RGB 15 RG 12 GB 6 RB 10 R 8 G 4 B 2 A 1 None 0)] _ColorMask("_ColorMask",int) = 15
+// ================================================== stencil settings
+        [Group(Stencil)]
+        [GroupEnum(Stencil,UnityEngine.Rendering.CompareFunction)] _StencilComp ("Stencil Comparison", Float) = 0
+        [GroupStencil(Stencil)] _Stencil ("Stencil ID", int) = 0
+        [GroupEnum(Stencil,UnityEngine.Rendering.StencilOp)] _StencilOp ("Stencil Operation", Float) = 0
+        [GroupHeader(Stencil,)]
+        [GroupEnum(Stencil,UnityEngine.Rendering.StencilOp)] _StencilFailOp ("Stencil Fail Operation", Float) = 0
+        [GroupEnum(Stencil,UnityEngine.Rendering.StencilOp)] _StencilZFailOp ("Stencil zfail Operation", Float) = 0
+        [GroupItem(Stencil)] _StencilWriteMask ("Stencil Write Mask", Float) = 255
+        [GroupItem(Stencil)] _StencilReadMask ("Stencil Read Mask", Float) = 255
     }
     SubShader
     {
         Tags { "RenderType"="Transparent" "Queue"="Transparent"}
         LOD 100
-        zwrite off
-        ztest always
-        blend [_SrcMode] [_DstMode]
+        ZWrite[_ZWriteMode]
+        Blend [_SrcMode][_DstMode]
+        // BlendOp[_BlendOp]
+        Cull [_CullMode]
+        ztest [_ZTestMode]
+        ColorMask [_ColorMask]
+
+        Stencil
+        {
+            Ref [_Stencil]
+            Comp [_StencilComp]
+            Pass [_StencilOp]
+            Fail [_StencilFailOp]
+            ZFail [_StencilZFailOp]
+            ReadMask [_StencilReadMask]
+            WriteMask [_StencilWriteMask]
+        }
 
         Pass
         {
@@ -111,7 +156,8 @@ Shader "FX/Box/BoxScan"
             half _FullScreenOn;
             half4 _MainTex_ST,_MainTex2_ST,_NoiseTex_ST;
             half _MainTexOffsetStop,_MainTex2OffsetStop,_NoiseTexOffsetStop;
-            half3 _Center;
+            float3 _Center;
+            half _UseTransformPos;
             half _Radius;
             half4 _Range,_InnerRange;
             half4 _Color,_Color2;
@@ -190,7 +236,8 @@ Shader "FX/Box/BoxScan"
 
 //============ Distances
                 float dist,distSign,bandDist;
-                float d = CalcWorldDistance(dist,distSign/**/,bandDist/**/,worldPos,_Center,_Radius+borderNoise,_Range.xy,_Range.zw);
+                float3 center = _UseTransformPos ? UNITY_MATRIX_M._14_24_34 : _Center;
+                float d = CalcWorldDistance(dist,distSign/**/,bandDist/**/,worldPos,center,_Radius+borderNoise,_Range.xy,_Range.zw);
                 float d2 = _InnerDistanceOn ? (smoothstep(_InnerRange.x,_InnerRange.y,dist)) : 1;
 // return d;
                 // float d = distance(worldPos,_Center) - _Radius;
