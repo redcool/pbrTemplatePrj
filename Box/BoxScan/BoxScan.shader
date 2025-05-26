@@ -30,7 +30,7 @@ Shader "FX/Box/BoxScan"
         [GroupHeader(Distance,Base)]
         [GroupToggle(Distance,,use transform position)] _UseTransformPos("_UseTransformPos",float) = 0
 
-        // [GroupDisableGroup(_UseTransformPos,reversed)]
+        [DisableGroup(_UseTransformPos,reversed)]
         [GroupItem(Distance,sphere world position)] _Center("_Center",vector) = (0,0,0,0)
         [GroupItem(Distance,sphere radius)] _Radius("_Radius",float) = 1
 //=================================
