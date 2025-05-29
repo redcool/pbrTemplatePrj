@@ -30,13 +30,20 @@ Shader "FX/Box/Nature/BoxSceneFog"
         [GroupItem(SceneFog,w is fog intensity )] _SceneFogColor("_SceneFogColor",color) = (.5,.5,.5,.5)
         [GroupItem(SceneFog)] _WorldPosScale("_WorldPosScale",float) = 0.001
         [GroupItem(SceneFog,fog show noise attenuation)] _FogNoiseAtten("_FogNoiseAtten",range(0,1)) = 0
-
+// ================================================== height fog
         [Group(HeightFog)]
         [GroupToggle(HeightFog)] _SceneHeightFogOn("_SceneHeightFogOn",float) = 1
         [GroupVectorSlider(HeightFog,min max,0_1 0_1,height fog range,field)] _HeightFogRange("_HeightFogRange",Vector) = (0,100,0,0)
         
         [GroupItem(HeightFog)]  _CameraFadeDist("_CameraFadeDist",float) = 10
-
+// ================================================== scene fog map(warfog)
+        [Group(SceneFogMap)]
+        [GroupToggle(SceneFogMap,SCENE_FOG_MAP)] _SceneFogMapOn("_SceneHeightFogOn",float) = 1
+        [GroupItem(SceneFogMap)] [NoScaleOffset]_SceneFogMap("_SceneFogMap",2d) = "white"{}
+        [GroupEnum(SceneFogMap,R 0 G 1 B 2 A 3)] _SceneFogMapAttenChannel("_SceneFogMapAttenChannel",float) = 1
+        [GroupVectorSlider(SceneFogMap,min max,0_1 0_1,scebe fog range)] _FogAreaScale("_FogAreaScale",vector) = (0,1,0,0)
+        [GroupItem(SceneFogMap)] _MinWorldPos("_MinWorldPos",vector) = (0,0,0,0)
+        [GroupItem(SceneFogMap)] _MaxWorldPos("_MaxWorldPos",vector) = (100,100,100,0)
 // ================================================== alpha      
         [Group(Alpha)]
         [GroupHeader(Alpha,BlendMode)]
@@ -102,15 +109,17 @@ HLSLINCLUDE
     float _FogNoiseAtten;
 
     float _CameraFadeDist;
-    /**
-    sampler2D _SceneFogMap; // map for fog hole
-    float2 _FogAreaScale; // map for fog hole
-    */
+    
     float4 _SceneFogColor;
     float _WorldPosScale;
     float _MaskScale;
     float4 _MaskTex_ST;
     float4 _ScreenRange;
+    // scene war fog 
+    sampler2D _SceneFogMap; // map for fog hole
+    float2 _FogAreaScale; // map for fog hole
+    float3 _MinWorldPos,_MaxWorldPos;
+    float _SceneFogMapAttenChannel;
     CBUFFER_END
 
     float4 CalcFogFactor(float3 worldPos){
@@ -118,10 +127,15 @@ HLSLINCLUDE
 
         float fogRate = 1; // sceneFog, dont need depth fog
         // map for fog hole
-        #if defined(_SCENE_FOG_MAP)
-        half4 fogMap = tex2Dlod(_SceneFogMap,half4(worldUV.xz,0,0));
-        half fogAtten = smoothstep(_FogAreaScale.x,_FogAreaScale.y,fogMap.y);
-        fogRate *= fogAtten;
+        #if defined(SCENE_FOG_MAP)
+            worldUV = (worldPos - _MinWorldPos)/(_MaxWorldPos - _MinWorldPos);
+
+            half4 fogMap = tex2Dlod(_SceneFogMap,half4(worldUV.xz,0,0));
+            half fogAtten = smoothstep(_FogAreaScale.x,_FogAreaScale.y,fogMap[_SceneFogMapAttenChannel]);
+            half isOut = any(worldUV.xz>1)||any(worldUV.xz<0); // over [0,1]
+            fogAtten *= 1-isOut;
+            // return float4(worldUV,saturate(fogAtten));
+            fogRate *= fogAtten;
         #endif
 
         float heightFogRate = (_HeightFogRange.x - worldPos.y)/(_HeightFogRange.y-_HeightFogRange.x);
@@ -186,6 +200,7 @@ ENDHLSL
             HLSLPROGRAM
             #pragma vertex vert
             #pragma fragment frag
+            #pragma shader_feature SCENE_FOG_MAP
 
             struct appdata
             {
