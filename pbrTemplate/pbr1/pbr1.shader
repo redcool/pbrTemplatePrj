@@ -71,7 +71,7 @@ Shader "URP/pbr1"
         [GroupToggle(Fog)]_HeightFogOn("_HeightFogOn",int) = 1
 //================================================= AnimTex
 		[Group(AnimTex)]
-        [GroupToggle(AnimTex,_ANIM_TEX_ON)] _AnimTexOn("Anim Tex",float) = 0
+        [GroupToggle(AnimTex,_ANIM_TEX_ON)] _AnimTexOn("Anim Tex ON",float) = 0
 		[GroupItem(AnimTex)] _AnimTex("Anim Tex",2d) = ""{}
 		[GroupItem(AnimTex)] _AnimSampleRate("Anim Sample Rate",float) = 30
 		[GroupItem(AnimTex)] _StartFrame("Start Frame",float) = 0
