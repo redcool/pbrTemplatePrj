@@ -15,8 +15,10 @@ struct appdata
     float4 vertex : POSITION;
     float2 uv : TEXCOORD0;
     float2 uv1:TEXCOORD1;
-    float3 normal:NORMAL;
+    float4 normal:NORMAL;
     float4 tangent:TANGENT;
+    float4 weights:BLENDWEIGHTS;
+    uint indices:BLENDINDICES;
     UNITY_VERTEX_INPUT_INSTANCE_ID
 };
 
@@ -42,10 +44,7 @@ v2f vert (appdata v)
     UNITY_TRANSFER_INSTANCE_ID(v,o);
     
     #if defined(_ANIM_TEX_ON)
-    v.vertex = GetBlendAnimPos(v.vertexId,v.vertex);
-    v.normal = GetBlendAnimPos(v.vertexId,float4(v.normal,0));
-
-    v.tangent = float4(GetBlendAnimPos(v.vertexId,float4(v.tangent.xyz,0)).xyz,v.tangent.w);
+        CalcBlendAnimPos(v.vertexId,v.vertex/**/,v.normal/**/,v.tangent/**/,v.weights,v.indices);
     #endif
 
     o.vertex = UnityObjectToClipPos(v.vertex.xyz);
