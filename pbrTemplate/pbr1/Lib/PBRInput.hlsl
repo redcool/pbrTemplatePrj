@@ -47,7 +47,19 @@ half _Cutoff;
 half4 _EmissionColor;
 
 half _ParallaxOn,_ParallaxIterate,_ParallaxHeight,_ParallaxMapChannel;
-
+            
+//--- gpu animTex
+half _StartFrame;
+half _EndFrame;
+half _AnimSampleRate;
+half _Loop;
+half _NextStartFrame;
+half _NextEndFrame;
+half _CrossLerp;
+half _PlayTime;
+half _OffsetPlayTime;
+            
+half4 _AnimTex_TexelSize;
 CBUFFER_END
 
 #endif //PBR_INPUT_HLSL

@@ -8,9 +8,10 @@
 #include "../../../../PowerShaderLib/Lib/MaterialLib.hlsl"
 #include "../../../../PowerShaderLib/URPLib/Lighting.hlsl"
 #include "../../../../PowerShaderLib/Lib/ParallaxLib.hlsl"
-
+#include "../../../../PowerShaderLib/Lib/Skinned/AnimTextureLib.hlsl"
 struct appdata
 {
+    uint vertexId:SV_VertexID;
     float4 vertex : POSITION;
     float2 uv : TEXCOORD0;
     float2 uv1:TEXCOORD1;
@@ -39,6 +40,13 @@ v2f vert (appdata v)
     v2f o = (v2f)0;
     UNITY_SETUP_INSTANCE_ID(v);
     UNITY_TRANSFER_INSTANCE_ID(v,o);
+    
+    #if defined(_ANIM_TEX_ON)
+    v.vertex = GetBlendAnimPos(v.vertexId,v.vertex);
+    v.normal = GetBlendAnimPos(v.vertexId,float4(v.normal,0));
+
+    v.tangent = float4(GetBlendAnimPos(v.vertexId,float4(v.tangent.xyz,0)).xyz,v.tangent.w);
+    #endif
 
     o.vertex = UnityObjectToClipPos(v.vertex.xyz);
     o.uv.xy = TRANSFORM_TEX(v.uv, _MainTex);

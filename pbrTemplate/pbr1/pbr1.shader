@@ -2,7 +2,7 @@ Shader "URP/pbr1"
 {
     Properties
     {
-        [GroupHeader(v0.0.7)]
+        [GroupHeader(v0.0.8)]
         [Group(Main)]
         [GroupItem(Main)]_BaseMap ("_BaseMap", 2D) = "white" {}
         [GroupItem(Main)][hdr][gamma]_Color ("_Color", color) = (1,1,1,1)
@@ -69,7 +69,20 @@ Shader "URP/pbr1"
         [GroupToggle(Fog)]_FogNoiseOn("_FogNoiseOn",int) = 0
         [GroupToggle(Fog)]_DepthFogOn("_DepthFogOn",int) = 1
         [GroupToggle(Fog)]_HeightFogOn("_HeightFogOn",int) = 1
+//================================================= AnimTex
+		[Group(AnimTex)]
+        [GroupToggle(AnimTex,_ANIM_TEX_ON)] _AnimTexOn("Anim Tex",float) = 0
+		[GroupItem(AnimTex)] _AnimTex("Anim Tex",2d) = ""{}
+		[GroupItem(AnimTex)] _AnimSampleRate("Anim Sample Rate",float) = 30
+		[GroupItem(AnimTex)] _StartFrame("Start Frame",float) = 0
+		[GroupItem(AnimTex)] _EndFrame("End Frame",float) = 1
+		[GroupItem(AnimTex)] _Loop("Loop[0:Loop,1:Clamp]",range(0,1)) = 1
+		[GroupItem(AnimTex)] _PlayTime("Play Time",float) = 0
+		[GroupItem(AnimTex)] _OffsetPlayTime("Offset Play Time",float) = 0
 
+		[GroupItem(AnimTex)] _NextStartFrame("Next Anim Start Frame",float) = 0
+		[GroupItem(AnimTex)] _NextEndFrame("Next Anim End Frame",float) = 0
+		[GroupItem(AnimTex)] _CrossLerp("Cross Lerp",range(0,1)) = 0
 
         // [Group(Lightmap)]
         // [GroupToggle(Lightmap,LIGHTMAP_ON)]_LightmapOn("_LightmapOn",int) = 0
@@ -134,6 +147,7 @@ Shader "URP/pbr1"
             #pragma shader_feature_fragment _RECEIVE_SHADOWS_OFF
             #pragma shader_feature_fragment ALPHA_TEST
             #pragma shader_feature_fragment _EMISSION
+            #pragma shader_feature_vertex _ANIM_TEX_ON
             
             #include "Lib/PBRInput.hlsl"
             #include "Lib/PBRForwardPass.hlsl"
@@ -173,6 +187,7 @@ Shader "URP/pbr1"
             #pragma multi_compile_vertex _ _CASTING_PUNCTUAL_LIGHT_SHADOW
 
             #pragma shader_feature_fragment ALPHA_TEST
+            #pragma shader_feature_vertex _ANIM_TEX_ON
             
             #define SHADOW_PASS 
             #define USE_SAMPLER2D
