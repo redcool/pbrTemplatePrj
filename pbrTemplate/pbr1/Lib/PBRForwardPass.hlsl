@@ -45,6 +45,8 @@ v2f vert (appdata v)
     
     #if defined(_ANIM_TEX_ON)
         CalcBlendAnimPos(v.vertexId,v.vertex/**/,v.normal/**/,v.tangent/**/,v.weights,v.indices);
+    #elif defined(_GPU_SKINNED_ON)
+        CalcSkinnedPos(v.vertexId,v.vertex/**/,v.normal/**/,v.tangent/**/,v.weights,v.indices);
     #endif
 
     o.vertex = UnityObjectToClipPos(v.vertex.xyz);
@@ -106,7 +108,7 @@ float4 frag (v2f i) : SV_Target
     float4 shadowCoord = TransformWorldToShadowCoord(worldPos);
     float shadowAtten = CalcShadow(shadowCoord,worldPos,shadowMask,_MainLightShadowSoftScale);
     float3 radiance = _MainLightColor.xyz * (nl * shadowAtten * distanceAtten);
-
+// return distanceAtten;
 //--------- lighting
     float4 mainTex = tex2D(_MainTex, mainUV) * _Color;
     float3 albedo = mainTex.xyz;
@@ -155,7 +157,7 @@ float4 frag (v2f i) : SV_Target
     
     float3 diffColor = albedo.xyz * (1- metallic);
     float3 directColor = (diffColor + specColor * specTerm) * radiance;
-// return directColor.xyzx;
+
 //------- gi
     float3 giColor = 0;
     float3 giDiff = CalcGIDiff(normal,diffColor,lightmapUV);

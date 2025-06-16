@@ -70,6 +70,9 @@ Shader "URP/pbr1"
         [GroupToggle(Fog)]_DepthFogOn("_DepthFogOn",int) = 1
         [GroupToggle(Fog)]_HeightFogOn("_HeightFogOn",int) = 1
 //================================================= AnimTex
+		[Group(GPUSkin)]
+        [GroupEnum(GPUSkin,_None _ANIM_TEX_ON _GPU_SKINNED_ON,true,use AnimTex or GpuSkin)] _GpuSkinnedOn("_GpuSkinOn",float) = 0
+
 		[Group(AnimTex)]
         [GroupToggle(AnimTex,_ANIM_TEX_ON)] _AnimTexOn("Anim Tex ON",float) = 0
 		[GroupItem(AnimTex)] _AnimTex("Anim Tex",2d) = ""{}
@@ -147,7 +150,7 @@ Shader "URP/pbr1"
             #pragma shader_feature_fragment _RECEIVE_SHADOWS_OFF
             #pragma shader_feature_fragment ALPHA_TEST
             #pragma shader_feature_fragment _EMISSION
-            #pragma shader_feature_vertex _ANIM_TEX_ON
+            #pragma shader_feature_vertex _ _ANIM_TEX_ON _GPU_SKINNED_ON
             
             #include "Lib/PBRInput.hlsl"
             #include "Lib/PBRForwardPass.hlsl"
@@ -187,7 +190,7 @@ Shader "URP/pbr1"
             #pragma multi_compile_vertex _ _CASTING_PUNCTUAL_LIGHT_SHADOW
 
             #pragma shader_feature_fragment ALPHA_TEST
-            #pragma shader_feature_vertex _ANIM_TEX_ON
+            #pragma shader_feature_vertex _ANIM_TEX_ON _GPU_SKINNED_ON
             
             #define SHADOW_PASS 
             #define USE_SAMPLER2D
