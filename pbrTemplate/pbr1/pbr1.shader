@@ -190,7 +190,7 @@ Shader "URP/pbr1"
             #pragma multi_compile_vertex _ _CASTING_PUNCTUAL_LIGHT_SHADOW
 
             #pragma shader_feature_fragment ALPHA_TEST
-            #pragma shader_feature_vertex _ANIM_TEX_ON _GPU_SKINNED_ON
+            #pragma shader_feature_vertex _ _ANIM_TEX_ON _GPU_SKINNED_ON
             
             #define SHADOW_PASS 
             #define USE_SAMPLER2D
