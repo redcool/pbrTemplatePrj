@@ -38,7 +38,7 @@ Shader "FX/Box/Nature/BoxSceneFog"
         [GroupItem(HeightFog)]  _CameraFadeDist("_CameraFadeDist",float) = 10
 // ================================================== scene fog map(warfog)
         [Group(SceneFogMap)]
-        [GroupToggle(SceneFogMap,SCENE_FOG_MAP)] _SceneFogMapOn("_SceneHeightFogOn",float) = 1
+        [GroupToggle(SceneFogMap,SCENE_FOG_MAP)] _SceneFogMapOn("_SceneFogMapOn",float) = 1
         [GroupItem(SceneFogMap)] [NoScaleOffset]_SceneFogMap("_SceneFogMap",2d) = "white"{}
         [GroupEnum(SceneFogMap,R 0 G 1 B 2 A 3)] _SceneFogMapAttenChannel("_SceneFogMapAttenChannel",float) = 1
         [GroupVectorSlider(SceneFogMap,min max,0_1 0_1,scebe fog range)] _FogAreaScale("_FogAreaScale",vector) = (0,1,0,0)
