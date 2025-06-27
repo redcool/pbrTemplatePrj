@@ -43,6 +43,15 @@ Shader "FX/Box/Blur/Box_PostEffects"
 
         [GroupItem(Vignette)] _Color1("_Color1",color) = (1,1,1,1)
         [GroupItem(Vignette)] _Color2("_Color2",color) = (1,1,1,1)
+// ================================================== Lens distortion
+        [Group(LensDistortion)]
+        [GroupToggle(LensDistortion,_LENS_DISTORTION)]_LensDistOn("_LensDistOn",float) = 0
+        [GroupItem(LensDistortion)]_LensDistIntensity("_LensDistIntensity",float) = 0
+        [GroupItem(LensDistortion)]_LensDistAmplitude("_LensDistAmplitude",float) = 0.02
+        [GroupVectorSlider(LensDistortion,centerX centerY,0_1 0_1)] _LensDistCenter("_LensDistCenter",vector) = (0.5,0.5,0,0)
+        [GroupItem(LensDistortion)]_LensDistScale("_LensDistScale",float) = 0
+        // [GroupItem(LensDistortion)]_LensDistMoveSpeed("_LensDistMoveSpeed",float) = 0
+        
 // ================================================== alpha      
         [Group(Alpha)]
         [GroupHeader(Alpha,BlendMode)]
@@ -115,6 +124,8 @@ Shader "FX/Box/Blur/Box_PostEffects"
             #pragma shader_feature _BLUR
             #pragma shader_feature _VIGNETTE
             #pragma shader_feature _NOISE_ON
+            #pragma shader_feature _LENS_DISTORTION
+            
 
             #include "../../../PowerShaderLib/Lib/UnityLib.hlsl"
             #include "../../../PowerShaderLib/Lib/PowerUtils.hlsl"
@@ -164,6 +175,12 @@ Shader "FX/Box/Blur/Box_PostEffects"
             half _NoiseSpeed;
             half _NoiseScale;
             half2 _NoiseDir;
+            // lens distortion
+            half _LensDistIntensity;
+            half _LensDistAmplitude;
+            half2 _LensDistCenter;
+            half _LensDistScale;
+            // half _LensDistMoveSpeed;
             CBUFFER_END
 
             v2f vert (appdata v)
@@ -183,6 +200,8 @@ Shader "FX/Box/Blur/Box_PostEffects"
                 return c * 0.5;
             }
 
+
+
             half4 frag (v2f i) : SV_Target
             {
                 float2 screenUV = i.vertex.xy / _ScaledScreenParams.xy;
@@ -195,6 +214,10 @@ Shader "FX/Box/Blur/Box_PostEffects"
                 #endif
 
                 screenUV += noise * 0.2;
+                // apply fish eye offset
+                #if defined(_LENS_DISTORTION)
+                ApplyLensDistorionUVOffset(screenUV/**/,_ScaledScreenParams,_LensDistIntensity,_LensDistAmplitude,_LensDistCenter,_LensDistScale);
+                #endif
 
                 TEXTURE2D(tex) = _CameraOpaqueTexture;
                 SAMPLER(texSampler) = sampler_CameraOpaqueTexture;
