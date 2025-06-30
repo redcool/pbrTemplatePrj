@@ -18,7 +18,7 @@ Shader "Hidden/StateTemplate"
 // ================================================== Settings
         [Group(Settings)]
         [GroupEnum(Settings,UnityEngine.Rendering.CullMode)]_CullMode("_CullMode",int) = 2
-		[GroupToggle(Settings)]_ZWriteMode("ZWriteMode",int) = 0
+		[GroupToggle(Settings)]_ZWriteMode("ZWriteMode",int) = 1
 
 		/*
 		Disabled,Never,Less,Equal,LessEqual,Greater,NotEqual,GreaterEqual,Always
