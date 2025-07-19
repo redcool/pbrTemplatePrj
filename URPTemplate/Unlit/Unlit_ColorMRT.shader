@@ -4,6 +4,8 @@ Shader "Template/Unlit/Color_MRT"
     {
         [Group(Main)]
         [GroupItem(Main)] _MainTex ("Texture", 2D) = "white" {}
+        [GroupToggle(Main,,sample texture use uv1)] _UseUV1 ("_UseUV1", float) = 0
+        [GroupToggle(Main,,uv1 y reverse)] _UV1ReverseY ("_UV1ReverseY", float) = 0
         [GroupItem(Main)] [hdr] _Color("_Color",color) = (1,1,1,1)
 
         [Group(Fog)]
@@ -77,6 +79,7 @@ Shader "Template/Unlit/Color_MRT"
             {
                 float4 vertex : POSITION;
                 float2 uv : TEXCOORD0;
+                float2 uv1:TEXCOORD1;
                 DECLARE_MOTION_VS_INPUT(prevPos);
                 float3 normal:NORMAL;
                 float4 color:COLOR;
@@ -85,7 +88,7 @@ Shader "Template/Unlit/Color_MRT"
 
             struct v2f
             {
-                float2 uv : TEXCOORD0;
+                float4 uv : TEXCOORD0;
                 float4 vertex : SV_POSITION;
                 float4 worldPos:TEXCOORD1;
                 float2 fogCoord:TEXCOORD2;
@@ -102,6 +105,7 @@ Shader "Template/Unlit/Color_MRT"
             half _FogOn,_FogNoiseOn,_DepthFogOn,_HeightFogOn;
             half _Cutoff;
             half _NormalUnifiedOn;
+            half _UseUV1,_UV1ReverseY;
             CBUFFER_END
             
             #include "../../../PowerShaderLib/Lib/FogLib.hlsl"
@@ -111,7 +115,8 @@ Shader "Template/Unlit/Color_MRT"
             {
                 v2f o = (v2f)0;
                 o.vertex = TransformObjectToHClip(v.vertex.xyz);
-                o.uv = TRANSFORM_TEX(v.uv, _MainTex);
+                o.uv.xy = TRANSFORM_TEX(v.uv, _MainTex);
+                o.uv.zw = _UV1ReverseY ? float2(v.uv1.x, 1 - v.uv1.y) : v.uv1;
                 o.worldPos.xyz = TransformObjectToWorld(v.vertex.xyz);
                 o.fogCoord = CalcFogFactor(o.worldPos.xyz,o.vertex.z,_HeightFogOn,_DepthFogOn);
                 o.color = v.color;
@@ -124,8 +129,9 @@ Shader "Template/Unlit/Color_MRT"
 
             float4 frag (v2f i,out float4 outputNormal:SV_TARGET1,out float4 outputMotionVectors:SV_TARGET2) : SV_Target
             {
+                float2 uv = _UseUV1? i.uv.zw : i.uv.xy;
                 // sample the texture
-                float4 col = tex2D(_MainTex, i.uv) * _Color * i.color;
+                float4 col = tex2D(_MainTex, uv) * _Color * i.color;
                 #if defined(ALPHA_TEST)
                     clip(col.w - _Cutoff);
                 #endif
