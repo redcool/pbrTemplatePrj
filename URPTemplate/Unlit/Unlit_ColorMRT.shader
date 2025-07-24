@@ -7,6 +7,11 @@ Shader "Template/Unlit/Color_MRT"
         [GroupToggle(Main,,sample texture use uv1)] _UseUV1 ("_UseUV1", float) = 0
         [GroupToggle(Main,,uv1 y reverse)] _UV1ReverseY ("_UV1ReverseY", float) = 0
         [GroupItem(Main)] [hdr] _Color("_Color",color) = (1,1,1,1)
+// ================================================== main texture array
+        [GroupHeader(MainTexArray)]
+        [GroupToggle(Main,MAIN_TEX_ARRAY,mainTex use tex1DARRAY)] MAIN_TEX_ARRAY ("MAIN_TEX_ARRAY", float) = 0
+        [GroupItem(Main)] _MainTexArray ("_MainTexArray", 2DArray) = "white" {}
+        [GroupSlider(Main,texArr id,int)] _MainTexArrayId ("_MainTexArrayId", range(0,16)) = 0
 
         [Group(Fog)]
         [GroupToggle(Fog)]_FogOn("_FogOn",int) = 1
@@ -71,6 +76,7 @@ Shader "Template/Unlit/Color_MRT"
             #pragma fragment frag
             #pragma shader_feature SIMPLE_FOG
             #pragma shader_feature ALPHA_TEST
+            #pragma shader_feature MAIN_TEX_ARRAY
 
             #include "../../../PowerShaderLib/Lib/UnityLib.hlsl"
             #include "../../../PowerShaderLib/URPLib/URP_MotionVectors.hlsl"
@@ -99,6 +105,8 @@ Shader "Template/Unlit/Color_MRT"
             };
 
             sampler2D _MainTex;
+            TEXTURE2D_ARRAY(_MainTexArray);SAMPLER(sampler_MainTexArray);
+
             CBUFFER_START(UnityPerMaterial)
             float4 _MainTex_ST;
             half4 _Color;
@@ -106,6 +114,7 @@ Shader "Template/Unlit/Color_MRT"
             half _Cutoff;
             half _NormalUnifiedOn;
             half _UseUV1,_UV1ReverseY;
+            half _MainTexArrayId;
             CBUFFER_END
             
             #include "../../../PowerShaderLib/Lib/FogLib.hlsl"
@@ -127,11 +136,25 @@ Shader "Template/Unlit/Color_MRT"
                 return o;
             }
 
+            half4 SampleMainTex(float2 uv){
+                #if defined(MAIN_TEX_ARRAY)
+                // half4 tex = tex2DARRAY(_MainTexArray,float3(uv,_MainTexArrayId));
+                half4 tex = SAMPLE_TEXTURE2D_ARRAY(_MainTexArray,sampler_MainTexArray,uv,_MainTexArrayId);
+                #else
+                half4 tex = tex2D(_MainTex, uv);
+                #endif
+                return tex;
+            }
+
             float4 frag (v2f i,out float4 outputNormal:SV_TARGET1,out float4 outputMotionVectors:SV_TARGET2) : SV_Target
             {
                 float2 uv = _UseUV1? i.uv.zw : i.uv.xy;
+
                 // sample the texture
-                float4 col = tex2D(_MainTex, uv) * _Color * i.color;
+                half4 mainTex = SampleMainTex(uv);
+                float4 col = mainTex * _Color * i.color;
+
+
                 #if defined(ALPHA_TEST)
                     clip(col.w - _Cutoff);
                 #endif
