@@ -7,6 +7,7 @@ Shader "Template/Unlit/Color_MRT"
         [GroupToggle(Main,,sample texture use uv1)] _UseUV1 ("_UseUV1", float) = 0
         [GroupToggle(Main,,uv1 y reverse)] _UV1ReverseY ("_UV1ReverseY", float) = 0
         [GroupItem(Main)] [hdr] _Color("_Color",color) = (1,1,1,1)
+        [GroupToggle(Main,,preMulti vertex color)] _PreMulVertexColor ("_PreMulVertexColor", float) = 0
 // ================================================== main texture array
         [GroupHeader(MainTexArray)]
         [GroupToggle(Main,MAIN_TEX_ARRAY,mainTex use tex1DARRAY)] MAIN_TEX_ARRAY ("MAIN_TEX_ARRAY", float) = 0
@@ -22,6 +23,26 @@ Shader "Template/Unlit/Color_MRT"
 
         [Group(Normal)]
         [GroupToggle(Normal, ,output flat normal)]_NormalUnifiedOn("_NormalUnifiedOn",int) = 0
+//================================================= emission
+        [Group(Emission)]
+        [GroupToggle(Emission,_EMISSION)]_EmissionOn("_EmissionOn",int) = 0  //_EMISSION
+        [GroupItem(Emission)]_EmissionMap("_EmissionMap(rgb:Color,a:Mask)",2d)=""{}
+        [hdr][GroupItem(Emission)]_EmissionColor("_EmissionColor(w:mask)",color) = (0,0,0,0)
+        [GroupMaterialGI(Emission)]_EmissionGI("_EmissionGI",int) = 0
+//================================================= Env
+        [Group(Env)]
+        [GroupHeader(Env,Custom IBL)]
+        [GroupToggle(Env,_IBL_ON)]_IBLOn("_IBLOn",float) = 0
+        [GroupItem(Env)][NoScaleOffset]_IBLCube("_IBLCube",cube) = ""{}
+        
+        [GroupHeader(Env,IBL Params)]
+        [GroupItem(Env)]_EnvIntensity("_EnvIntensity",float) = 1
+        [GroupItem(Env)]_FresnelIntensity("_FresnelIntensity",float) = 1
+
+// ================================================== lighting
+        [Group(Lighting)]
+        [GroupItem(Lighting)] _Metallic("_Metallic",range(0,1)) = 0.5
+        [GroupItem(Lighting)] _Smoothness("_Smoothness",range(0,1)) = 0.5
 // ================================================== stencil settings
         [Group(Stencil)]
         [GroupEnum(Stencil,UnityEngine.Rendering.CompareFunction)]_StencilComp ("Stencil Comparison", Float) = 0
@@ -77,8 +98,12 @@ Shader "Template/Unlit/Color_MRT"
             #pragma shader_feature SIMPLE_FOG
             #pragma shader_feature ALPHA_TEST
             #pragma shader_feature MAIN_TEX_ARRAY
+            #pragma shader_feature _EMISSION
+            #pragma shader_feature _IBL_ON
 
             #include "../../../PowerShaderLib/Lib/UnityLib.hlsl"
+            #include "../../../PowerShaderLib/Lib/MaterialLib.hlsl"
+            #include "../../../PowerShaderLib/Lib/GILib.hlsl"
             #include "../../../PowerShaderLib/URPLib/URP_MotionVectors.hlsl"
 
             struct appdata
@@ -106,6 +131,8 @@ Shader "Template/Unlit/Color_MRT"
 
             sampler2D _MainTex;
             TEXTURE2D_ARRAY(_MainTexArray);SAMPLER(sampler_MainTexArray);
+            sampler2D _EmissionMap;
+            TEXTURECUBE(_IBLCube); SAMPLER(sampler_IBLCube);
 
             CBUFFER_START(UnityPerMaterial)
             float4 _MainTex_ST;
@@ -115,6 +142,14 @@ Shader "Template/Unlit/Color_MRT"
             half _NormalUnifiedOn;
             half _UseUV1,_UV1ReverseY;
             half _MainTexArrayId;
+            half _PreMulVertexColor;
+
+            half _EmissionOn;
+            half4 _EmissionColor;
+            half _Metallic,_Smoothness;
+            half _EnvIntensity;
+            half _FresnelIntensity;
+            half4 _IBLCube_HDR;;
             CBUFFER_END
             
             #include "../../../PowerShaderLib/Lib/FogLib.hlsl"
@@ -149,19 +184,89 @@ Shader "Template/Unlit/Color_MRT"
             float4 frag (v2f i,out float4 outputNormal:SV_TARGET1,out float4 outputMotionVectors:SV_TARGET2) : SV_Target
             {
                 float2 uv = _UseUV1? i.uv.zw : i.uv.xy;
+                float3 worldPos = i.worldPos.xyz;
+                float3 n = i.normal.xyz;
+                float3 v = normalize(GetWorldSpaceViewDir(worldPos));
+                float nv = saturate(dot(n,v));
+
+
+                float metallic = _Metallic;
+                float smoothness = _Smoothness;
+
+                //---------- roughness
+                float roughness = 0;
+                float a = 0;
+                float a2 = 0;
+                CalcRoughness(roughness/**/,a/**/,a2/**/,smoothness);                
 
                 // sample the texture
                 half4 mainTex = SampleMainTex(uv);
-                float4 col = mainTex * _Color * i.color;
+                half4 vertexColor = _PreMulVertexColor ? i.color : 1;
+                float4 c = mainTex * _Color * vertexColor;
 
+                float3 albedo = c.xyz;
+                float alpha = c.w;
+
+                float3 diffColor = albedo * (1 - metallic);
+                float3 specColor = lerp(0.04,albedo,metallic);
+
+                half3 directColor = diffColor;
+
+                //--- custom ibl
+                #if defined(_IBL_ON)
+                    #define IBL_CUBE _IBLCube
+                    #define IBL_CUBE_SAMPLER sampler_IBLCube
+                    #define IBL_HDR _IBLCube_HDR    
+                #else
+                    #define IBL_CUBE unity_SpecCube0
+                    #define IBL_CUBE_SAMPLER samplerunity_SpecCube0
+                    #define IBL_HDR unity_SpecCube0_HDR
+                #endif
+                float3 giColor = 0;
+                // float3 giDiff = CalcGIDiff(normal,diffColor,lightmapUV);
+                float3 giSpec = CalcGISpec(IBL_CUBE,
+                    IBL_CUBE_SAMPLER,
+                    IBL_HDR,
+                    specColor,
+                    worldPos,
+                    n,
+                    v,
+                    0/*reflectDirOffset*/,
+                    _EnvIntensity/*reflectIntensity*/,
+                    nv,
+                    roughness,
+                    a2,
+                    smoothness,
+                    metallic,
+                    half2(0,1),
+                    _FresnelIntensity,
+                    0,
+                    0,
+                    0,
+                    0
+                );
+                // giColor = (giDiff * _LightmapColor.xyz + giSpec) * occlusion;
+                giColor = giSpec;
+
+                half4 col = (half4)0;
+                col.xyz = directColor + giColor;
+                col.w = alpha;
+
+            //------ emission
+                half3 emissionColor = 0;
+                #if defined(_EMISSION)
+                    emissionColor += CalcEmission(tex2D(_EmissionMap,uv),_EmissionColor.xyz,_EmissionColor.w*_EmissionOn);
+                #endif
+                col.xyz += emissionColor;
 
                 #if defined(ALPHA_TEST)
                     clip(col.w - _Cutoff);
                 #endif
-                float3 worldPos = i.worldPos.xyz;
+
+
                 //-------- output mrt
                 // output world normal
-                outputNormal = half4(i.normal.xyz,0.5);
+                outputNormal = half4(n,0.5);
                 // output motion
                 outputMotionVectors = CALC_MOTION_VECTORS(i);
 
