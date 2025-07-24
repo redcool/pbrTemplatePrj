@@ -9,7 +9,7 @@ Shader "Template/Unlit/Color_MRT"
         [GroupItem(Main)] [hdr] _Color("_Color",color) = (1,1,1,1)
         [GroupToggle(Main,,preMulti vertex color)] _PreMulVertexColor ("_PreMulVertexColor", float) = 0
 // ================================================== main texture array
-        [GroupHeader(MainTexArray)]
+        [GroupHeader(Main,MainTexArray)]
         [GroupToggle(Main,MAIN_TEX_ARRAY,mainTex use tex1DARRAY)] MAIN_TEX_ARRAY ("MAIN_TEX_ARRAY", float) = 0
         [GroupItem(Main)] _MainTexArray ("_MainTexArray", 2DArray) = "white" {}
         [GroupSlider(Main,texArr id,int)] _MainTexArrayId ("_MainTexArrayId", range(0,16)) = 0
@@ -21,13 +21,7 @@ Shader "Template/Unlit/Color_MRT"
         [GroupItem(PBR Mask)]_Smoothness("_Smoothness",range(0,1)) = 0.5
         [GroupItem(PBR Mask)]_Occlusion("_Occlusion",range(0,1)) = 0
 
-        [Group(Fog)]
-        [GroupToggle(Fog)]_FogOn("_FogOn",int) = 1
-        [GroupToggle(Fog,SIMPLE_FOG,use simple linear depth height fog)]_SimpleFog("_SimpleFog",int) = 0
-        [GroupToggle(Fog)]_FogNoiseOn("_FogNoiseOn",int) = 0
-        [GroupToggle(Fog)]_DepthFogOn("_DepthFogOn",int) = 1
-        [GroupToggle(Fog)]_HeightFogOn("_HeightFogOn",int) = 1
-
+//================================================= Normal
         [Group(Normal)]
         [GroupToggle(Normal, ,output flat normal)]_NormalUnifiedOn("_NormalUnifiedOn",int) = 0
 //================================================= emission
@@ -45,6 +39,13 @@ Shader "Template/Unlit/Color_MRT"
         [GroupHeader(Env,IBL Params)]
         [GroupItem(Env)]_EnvIntensity("_EnvIntensity",float) = 1
         [GroupItem(Env)]_FresnelIntensity("_FresnelIntensity",float) = 1
+// ================================================== Fog
+        [Group(Fog)]
+        [GroupToggle(Fog)]_FogOn("_FogOn",int) = 1
+        [GroupToggle(Fog,SIMPLE_FOG,use simple linear depth height fog)]_SimpleFog("_SimpleFog",int) = 0
+        [GroupToggle(Fog)]_FogNoiseOn("_FogNoiseOn",int) = 0
+        [GroupToggle(Fog)]_DepthFogOn("_DepthFogOn",int) = 1
+        [GroupToggle(Fog)]_HeightFogOn("_HeightFogOn",int) = 1        
 // ================================================== stencil settings
         [Group(Stencil)]
         [GroupEnum(Stencil,UnityEngine.Rendering.CompareFunction)]_StencilComp ("Stencil Comparison", Float) = 0
