@@ -13,6 +13,13 @@ Shader "Template/Unlit/Color_MRT"
         [GroupToggle(Main,MAIN_TEX_ARRAY,mainTex use tex1DARRAY)] MAIN_TEX_ARRAY ("MAIN_TEX_ARRAY", float) = 0
         [GroupItem(Main)] _MainTexArray ("_MainTexArray", 2DArray) = "white" {}
         [GroupSlider(Main,texArr id,int)] _MainTexArrayId ("_MainTexArrayId", range(0,16)) = 0
+// ================================================== pbrMask        
+        [Group(PBR Mask)]
+        [GroupItem(PBR Mask)]_PbrMask("_PbrMask",2d)="white"{}
+
+        [GroupItem(PBR Mask)]_Metallic("_Metallic",range(0,1)) = 0.5
+        [GroupItem(PBR Mask)]_Smoothness("_Smoothness",range(0,1)) = 0.5
+        [GroupItem(PBR Mask)]_Occlusion("_Occlusion",range(0,1)) = 0
 
         [Group(Fog)]
         [GroupToggle(Fog)]_FogOn("_FogOn",int) = 1
@@ -38,11 +45,6 @@ Shader "Template/Unlit/Color_MRT"
         [GroupHeader(Env,IBL Params)]
         [GroupItem(Env)]_EnvIntensity("_EnvIntensity",float) = 1
         [GroupItem(Env)]_FresnelIntensity("_FresnelIntensity",float) = 1
-
-// ================================================== lighting
-        [Group(Lighting)]
-        [GroupItem(Lighting)] _Metallic("_Metallic",range(0,1)) = 0.5
-        [GroupItem(Lighting)] _Smoothness("_Smoothness",range(0,1)) = 0.5
 // ================================================== stencil settings
         [Group(Stencil)]
         [GroupEnum(Stencil,UnityEngine.Rendering.CompareFunction)]_StencilComp ("Stencil Comparison", Float) = 0
@@ -129,10 +131,11 @@ Shader "Template/Unlit/Color_MRT"
                 float4 normal:TEXCOORD3;
             };
 
-            sampler2D _MainTex;
             TEXTURE2D_ARRAY(_MainTexArray);SAMPLER(sampler_MainTexArray);
-            sampler2D _EmissionMap;
             TEXTURECUBE(_IBLCube); SAMPLER(sampler_IBLCube);
+            sampler2D _MainTex;
+            sampler2D _EmissionMap;
+            sampler2D _PbrMask;
 
             CBUFFER_START(UnityPerMaterial)
             float4 _MainTex_ST;
@@ -146,7 +149,7 @@ Shader "Template/Unlit/Color_MRT"
 
             half _EmissionOn;
             half4 _EmissionColor;
-            half _Metallic,_Smoothness;
+            half _Metallic,_Smoothness,_Occlusion;
             half _EnvIntensity;
             half _FresnelIntensity;
             half4 _IBLCube_HDR;;
@@ -189,16 +192,6 @@ Shader "Template/Unlit/Color_MRT"
                 float3 v = normalize(GetWorldSpaceViewDir(worldPos));
                 float nv = saturate(dot(n,v));
 
-
-                float metallic = _Metallic;
-                float smoothness = _Smoothness;
-
-                //---------- roughness
-                float roughness = 0;
-                float a = 0;
-                float a2 = 0;
-                CalcRoughness(roughness/**/,a/**/,a2/**/,smoothness);                
-
                 // sample the texture
                 half4 mainTex = SampleMainTex(uv);
                 half4 vertexColor = _PreMulVertexColor ? i.color : 1;
@@ -207,10 +200,21 @@ Shader "Template/Unlit/Color_MRT"
                 float3 albedo = c.xyz;
                 float alpha = c.w;
 
+
+                //---------- pbrMask
+                float4 pbrMask = tex2D(_PbrMask,uv);
+                float metallic = 0;
+                float smoothness =0;
+                float occlusion =0;
+                SplitPbrMaskTexture(metallic/**/,smoothness/**/,occlusion/**/,pbrMask,int3(0,1,2),float3(_Metallic,_Smoothness,_Occlusion),false);
+
                 float3 diffColor = albedo * (1 - metallic);
                 float3 specColor = lerp(0.04,albedo,metallic);
-
-                half3 directColor = diffColor;
+                //---------- roughness
+                float roughness = 0;
+                float a = 0;
+                float a2 = 0;
+                CalcRoughness(roughness/**/,a/**/,a2/**/,smoothness);      
 
                 //--- custom ibl
                 #if defined(_IBL_ON)
@@ -247,6 +251,8 @@ Shader "Template/Unlit/Color_MRT"
                 );
                 // giColor = (giDiff * _LightmapColor.xyz + giSpec) * occlusion;
                 giColor = giSpec;
+                
+                half3 directColor = diffColor;
 
                 half4 col = (half4)0;
                 col.xyz = directColor + giColor;
