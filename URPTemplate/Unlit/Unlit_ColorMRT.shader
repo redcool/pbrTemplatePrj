@@ -8,7 +8,7 @@ Shader "Template/Unlit/Color_MRT"
         [GroupToggle(Main,,uv1 y reverse)] _UV1ReverseY ("_UV1ReverseY", float) = 0
         [GroupItem(Main)] [hdr] _Color("_Color",color) = (1,1,1,1)
 // ================================================== main texture array
-        [GroupHeader(MainTexArray)]
+        [GroupHeader(Main,MainTexArray)]
         [GroupToggle(Main,MAIN_TEX_ARRAY,mainTex use tex1DARRAY)] MAIN_TEX_ARRAY ("MAIN_TEX_ARRAY", float) = 0
         [GroupItem(Main)] _MainTexArray ("_MainTexArray", 2DArray) = "white" {}
         [GroupSlider(Main,texArr id,int)] _MainTexArrayId ("_MainTexArrayId", range(0,16)) = 0
