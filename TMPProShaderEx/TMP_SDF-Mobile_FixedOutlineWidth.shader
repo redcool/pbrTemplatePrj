@@ -267,10 +267,15 @@ SubShader {
 
 
 			#ifdef OUTLINE_ON
+			float4 lastCol = c;
 			float outlineRate = saturate(smoothstep(0.01,0.02,d)*4 );
 			//c = lerp(input.outlineColor, input.faceColor, saturate(d - input.param.z));
             c = lerp(input.outlineColor, c, saturate(d - input.param.z));
+			// return d;
+			// return saturate(d-input.param.z);
+			// return saturate(d - input.param.y)* 1;
 			c *= saturate(d - input.param.y) * outlineRate;
+			c.xyz += lastCol.xyz;
 			#endif
 
 			#if UNDERLAY_ON
