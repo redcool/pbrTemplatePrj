@@ -90,4 +90,5 @@ float4 _FaceTex_ST;
 float4 _OutlineTex_ST;
 float _GrayOn;
 float _TwoColor;
+half _OutlineScale; //[1-4],for big text
 CBUFFER_END

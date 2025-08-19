@@ -56,6 +56,9 @@ Properties {
 	[GroupToggle(Effects)]_GrayOn("_GrayOn",int) = 0
 	[GroupToggle(Effects)]_TwoColor("_TwoColor",int) = 0
 
+	// [GroupItem(Effects,inner glyph scale)]_GlyphScale("_GlyphScale",range(0,.4)) = 0
+	[GroupItem(Effects,scale outline thickness)]_OutlineScale("_OutlineScale",range(1,4)) = 1
+	
 
 	[Group(Alpha)]
 	[GroupPresetBlendMode(Alpha,,_SrcMode,_DstMode)]_PresetBlendMode("_PresetBlendMode",int)=0
@@ -239,7 +242,7 @@ SubShader {
 			output.faceColor = faceColor;
 			output.outlineColor = outlineColor;
 			output.texcoord0 = float4(input.texcoord0.x, input.texcoord0.y, maskUV.x, maskUV.y);
-			output.param = half4(scale, bias - outline, bias + outline, bias);
+			output.param = half4(scale, bias - outline*_OutlineScale, bias + outline, bias);
 			output.mask = half4(vert.xy * 2 - clampedRect.xy - clampedRect.zw, 0.25 / (0.25 * half2(_MaskSoftnessX, _MaskSoftnessY) + pixelSize.xy));
 			#if (UNDERLAY_ON || UNDERLAY_INNER)
 			output.texcoord1 = float4(input.texcoord0 + layerOffset, input.color.a, 0);
@@ -256,21 +259,20 @@ SubShader {
 		// PIXEL SHADER
 		fixed4 PixShader(pixel_t input) : SV_Target
 		{
-			#if defined(_TWO_COLOR)
-			return 0;
-			#endif
 			UNITY_SETUP_INSTANCE_ID(input);
 
-			half d = tex2D(_MainTex, input.texcoord0.xy).a * input.param.x;
+			half4 mainTex = tex2D(_MainTex, input.texcoord0.xy);
+			half d = mainTex.a * input.param.x;
 			//half4 c = input.faceColor * saturate(d - input.param.w);
             half4 c = lerp(input.faceColor,_FaceColor *(input.upCol*(input.textureUV.y>0.5)+input.downCol*(input.textureUV.y<0.5)),_TwoColor)* saturate(d - input.param.w);
-
-
 			#ifdef OUTLINE_ON
-			float outlineRate = saturate(smoothstep(0.01,0.02,d)*4 );
-			//c = lerp(input.outlineColor, input.faceColor, saturate(d - input.param.z));
-            c += lerp(input.outlineColor, c, saturate(d - input.param.z));
-			c *= saturate(d - input.param.y) * outlineRate;
+				float outlineRate = saturate(smoothstep(0.01,0.05,d)*4 );
+				//c = lerp(input.outlineColor, input.faceColor, saturate(d - input.param.z));
+				// half glyphScale =smoothstep(0.1,0.2,mainTex.a - _GlyphScale); // glyph scale
+
+				c = lerp(input.outlineColor, c, saturate(d - input.param.w)) + c; // saturate(d - input.param.z)
+				half atten = saturate(d - input.param.y) * outlineRate; // whole glyph scale
+				c *= atten;
 			#endif
 
 			#if UNDERLAY_ON
