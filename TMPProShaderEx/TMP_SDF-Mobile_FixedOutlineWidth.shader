@@ -199,7 +199,8 @@ SubShader {
 			//float outline = _OutlineWidth * _ScaleRatioA * 0.5 * scale;
 
 			// use _OutlineWidth direct
-			float outline = _OutlineWidth *_ScaleRatioA *10;
+			float outline = _OutlineWidth *_ScaleRatioA *10*4;
+			outline *= lerp(1,0.1,saturate(scale*500)); // control big font
 
 			float opacity = input.color.a;
 			#if (UNDERLAY_ON | UNDERLAY_INNER)
@@ -242,7 +243,7 @@ SubShader {
 			output.faceColor = faceColor;
 			output.outlineColor = outlineColor;
 			output.texcoord0 = float4(input.texcoord0.x, input.texcoord0.y, maskUV.x, maskUV.y);
-			output.param = half4(scale, bias - outline*_OutlineScale, bias + outline, bias);
+			output.param = half4(scale, bias - outline, bias + outline, bias);
 			output.mask = half4(vert.xy * 2 - clampedRect.xy - clampedRect.zw, 0.25 / (0.25 * half2(_MaskSoftnessX, _MaskSoftnessY) + pixelSize.xy));
 			#if (UNDERLAY_ON || UNDERLAY_INNER)
 			output.texcoord1 = float4(input.texcoord0 + layerOffset, input.color.a, 0);
@@ -263,6 +264,7 @@ SubShader {
 
 			half4 mainTex = tex2D(_MainTex, input.texcoord0.xy);
 			half d = mainTex.a * input.param.x;
+
 			//half4 c = input.faceColor * saturate(d - input.param.w);
             half4 c = lerp(input.faceColor,_FaceColor *(input.upCol*(input.textureUV.y>0.5)+input.downCol*(input.textureUV.y<0.5)),_TwoColor)* saturate(d - input.param.w);
 			#ifdef OUTLINE_ON
@@ -270,7 +272,7 @@ SubShader {
 				//c = lerp(input.outlineColor, input.faceColor, saturate(d - input.param.z));
 				// half glyphScale =smoothstep(0.1,0.2,mainTex.a - _GlyphScale); // glyph scale
 
-				c = lerp(input.outlineColor, c, saturate(d - input.param.w)) + c; // saturate(d - input.param.z)
+				c = lerp(input.outlineColor, 0, saturate(d - input.param.w)) + c; // saturate(d - input.param.z)
 				half atten = saturate(d - input.param.y) * outlineRate; // whole glyph scale
 				c *= atten;
 			#endif
