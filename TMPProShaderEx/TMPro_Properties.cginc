@@ -89,6 +89,9 @@ uniform float		_Sharpness;
 float4 _FaceTex_ST;
 float4 _OutlineTex_ST;
 float _GrayOn;
-float _TwoColor;
-half _OutlineScale; //[1-4],for big text
+
+half2 _FaceColorRange;
+half4 _FaceColor2;
+
+// half _OutlineScale; //[1-4],for big text
 CBUFFER_END

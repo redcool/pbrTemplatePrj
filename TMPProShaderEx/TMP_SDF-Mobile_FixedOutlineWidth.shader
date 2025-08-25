@@ -54,10 +54,14 @@ Properties {
 
 	[Group(Effects)]
 	[GroupToggle(Effects)]_GrayOn("_GrayOn",int) = 0
-	[GroupToggle(Effects)]_TwoColor("_TwoColor",int) = 0
+
+	[Group(GradientColor)]
+	[GroupToggle(GradientColor,_SMOOTH_GRADIENT_ON, use TMPText ColorGradient smooth control)]_SmoothGradientOn("_SmoothGradientOn",int) = 0
+	[GroupVectorSlider(GradientColor,colorRangeMin colorRangeMax, 0_1 0_1,,color Gradient range)]_FaceColorRange("_FaceColorRange",vector) = (0,1,0,0)
+	[GroupItem(GradientColor)]_FaceColor2("_FaceColor2",color) = ( 1,1,1,1)
 
 	// [GroupItem(Effects,inner glyph scale)]_GlyphScale("_GlyphScale",range(0,.4)) = 0
-	[GroupItem(Effects,scale outline thickness)]_OutlineScale("_OutlineScale",range(1,4)) = 1
+	// [GroupItem(Effects,scale outline thickness)]_OutlineScale("_OutlineScale",range(1,4)) = 1
 	
 
 	[Group(Alpha)]
@@ -109,6 +113,7 @@ SubShader {
 		#pragma fragment PixShader
 		#pragma shader_feature OUTLINE_ON
 		#pragma shader_feature UNDERLAY_ON UNDERLAY_INNER
+		#pragma shader_feature_fragment _SMOOTH_GRADIENT_ON
 
 		#pragma multi_compile __ UNITY_UI_CLIP_RECT
 		#pragma multi_compile __ UNITY_UI_ALPHACLIP
@@ -119,17 +124,9 @@ SubShader {
 		
 		#include "UnityUI.cginc"
 		#include "TMPro_Properties.cginc"
+		#include "TMPro.cginc"
 
 		#pragma multi_compile_fragment _ _SRGB_TO_LINEAR_CONVERSION _LINEAR_TO_SRGB_CONVERSION
-
-        float2 UnpackUV(float uv)
-		{ 
-			float2 output;
-			output.x = floor(uv / 4096);
-			output.y = uv - 4096 * output.x;
-
-			return output * 0.001953125;
-		}
 
 		struct vertex_t {
 			UNITY_VERTEX_INPUT_INSTANCE_ID
@@ -200,7 +197,7 @@ SubShader {
 
 			// use _OutlineWidth direct
 			float outline = _OutlineWidth *_ScaleRatioA *10*4;
-			outline *= lerp(1,0.1,saturate(scale*500)); // control big font
+			outline *= lerp(1,0.17,saturate(scale*100)); // control big font
 
 			float opacity = input.color.a;
 			#if (UNDERLAY_ON | UNDERLAY_INNER)
@@ -208,15 +205,6 @@ SubShader {
 			#endif
 
             fixed4 faceColor = fixed4(input.color.rgb, opacity) * _FaceColor;
-        
-            float2 textureUV = UnpackUV(input.texcoord1.xy);			
-			fixed4 upColor = float4(0,0,0,1);
-			fixed4 downColor = float4(0,0,0,1);
-            float _Threshold = 0.01;
-            if (abs(textureUV.y) < _Threshold)
-			{downColor.rgb = input.color.rgb;}
-			else
-			{upColor.rgb = input.color.rgb;}
 			
 			faceColor.rgb *= faceColor.a;
 
@@ -249,9 +237,6 @@ SubShader {
 			output.texcoord1 = float4(input.texcoord0 + layerOffset, input.color.a, 0);
 			output.underlayParam = half2(layerScale, layerBias);
 			#endif
-            output.textureUV = float4(textureUV,textureUV);
-			output.upCol = upColor;
-			output.downCol = downColor;
 
 			return output;
 		}
@@ -261,12 +246,18 @@ SubShader {
 		fixed4 PixShader(pixel_t input) : SV_Target
 		{
 			UNITY_SETUP_INSTANCE_ID(input);
+			
+			// gradient color scale
+			#if defined(_SMOOTH_GRADIENT_ON)
+				half colorScale = dot(input.faceColor.xyz,half3(0.2,0.7,0.02));
+				half4 mainFaceColor = lerp(_FaceColor2,_FaceColor, smoothstep(_FaceColorRange.x,_FaceColorRange.y,colorScale));
+				input.faceColor.xyz = mainFaceColor.xyz;
+			#endif
 
 			half4 mainTex = tex2D(_MainTex, input.texcoord0.xy);
 			half d = mainTex.a * input.param.x;
 
-			//half4 c = input.faceColor * saturate(d - input.param.w);
-            half4 c = lerp(input.faceColor,_FaceColor *(input.upCol*(input.textureUV.y>0.5)+input.downCol*(input.textureUV.y<0.5)),_TwoColor)* saturate(d - input.param.w);
+			half4 c = input.faceColor * saturate(d - input.param.w);
 			#ifdef OUTLINE_ON
 				float outlineRate = saturate(smoothstep(0.01,0.05,d)*4 );
 				//c = lerp(input.outlineColor, input.faceColor, saturate(d - input.param.z));
@@ -303,8 +294,7 @@ SubShader {
 			#endif
 
 			LinearGammaAutoChange(c/**/);
-			c.xyz = lerp(c.xyz,dot(float3(0.2,0.7,0.02),c.xyz),_GrayOn);
-            c.xyz = lerp(c.xyz,c.xyz*1.5,_TwoColor);
+			c.xyz = lerp(c.xyz,dot(c.xyz,half3(0.2,0.7,0.02)),_GrayOn);
 			return c;
 		}
 		ENDHLSL
