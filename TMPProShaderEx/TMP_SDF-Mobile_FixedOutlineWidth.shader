@@ -150,9 +150,7 @@ SubShader {
 			float4	texcoord1		: TEXCOORD3;			// Texture UV, alpha, reserved
 			half2	underlayParam	: TEXCOORD4;			// Scale(x), Bias(y)
 			#endif
-            float4	textureUV		: TEXCOORD5;
-			float4	upCol			: TEXCOORD6;
-			float4	downCol		: TEXCOORD7;
+
 		};
 
 		pixel_t VertShader(vertex_t input)
@@ -170,17 +168,10 @@ SubShader {
 			vert.x += _VertexOffsetX;
 			vert.y += _VertexOffsetY;
 			float4 vPosition = UnityObjectToClipPos(vert);
-
-			// float2 screenSize = _ScaledScreenParams;
-			float isOrtho = unity_OrthoParams.w;
-			float pixelScale = lerp(4,1,isOrtho);
-
 			float2 screenSize = float2(1920,1080);
 			screenSize = lerp(screenSize.xy, screenSize.yx ,_ScreenParams.y > _ScreenParams.x);
 			float2 pixelSize = vPosition.w;
 			pixelSize /= float2(_ScaleX, _ScaleY) * abs(mul((float2x2)UNITY_MATRIX_P, screenSize.xy));
-			// pixelSize = 4/_ScaledScreenParams*float2(_ScaleX, _ScaleY);
-			// pixelSize *= pixelScale;
 
 			float scale = rsqrt(dot(pixelSize, pixelSize));
 			scale *= abs(input.texcoord1.y) * _GradientScale * (_Sharpness + 1);

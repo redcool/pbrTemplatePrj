@@ -86,6 +86,15 @@ Properties {
 	[Group(Effects)]
 	[GroupToggle(Effects)]_GrayOn("_GrayOn",int) = 0
 
+	[Group(GradientColor)]
+	[GroupToggle(GradientColor,_SMOOTH_GRADIENT_ON, use TMPText ColorGradient smooth control)]_SmoothGradientOn("_SmoothGradientOn",int) = 0
+	[GroupVectorSlider(GradientColor,colorRangeMin colorRangeMax, 0_1 0_1,,color Gradient range)]_FaceColorRange("_FaceColorRange",vector) = (0,1,0,0)
+	[GroupItem(GradientColor)]_FaceColor2("_FaceColor2",color) = ( 1,1,1,1)
+
+	// [GroupItem(Effects,inner glyph scale)]_GlyphScale("_GlyphScale",range(0,.4)) = 0
+	// [GroupItem(Effects,scale outline thickness)]_OutlineScale("_OutlineScale",range(1,4)) = 1
+	
+
 	[Group(Alpha)]
 	[GroupPresetBlendMode(Alpha,,_SrcMode,_DstMode)]_PresetBlendMode("_PresetBlendMode",int)=0
 	// [GroupEnum(Alpha,UnityEngine.Rendering.BlendMode)]
@@ -148,6 +157,7 @@ SubShader {
 		#include "TMPro_Properties.cginc"
 		#include "TMPro.cginc"
 		#pragma multi_compile_fragment _ _SRGB_TO_LINEAR_CONVERSION _LINEAR_TO_SRGB_CONVERSION
+		#pragma shader_feature _SMOOTH_GRADIENT_ON
 
 		struct vertex_t {
 			UNITY_VERTEX_INPUT_INSTANCE_ID
@@ -192,9 +202,13 @@ SubShader {
 			vert.y += _VertexOffsetY;
 
 			float4 vPosition = UnityObjectToClipPos(vert);
-
+			float2 screenSize = float2(1920,1080);
+			screenSize = lerp(screenSize.xy, screenSize.yx ,_ScreenParams.y > _ScreenParams.x);
+			// float2 pixelSize = vPosition.w;
+			// pixelSize /= float2(_ScaleX, _ScaleY) * abs(mul((float2x2)UNITY_MATRIX_P, _ScreenParams.xy));
 			float2 pixelSize = vPosition.w;
-			pixelSize /= float2(_ScaleX, _ScaleY) * abs(mul((float2x2)UNITY_MATRIX_P, _ScreenParams.xy));
+			pixelSize /= float2(_ScaleX, _ScaleY) * abs(mul((float2x2)UNITY_MATRIX_P, screenSize.xy));
+
 			float scale = rsqrt(dot(pixelSize, pixelSize));
 			scale *= abs(input.texcoord1.y) * _GradientScale * (_Sharpness + 1);
 			if (UNITY_MATRIX_P[3][3] == 0) scale = lerp(abs(scale) * (1 - _PerspectiveFilter), scale, abs(dot(UnityObjectToWorldNormal(input.normal.xyz), normalize(WorldSpaceViewDir(vert)))));
@@ -256,7 +270,7 @@ SubShader {
 			UNITY_SETUP_INSTANCE_ID(input);
 
 			float c = tex2D(_MainTex, input.atlas).a;
-
+// return c;
 		#ifndef UNDERLAY_ON
 			clip(c - input.param.x);
 		#endif
@@ -265,7 +279,6 @@ SubShader {
 			float	bias	= input.param.z;
 			float	weight	= input.param.w;
 			float	sd = (bias - c) * scale;
-
 			float outline = (_OutlineWidth * _ScaleRatioA) * scale;
 			float softness = (_OutlineSoftness * _ScaleRatioA) * scale;
 
@@ -277,10 +290,18 @@ SubShader {
 			faceColor *= tex2D(_FaceTex, input.textures.xy + float2(_FaceUVSpeedX, _FaceUVSpeedY) * _Time.y);
 			outlineColor *= tex2D(_OutlineTex, input.textures.zw + float2(_OutlineUVSpeedX, _OutlineUVSpeedY) * _Time.y);
 
-			half4 glyphColor = faceColor * (1-sd);
-
+		// gradient color scale
+		#if defined(_SMOOTH_GRADIENT_ON)
+			half colorScale = dot(faceColor.xyz,half3(0.2,0.7,0.02));
+			half4 mainFaceColor = lerp(_FaceColor2,faceColor, smoothstep(_FaceColorRange.x,_FaceColorRange.y,colorScale));
+			faceColor.xyz = mainFaceColor.xyz;
+		#endif
+		// outline
+			half glyphRate = saturate(1-sd);
+			half4 glyphColor = faceColor * glyphRate;
 			faceColor = GetColor(sd, faceColor, outlineColor, outline, softness);
-			faceColor.xyz = saturate(faceColor + glyphColor).xyz; // keep glyph clear
+			faceColor.xyz = lerp(faceColor,glyphColor,glyphRate);// keep glyph clear
+
 		#if BEVEL_ON
 			float3 dxy = float3(0.5 / _TextureWidth, 0.5 / _TextureHeight, 0);
 			float3 n = GetSurfaceNormal(input.atlas, weight, dxy);
