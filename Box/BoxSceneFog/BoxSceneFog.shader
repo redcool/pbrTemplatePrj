@@ -35,7 +35,10 @@ Shader "FX/Box/Nature/BoxSceneFog"
         [GroupToggle(HeightFog)] _SceneHeightFogOn("_SceneHeightFogOn",float) = 1
         [GroupVectorSlider(HeightFog,min max,0_1 0_1,height fog range,field)] _HeightFogRange("_HeightFogRange",Vector) = (0,100,0,0)
         
-        [GroupItem(HeightFog)]  _CameraFadeDist("_CameraFadeDist",float) = 10
+        // [GroupItem(HeightFog)]  _CameraFadeDist("_CameraFadeDist",float) = 10
+        [Group(ExpFog)]
+        [GroupItem(ExpFog,exp fog density)]  _FogDensity("_FogDensity",range(0,.5)) = 0.01
+        
 // ================================================== scene fog map(warfog)
         [Group(SceneFogMap)]
         [GroupToggle(SceneFogMap,SCENE_FOG_MAP)] _SceneFogMapOn("_SceneFogMapOn",float) = 1
@@ -108,7 +111,8 @@ HLSLINCLUDE
     float2 _HeightFogRange;
     float _FogNoiseAtten;
 
-    float _CameraFadeDist;
+    // float _CameraFadeDist;
+    half _FogDensity; 
     
     float4 _SceneFogColor;
     float _WorldPosScale;
@@ -139,20 +143,21 @@ HLSLINCLUDE
         #endif
 
         float heightFogRate = (_HeightFogRange.x - worldPos.y)/(_HeightFogRange.y-_HeightFogRange.x);
-        fogRate *= heightFogRate;
+        fogRate *= _SceneHeightFogOn ? heightFogRate : 1;
 
-        float4 sceneFogFactor = float4(worldUV,saturate(fogRate));
+        // 
+        // float viewDist = abs(_WorldSpaceCameraPos.y - worldPos.y);
+        // float viewFade = lerp(0.1,1,viewDist / max(0.001,_CameraFadeDist));
+        // fogRate *= saturate(viewFade);
 
-        // // --------- vertical linear fog
-        float viewDist = abs(_WorldSpaceCameraPos.y - worldPos.y);
+        //// --------- exp fog
+        float distToCam = distance(_WorldSpaceCameraPos,worldPos);
+        fogRate *= 1 - exp(-distToCam * _FogDensity);
 
-        float viewFade = lerp(0.1,1,viewDist / max(0.001,_CameraFadeDist));
-        sceneFogFactor.w *= saturate(viewFade);
-
-        return sceneFogFactor;
+        return float4(worldUV,saturate(fogRate));
     }
 
-    float3 CaclHighLight(float3 worldPos,float3 highlightColor){
+    float3 CalcHighLight(float3 worldPos,float3 highlightColor){
         // high light
         float4 highlightTex = tex2D(_HighlightTex,worldPos.xz);
         float highlight = abs(sin(_Time.y)) * highlightTex.x;
@@ -201,6 +206,7 @@ ENDHLSL
             #pragma vertex vert
             #pragma fragment frag
             #pragma shader_feature SCENE_FOG_MAP
+            #pragma shader_feature EXP_FOG
 
             struct appdata
             {
@@ -241,6 +247,7 @@ ENDHLSL
                 float isFar = IsTooFar(depthTex.x);
                 
                 float3 worldPos = ScreenToWorldPos(screenUV,depthTex,UNITY_MATRIX_I_VP);
+
 //======== border fading
                 float4 maskTex = tex2D(_MaskTex, i.uv);
 
@@ -250,6 +257,7 @@ ENDHLSL
                 
                 float fogNoise = fogColor.w;
                 float fogFactor = worldUVfogFactor.w * _SceneFogColor.w;
+                
                 fogFactor *= lerp(1,fogNoise,_FogNoiseAtten);
                 fogFactor *= lerp(1,maskTex.x,_MaskScale); // main texture fading
 
