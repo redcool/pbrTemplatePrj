@@ -17,7 +17,8 @@ Shader "FX/Box/Nature/BoxSceneFog"
 
         [GroupHeader(SceneFog,Main NoiseMap)]
         [GroupItem(SceneFog)] [NoScaleOffset] _FogMainNoiseMap("_FogMainNoiseMap",2d)=""{}
-        [GroupItem(SceneFog)] _FogNoiseTilingOffset("_FogNoiseTilingOffset",vector) = (3,3,1,1)
+
+        [GroupVectorSlider(SceneFog,TilingX TilingZ OffsetX OffsetZ,0_1 0_1 0_1 0_1 , fog noise tiling and offset,field)] _FogNoiseTilingOffset("_FogNoiseTilingOffset",vector) = (3,3,1,1)
 
         [GroupHeader(SceneFog,Detial NoiseMap)]
         [GroupItem(SceneFog)] [NoScaleOffset] _FogDetailNoiseMap("_FogDetailNoiseMap",2d)=""{}
@@ -28,7 +29,7 @@ Shader "FX/Box/Nature/BoxSceneFog"
         // [GroupVectorSlider(HeightFog,rangeMin rangeMax,0_1 0_1)] _FogAreaScale("_FogAreaScale",vector) = (0,1,0,0)
         [GroupHeader(SceneFog,Others)]
         [GroupItem(SceneFog,w is fog intensity )] _SceneFogColor("_SceneFogColor",color) = (.5,.5,.5,.5)
-        [GroupItem(SceneFog)] _WorldPosScale("_WorldPosScale",float) = 0.001
+        [GroupItem(SceneFog,fog )] _WorldPosScale("_WorldPosScale",float) = 0.001
         [GroupItem(SceneFog,fog show noise attenuation)] _FogNoiseAtten("_FogNoiseAtten",range(0,1)) = 0
 // ================================================== height fog
         [Group(HeightFog)]
@@ -100,30 +101,28 @@ HLSLINCLUDE
     sampler2D _MaskTex;
 
     CBUFFER_START(UnityPerMaterial)
-    float _FullScreenOn;
+    half _FullScreenOn;
 
-    float3 _SceneMin;
-    float3 _SceneMax;
-    float4 _FogNoiseTilingOffset;
-    float4 _DetailFogTiling,_DetailFogOffset;
+    half4 _FogNoiseTilingOffset;
+    half4 _DetailFogTiling,_DetailFogOffset;
 
-    float _SceneHeightFogOn;
-    float2 _HeightFogRange;
-    float _FogNoiseAtten;
+    half _SceneHeightFogOn;
+    half2 _HeightFogRange;
+    half _FogNoiseAtten;
 
-    // float _CameraFadeDist;
+    // half _CameraFadeDist;
     half _FogDensity; 
     
-    float4 _SceneFogColor;
-    float _WorldPosScale;
-    float _MaskScale;
-    float4 _MaskTex_ST;
-    float4 _ScreenRange;
+    half4 _SceneFogColor;
+    half _WorldPosScale;
+    half _MaskScale;
+    half4 _MaskTex_ST;
+    half4 _ScreenRange;
     // scene war fog 
     sampler2D _SceneFogMap; // map for fog hole
-    float2 _FogAreaScale; // map for fog hole
-    float3 _MinWorldPos,_MaxWorldPos;
-    float _SceneFogMapAttenChannel;
+    half2 _FogAreaScale; // map for fog hole
+    half3 _MinWorldPos,_MaxWorldPos;
+    half _SceneFogMapAttenChannel;
     CBUFFER_END
 
     float4 CalcFogFactor(float3 worldPos){
@@ -145,12 +144,7 @@ HLSLINCLUDE
         float heightFogRate = (_HeightFogRange.x - worldPos.y)/(_HeightFogRange.y-_HeightFogRange.x);
         fogRate *= _SceneHeightFogOn ? heightFogRate : 1;
 
-        // 
-        // float viewDist = abs(_WorldSpaceCameraPos.y - worldPos.y);
-        // float viewFade = lerp(0.1,1,viewDist / max(0.001,_CameraFadeDist));
-        // fogRate *= saturate(viewFade);
-
-        //// --------- exp fog
+        //// --------- exp fog factor atten
         float distToCam = distance(_WorldSpaceCameraPos,worldPos);
         fogRate *= 1 - exp(-distToCam * _FogDensity);
 
@@ -188,8 +182,8 @@ ENDHLSL
     {
         Tags { "RenderType"="Transparent" "Queue"="Transparent"}
         LOD 100
-        zwrite off
-        ztest always
+        zwrite [_ZWriteMode]
+        ztest [_ZTestMode]
         cull [_CullMode]
         Stencil
         {
