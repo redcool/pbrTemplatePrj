@@ -92,6 +92,7 @@ HLSLINCLUDE
     #include "../../../PowerShaderLib/Lib/MathLib.hlsl"
     #include "../../../PowerShaderLib/Lib/FullscreenLib.hlsl"
     #include "../../../PowerShaderLib/URPLib/URP_Input.hlsl"
+    #include "../../../PowerShaderLib/Lib/SDF.hlsl"
 
     sampler2D _FogMainNoiseMap,_FogDetailNoiseMap;
     // 
@@ -144,9 +145,7 @@ HLSLINCLUDE
         float heightFogRate = (_HeightFogRange.x - worldPos.y)/(_HeightFogRange.y-_HeightFogRange.x);
         fogRate *= _SceneHeightFogOn ? heightFogRate : 1;
 
-        //// --------- exp fog factor atten
-        float distToCam = distance(_WorldSpaceCameraPos,worldPos);
-        fogRate *= 1 - exp(-distToCam * _FogDensity);
+
 
         return float4(worldUV,saturate(fogRate));
     }
@@ -201,6 +200,8 @@ ENDHLSL
             #pragma fragment frag
             #pragma shader_feature SCENE_FOG_MAP
             #pragma shader_feature EXP_FOG
+            // ray march count
+            #define COUNT 1
 
             struct appdata
             {
@@ -231,6 +232,14 @@ ENDHLSL
                 return o;
             }
 
+            half3 GetMainLightColor(float3 worldPos){
+                float3 l = _MainLightPosition.xyz;
+                float3 v = normalize(worldPos - _WorldSpaceCameraPos.xyz);
+                float3 lightColor = _MainLightColor;
+                float lv = saturate(dot(l,v));
+                return lightColor * pow(lv,1024);
+            }
+
             float4 frag (v2f i) : SV_Target
             {
                 float2 screenUV = i.vertex.xy / _ScaledScreenParams.xy;
@@ -241,21 +250,33 @@ ENDHLSL
                 float isFar = IsTooFar(depthTex.x);
                 
                 float3 worldPos = ScreenToWorldPos(screenUV,depthTex,UNITY_MATRIX_I_VP);
-
+                float3 viewDir = worldPos - _WorldSpaceCameraPos.xyz;
+                float3 viewDirSegment = viewDir * 0.1;
 //======== border fading
                 float4 maskTex = tex2D(_MaskTex, i.uv);
 
 //======== scene fog
-                float4 worldUVfogFactor = CalcFogFactor(worldPos);
-                float4 fogColor = CalcFogColor(worldUVfogFactor.xyz);
-                
-                float fogNoise = fogColor.w;
-                float fogFactor = worldUVfogFactor.w * _SceneFogColor.w;
-                
-                fogFactor *= lerp(1,fogNoise,_FogNoiseAtten);
-                fogFactor *= lerp(1,maskTex.x,_MaskScale); // main texture fading
+                half4 col = 0;
+                for(uint x = 0;x<COUNT;x++){
+                    float4 worldUVfogFactor = CalcFogFactor(worldPos + viewDirSegment*x);
+                    float4 fogColor = CalcFogColor(worldUVfogFactor.xyz);
+                    
+                    float fogNoise = fogColor.w;
+                    float fogFactor = worldUVfogFactor.w * _SceneFogColor.w;
+                    
+                    fogFactor *= lerp(1,fogNoise,_FogNoiseAtten);
+                    fogFactor *= lerp(1,maskTex.x,_MaskScale); // main texture fading
+                    fogFactor *= (! isFar);
+                    //// --------- exp fog factor atten
+                    float distToCam = length(viewDir);
+                    fogFactor *= 1 - exp(-distToCam * _FogDensity);
 
-                return lerp(sceneColor,fogColor,fogFactor * (! isFar));
+                    col += lerp(sceneColor,fogColor,fogFactor);
+                    // col.xyz += GetMainLightColor(worldPos) ;
+                }
+                col *= rcp(COUNT);
+
+                return col;
             }
             ENDHLSL
         }
