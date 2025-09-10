@@ -168,6 +168,7 @@ Shader "URP/pbr1"
             #pragma vertex vert
             #pragma fragment frag 
             #pragma shader_feature_fragment ALPHA_TEST
+            #pragma shader_feature_vertex _ _ANIM_TEX_ON _GPU_SKINNED_ON
 
             #define USE_SAMPLER2D
             #include "Lib/PBRInput.hlsl"
