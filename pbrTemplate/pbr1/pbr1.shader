@@ -86,9 +86,17 @@ Shader "URP/pbr1"
 		[GroupItem(AnimTex)] _NextStartFrame("Next Anim Start Frame",float) = 0
 		[GroupItem(AnimTex)] _NextEndFrame("Next Anim End Frame",float) = 0
 		[GroupItem(AnimTex)] _CrossLerp("Cross Lerp",range(0,1)) = 0
+// ================================================== stencil settings
+        [Group(Stencil)]
+        [GroupEnum(Stencil,UnityEngine.Rendering.CompareFunction)]_StencilComp ("Stencil Comparison", Float) = 0
+        [GroupStencil(Stencil)] _Stencil ("Stencil ID", int) = 0
+        [GroupEnum(Stencil,UnityEngine.Rendering.StencilOp)]_StencilOp ("Stencil Operation", Float) = 0
+        [HideInInspector] _StencilWriteMask ("Stencil Write Mask", Float) = 255
+        [HideInInspector] _StencilReadMask ("Stencil Read Mask", Float) = 255
 
         // [Group(Lightmap)]
         // [GroupToggle(Lightmap,LIGHTMAP_ON)]_LightmapOn("_LightmapOn",int) = 0
+// ================================================== Alpha settings        
         [Group(Alpha)]
         [GroupHeader(Alpha,BlendMode)]
         [GroupPresetBlendMode(Alpha,,_SrcMode,_DstMode)]_PresetBlendMode("_PresetBlendMode",int)=0
@@ -102,7 +110,7 @@ Shader "URP/pbr1"
         [GroupHeader(Alpha,AlphaTest)]
         [GroupToggle(Alpha,ALPHA_TEST)]_AlphaTestOn("_AlphaTestOn",int) = 0
         [GroupSlider(Alpha)]_Cutoff("_Cutoff",range(0,1)) = 0.5
-
+// ================================================== settings
         [Group(Settings)]
         [GroupEnum(Settings,UnityEngine.Rendering.CullMode)]_CullMode("_CullMode",int) = 2
 		[GroupToggle(Settings)]_ZWriteMode("ZWriteMode",int) = 1
@@ -125,6 +133,14 @@ Shader "URP/pbr1"
 			Cull[_CullMode]
 			ztest[_ZTestMode]
 			// ColorMask [_ColorMask]
+            Stencil
+            {
+                Ref [_Stencil]
+                Comp [_StencilComp]
+                Pass [_StencilOp]
+                ReadMask [_StencilReadMask]
+                WriteMask [_StencilWriteMask]
+            }            
 
             HLSLPROGRAM
             #pragma vertex vert
