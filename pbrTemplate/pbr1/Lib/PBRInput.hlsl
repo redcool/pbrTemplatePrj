@@ -60,6 +60,8 @@ half _PlayTime;
 half _OffsetPlayTime;
             
 half4 _AnimTex_TexelSize;
+half3 _ReflectionColor;
+half2 _ReflectionSurfaceRange;
 CBUFFER_END
 
 #endif //PBR_INPUT_HLSL

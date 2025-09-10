@@ -95,10 +95,12 @@ float4 frag (v2f i) : SV_Target
     float3 v = normalize(UnityWorldSpaceViewDir(worldPos));
     float3 h = normalize(l+v);
     
+    float originalNL = dot(n,l);
+    float nl = saturate(originalNL);
+    float wrapNL = originalNL * 0.5 + 0.5;
+
     float lh = saturate(dot(l,h));
     float nh = saturate(dot(n,h));
-    float nl = saturate(dot(n,l));
-
     float nv = saturate(dot(n,v));
 // return v.xyzx;
 
@@ -161,7 +163,25 @@ float4 frag (v2f i) : SV_Target
 //------- gi
     float3 giColor = 0;
     float3 giDiff = CalcGIDiff(normal,diffColor,lightmapUV);
-    float3 giSpec = CalcGISpec(unity_SpecCube0,samplerunity_SpecCube0,unity_SpecCube0_HDR,specColor,worldPos,n,v,(half3)0/*reflectDirOffset*/,1/*reflectIntensity*/,nv,roughness,a2,smoothness,metallic);
+    half3 reflectionColor = _ReflectionColor * smoothstep(_ReflectionSurfaceRange.x,_ReflectionSurfaceRange.y,wrapNL);
+    float3 giSpec = CalcGISpec(
+        unity_SpecCube0
+        ,samplerunity_SpecCube0
+        ,unity_SpecCube0_HDR
+        ,specColor
+        ,worldPos
+        ,n
+        ,v
+        ,(half3)0/*reflectDirOffset*/
+        ,reflectionColor/*reflectIntensity*/
+        ,nv
+        ,roughness
+        ,a2
+        ,smoothness
+        ,metallic
+        ,half2(0,1)
+        // ,grazingTermColor
+    );
     giColor = (giDiff + giSpec) * occlusion;
 // return giColor.xyzx;
 

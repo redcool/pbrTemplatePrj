@@ -2,7 +2,7 @@ Shader "URP/pbr1"
 {
     Properties
     {
-        [GroupHeader(v0.0.8)]
+        [GroupHeader(v0.0.9)]
         [Group(Main)]
         [GroupItem(Main)]_BaseMap ("_BaseMap", 2D) = "white" {}
         [GroupItem(Main)][hdr][gamma]_Color ("_Color", color) = (1,1,1,1)
@@ -20,6 +20,10 @@ Shader "URP/pbr1"
         [GroupToggle(LightMode)]_SpecularOn("_SpecularOn",int) = 1
         // [Enum(PBR,0,Aniso,1,Charlie,2)]_PbrMode("_PbrMode",int) = 0
         [GroupEnum(LightMode,_PBRMODE_PBR _PBRMODE_ANISO _PBRMODE_CHARLIE,true)]_PbrMode("_PbrMode",int) = 0
+
+        [Group(GI)]
+        [GroupItem(GI,grazing term color)] [hdr] _ReflectionColor("_ReflectionColor",color) = (1,1,1,1)
+        [GroupVectorSlider(GI,min max,0_1 0_1,grazingTerm show on hemisphere or fullsphere)]_ReflectionSurfaceRange("_ReflectionSurfaceRange",vector) = (0,1,0,0)
         
         [Group(Shadow)]
         //[LineHeader(Shadows)]
