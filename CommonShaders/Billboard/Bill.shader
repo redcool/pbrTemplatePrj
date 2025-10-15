@@ -6,15 +6,15 @@ shader "URP/Unlit/Bill"
         [Group(Main)]
         [GroupItem(Main)] _MainTex ("Texture", 2D) = "white" {}
         [GroupItem(Main)] [hdr]_Color("_Color",color) = (1,1,1,1)
-        [GroupToggle(Main,_FACE_CAMERA)]_FullFaceCamera("_FullFaceCamera",int) = 0
+
+        [Group(Bill)]
+        [GroupToggle(Bill,,xy plane face camera)]_XYPlaneFaceCamera("_XYPlaneFaceCamera",int) = 1
+        [GroupToggle(Bill,_FACE_CAMERA,full face camera)]_FullFaceCamera("_FullFaceCamera",int) = 0
 
 //=================================================  Lighting
         [Group(Lighting)]
         // [GroupToggle(Lighting)]_ApplyMainLightColor("_ApplyMainLightColor",int) = 1
         [GroupItem(Lighting)]_Metallic("_Metallic",range(0,1)) = 0.5
-
-
-
         [GroupHeader(Lighting,Diffuse)]
         [GroupVectorSlider(Lighting,Min Max,0_1 0_1)] _DiffuseRange("_DiffuseRange",vector) = (0,0.5,0,0)
         [GroupItem(Lighting,PosRange)] _TopdownLine("_TopdownLine",range(-5,5))= 0

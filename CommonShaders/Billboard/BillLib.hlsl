@@ -16,102 +16,40 @@
     // #endif
 
     // define variables
-    UNITY_INSTANCING_BUFFER_START(UnityPerMaterial)
-        UNITY_DEFINE_INSTANCED_PROP(half4,_MainTex_ST)
-        UNITY_DEFINE_INSTANCED_PROP(half4,_Color)
+    CBUFFER_START(UnityPerMaterial)
+    half4 _MainTex_ST ;
+    half4 _Color ;
+            
+    half _Cutoff ;
+    half _RotateShadow ;
+
+    half _WindOn ;
+    half4 _WindAnimParam ;
+    half4 _WindDir ;
+    half _WindSpeed ;
+
+    half _SnowIntensity ;
+    half2 _SnowNoiseTiling ;
+            
+    half _ApplyEdgeOn ;
+    half _SnowIntensityUseMainTexA ;
+
+    half _FogOn ;
+    half _FogNoiseOn ;
+    half _DepthFogOn ;
+    half _HeightFogOn ;
+
+    half2 _DiffuseRange ;
+            
+    half4 _MatCap_ST ;
+    half _MatCapScale ;
+    half _Metallic ;
+
+    half _TopdownLine ;
+    half _DiffuseBlend ;
+    half _XYPlaneFaceCamera ;
         
-        // UNITY_DEFINE_INSTANCED_PROP(float,_FullFaceCamera)
-        UNITY_DEFINE_INSTANCED_PROP(half,_Cutoff)
-        UNITY_DEFINE_INSTANCED_PROP(half,_RotateShadow)
-
-        UNITY_DEFINE_INSTANCED_PROP(half,_WindOn)
-        UNITY_DEFINE_INSTANCED_PROP(half4,_WindAnimParam)
-        UNITY_DEFINE_INSTANCED_PROP(half4,_WindDir)
-        UNITY_DEFINE_INSTANCED_PROP(half,_WindSpeed)
-        // UNITY_DEFINE_INSTANCED_PROP(half,_ApplyMainLightColor)
-
-        UNITY_DEFINE_INSTANCED_PROP(half,_SnowIntensity)
-        UNITY_DEFINE_INSTANCED_PROP(half2,_SnowNoiseTiling)
-        
-        UNITY_DEFINE_INSTANCED_PROP(half,_ApplyEdgeOn)
-        UNITY_DEFINE_INSTANCED_PROP(half,_SnowIntensityUseMainTexA)
-
-        UNITY_DEFINE_INSTANCED_PROP(half,_FogOn)
-        UNITY_DEFINE_INSTANCED_PROP(half,_FogNoiseOn)
-        UNITY_DEFINE_INSTANCED_PROP(half,_DepthFogOn)
-        UNITY_DEFINE_INSTANCED_PROP(half,_HeightFogOn)
-
-        UNITY_DEFINE_INSTANCED_PROP(half2,_DiffuseRange)
-        
-        UNITY_DEFINE_INSTANCED_PROP(half4,_MatCap_ST)
-        UNITY_DEFINE_INSTANCED_PROP(half,_MatCapScale)
-        UNITY_DEFINE_INSTANCED_PROP(half,_Metallic)
-
-        UNITY_DEFINE_INSTANCED_PROP(half,_TopdownLine)
-        UNITY_DEFINE_INSTANCED_PROP(half,_DiffuseBlend)
-        
-    //---------Cloud shadows
-        // UNITY_DEFINE_INSTANCED_PROP(half,_CloudShadowOn)
-        // UNITY_DEFINE_INSTANCED_PROP(half4,_CloudNoiseTilingOffset)
-        // UNITY_DEFINE_INSTANCED_PROP(half,_CloudNoiseRangeMin)
-        // UNITY_DEFINE_INSTANCED_PROP(half,_CloudNoiseRangeMax)
-        // UNITY_DEFINE_INSTANCED_PROP(half,_CloudNoiseOffsetStop)
-        // UNITY_DEFINE_INSTANCED_PROP(half4,_CloudShadowColor)
-        // UNITY_DEFINE_INSTANCED_PROP(half,_CloudBaseShadowIntensity)
-        // UNITY_DEFINE_INSTANCED_PROP(half,_CloudShadowIntensity)
-
-    UNITY_INSTANCING_BUFFER_END(UnityPerMaterial)
-
-    // define shortcot getters
-    #define _MainTex_ST UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial,_MainTex_ST)
-    #define _Color UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial,_Color)
-    #define _FullFaceCamera UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial,_FullFaceCamera)
-    #define _Cutoff UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial,_Cutoff)
-    #define _RotateShadow UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial,_RotateShadow)
-
-    #define _WindOn UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial,_WindOn)
-    #define _WindAnimParam UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial,_WindAnimParam)
-    #define _WindDir UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial,_WindDir)
-    #define _WindSpeed UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial,_WindSpeed)
-    #define _ApplyMainLightColor UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial,_ApplyMainLightColor)
-
-    #define _SnowIntensity UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial,_SnowIntensity)
-    #define _SnowNoiseTiling UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial,_SnowNoiseTiling)
-    
-    #define _ApplyEdgeOn UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial,_ApplyEdgeOn)
-    #define _SnowIntensityUseMainTexA UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial,_SnowIntensityUseMainTexA)
-
-    #define _FogOn UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial,_FogOn)
-    #define _FogNoiseOn UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial,_FogNoiseOn)
-    #define _DepthFogOn UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial,_DepthFogOn)
-    #define _HeightFogOn UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial,_HeightFogOn)
-    #define _DiffuseRange UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial,_DiffuseRange)
-
-    #define _MatCap_ST UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial,_MatCap_ST)
-    #define _MatCapScale UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial,_MatCapScale)
-    #define _Metallic UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial,_Metallic)
-    #define _TopdownLine UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial,_TopdownLine)
-    #define _DiffuseBlend UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial,_DiffuseBlend)
-    // cloud shadow
-    #define _DiffuseBlend UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial,_DiffuseBlend)
-    #define _CloudNoiseTilingOffset UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial,_CloudNoiseTilingOffset)
-    #define _CloudNoiseRangeMin UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial,_CloudNoiseRangeMin)
-    #define _CloudNoiseRangeMax UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial,_CloudNoiseRangeMax)
-    #define _CloudNoiseOffsetStop UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial,_CloudNoiseOffsetStop)
-    #define _CloudShadowColor UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial,_CloudShadowColor)
-    #define _CloudBaseShadowIntensity UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial,_CloudBaseShadowIntensity)
-    #define _CloudShadowIntensity UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial,_CloudShadowIntensity)
-    
-
-        // half _CloudShadowOn;
-    // half4 _CloudNoiseTilingOffset;
-    // half _CloudNoiseRangeMin;
-    // half _CloudNoiseRangeMax;
-    // half _CloudNoiseOffsetStop;
-
-    // half4 _CloudShadowColor;
-    // half _CloudBaseShadowIntensity;
-    // half _CloudShadowIntensity;
+    CBUFFER_END
 
     // _FogOn,need define first
     #include "../../../PowerShaderLib/Lib/FogLib.hlsl"
@@ -153,7 +91,7 @@
         UNITY_SETUP_INSTANCE_ID(v);
         UNITY_TRANSFER_INSTANCE_ID(v, o);
 
-        v.vertex.xyz = mul(_CameraYRot,v.vertex).xyz;
+        v.vertex.xyz = _XYPlaneFaceCamera ? mul(_CameraYRot,v.vertex).xyz : v.vertex.xyz;
         float3 worldPos = TransformObjectToWorld(v.vertex.xyz);
         float3 n = v.vertex.xyz;
         o.normal = n;
