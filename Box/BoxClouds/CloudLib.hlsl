@@ -2,8 +2,8 @@
 #define CLOUD_LIB_HLSL
 
 float2 squareUV(float2 uv) {
-    float width = _ScreenParams.x;
-    float height =_ScreenParams.y;
+    float width = _ScaledScreenParams.x;
+    float height =_ScaledScreenParams.y;
     //float minDim = min(width, height);
     float scale = 1000;
     float x = uv.x * width;
