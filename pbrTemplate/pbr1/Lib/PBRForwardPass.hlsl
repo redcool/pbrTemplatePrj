@@ -53,7 +53,7 @@ v2f vert (appdata v)
     o.uv.xy = TRANSFORM_TEX(v.uv, _MainTex);
     o.uv.zw = v.uv1 * unity_LightmapST.xy + unity_LightmapST.zw;
 
-    TANGENT_SPACE_COMBINE(v.vertex,v.normal,v.tangent,o/**/);
+    TANGENT_SPACE_COMBINE(v.vertex,v.normal.xyz,v.tangent,o/**/);
     // o.shadowCoord = TransformWorldToShadowCoord(worldPos);
 
     o.fogCoord.xy = CalcFogFactor(WORLD_POS,o.vertex.z,_HeightFogOn,_DepthFogOn);
