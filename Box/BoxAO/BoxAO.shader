@@ -26,10 +26,10 @@ Shader "FX/Box/AO"
         // [GroupHeader(Alpha,Premultiply)]
         // [GroupToggle(Alpha)]_AlphaPremultiply("_AlphaPremultiply",int) = 0
 
-        [GroupHeader(Alpha,AlphaTest)]
-        [GroupToggle(Alpha,ALPHA_TEST)]_AlphaTestOn("_AlphaTestOn",int) = 0
-        [GroupSlider(Alpha)]_Cutoff("_Cutoff",range(0,1)) = 0.5
-// ================================================== Settings
+//         [GroupHeader(Alpha,AlphaTest)]
+//         [GroupToggle(Alpha,ALPHA_TEST)]_AlphaTestOn("_AlphaTestOn",int) = 0
+//         [GroupSlider(Alpha)]_Cutoff("_Cutoff",range(0,1)) = 0.5
+// // ================================================== Settings
         [Group(Settings)]
         [GroupEnum(Settings,UnityEngine.Rendering.CullMode)]_CullMode("_CullMode",int) = 2
 		[GroupToggle(Settings)]_ZWriteMode("ZWriteMode",int) = 0
@@ -115,8 +115,7 @@ Shader "FX/Box/AO"
             half _FullScreenOn;
             // half4 _MainTex_ST;
             half4 _ScreenRange;
-            half _Value;
-            half _Cutoff;
+            // half _Cutoff;
 
             float _AORangeMax,_AORangeMin;
             float _StepScale;
@@ -165,7 +164,7 @@ Shader "FX/Box/AO"
                 float3 viewNormal = normalize(WorldToViewNormal(worldNormal));
 
                 float occlusion = CalcHBAO(screenUV,viewNormal,viewPos,_DirCount,_StepCount,_StepScale,_AORangeMin,_AORangeMax);
-                
+                // return occlusion ;
                 return half4(screenCol.xyz * occlusion,1);
             }
             ENDHLSL

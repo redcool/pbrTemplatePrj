@@ -12,7 +12,8 @@ Material:
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
-  m_InvalidKeywords: []
+  m_InvalidKeywords:
+  - ALPHA_TEST
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
@@ -29,12 +30,17 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
+    - _AORangeMax: 0.787
+    - _AORangeMin: 0.329
     - _AlphaTestOn: 0
     - _ColorMask: 15
-    - _CullMode: 2
-    - _Cutoff: 0
+    - _CullMode: 0
+    - _Cutoff: 0.299
+    - _DirCount: 4
     - _DstMode: 0
     - _FullScreenOn: 1
+    - _NormalFromDepth: 0
+    - _OffsetHalfPixelOn: 0
     - _PresetBlendMode: 0
     - _SrcMode: 1
     - _Stencil: 0
@@ -44,6 +50,8 @@ Material:
     - _StencilReadMask: 255
     - _StencilWriteMask: 255
     - _StencilZFailOp: 0
+    - _StepCount: 4
+    - _StepScale: 0.046
     - _Value: 2.18
     - _ZTestMode: 4
     - _ZWriteMode: 0
