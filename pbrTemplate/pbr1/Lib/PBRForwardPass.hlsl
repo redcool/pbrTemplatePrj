@@ -11,15 +11,16 @@
 #include "../../../../PowerShaderLib/Lib/Skinned/AnimTextureLib.hlsl"
 struct appdata
 {
-    uint vertexId:SV_VertexID;
     float4 vertex : POSITION;
     float2 uv : TEXCOORD0;
     float2 uv1:TEXCOORD1;
     float4 normal:NORMAL;
     float4 tangent:TANGENT;
-    float4 weights:BLENDWEIGHTS;
-    uint indices:BLENDINDICES;
     UNITY_VERTEX_INPUT_INSTANCE_ID
+    //animTexture
+    uint vertexId:SV_VertexID;
+    float4 weights:BLENDWEIGHTS;
+    uint4 indices:BLENDINDICES;
 };
 
 struct v2f

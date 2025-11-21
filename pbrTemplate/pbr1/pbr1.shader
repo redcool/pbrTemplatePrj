@@ -73,12 +73,12 @@ Shader "URP/pbr1"
         [GroupToggle(Fog)]_FogNoiseOn("_FogNoiseOn",int) = 0
         [GroupToggle(Fog)]_DepthFogOn("_DepthFogOn",int) = 1
         [GroupToggle(Fog)]_HeightFogOn("_HeightFogOn",int) = 1
-//================================================= AnimTex
-		[Group(GPUSkin)]
-        [GroupEnum(GPUSkin,_None _ANIM_TEX_ON _GPU_SKINNED_ON,true,use AnimTex or GpuSkin)] _GpuSkinnedOn("_GpuSkinOn",float) = 0
-
+//================================================= AnimTex,get matrix from _AnimTexture
 		[Group(AnimTex)]
-        [GroupToggle(AnimTex,_ANIM_TEX_ON)] _AnimTexOn("Anim Tex ON",float) = 0
+        [GroupHeader(AnimTex,Mode)]
+        [GroupEnum(AnimTex,_None _ANIM_TEX_ON _GPU_SKINNED_ON,true,use AnimTex or GpuSkin)] _GpuSkinnedOn("_GpuSkinOn",float) = 0
+
+		[GroupHeader(AnimTex,Info)]
 		[GroupItem(AnimTex)] _AnimTex("Anim Tex",2d) = ""{}
 		[GroupItem(AnimTex)] _AnimSampleRate("Anim Sample Rate",float) = 30
 		[GroupItem(AnimTex)] _StartFrame("Start Frame",float) = 0
