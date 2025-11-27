@@ -127,7 +127,7 @@ float4 frag (v2f i) : SV_Target
         // if(_PbrMode == 0){
         #if defined(_PBRMODE_PBR)
             specTerm = MinimalistCookTorrance(nh,lh,a,a2);
-            // specTerm = D_GGXNoPI(nh,a2);
+            // specTerm = D_GGXTerm(nh,a2);
         // }else if(_PbrMode == 1){
         #elif defined(_PBRMODE_ANISO)
             float3 t = tangent;//(cross(n,float3(0,1,0)));
