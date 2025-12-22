@@ -8,14 +8,16 @@ Shader "FX/Box/AO"
         [GroupVectorSlider(Base,minX minY maxX maxY,0_1 0_1 0_1 0_1,limit screen range,float)]_ScreenRange("ScreenRange",vector) = (0,0,1,1)
         
         [Group(HBAO)]
-        [GroupItem(HBAO)] _AORangeMin("_AORangeMin",range(0,1)) = 0.1
-        [GroupItem(HBAO)] _AORangeMax("_AORangeMax",range(0,1)) = 1
-        [GroupItem(HBAO)] _StepScale("_StepScale",range(0.02,.2)) = 0.1
+        [GroupSlider(HBAO, s curve start )] _AORangeMin("_AORangeMin",range(0,1)) = 0.1
+        [GroupSlider(HBAO, s curve end)] _AORangeMax("_AORangeMax",range(0,1)) = 1
+        [GroupSlider(HBAO,screen tex sample distance scale)] _StepScale("_StepScale",range(0.02,.2)) = 0.1
 
         [GroupSlider(HBAO,direction count ,int)] _DirCount("_DirCount",range(4,20)) = 10
-        [GroupSlider(HBAO,calc times a count,int)] _StepCount("_StepCount",range(4,20)) = 4
+        [GroupSlider(HBAO,sample times a dir,int)] _StepCount("_StepCount",range(4,20)) = 4
         
-        [GroupToggle((HBAO),_NORMAL_FROM_DEPTH)] _NormalFromDepth("_NormalFromDepth",float) = 0
+        [GroupToggle(HBAO,_NORMAL_FROM_DEPTH,calc normal from depthTex otherwise sample _CameraNormalsTexture )] _NormalFromDepth("_NormalFromDepth",float) = 0
+        [GroupItem(HBAO, occlusion scale)] _OcclusionScale("_OcclusionScale",float) = 1
+        
 // ================================================== alpha      
         [Group(Alpha)]
         [GroupHeader(Alpha,BlendMode)]
@@ -91,6 +93,9 @@ Shader "FX/Box/AO"
             #include "../../../PowerShaderLib/Lib/FullscreenLib.hlsl"
             #define USE_SAMPLER2D
             #include "../../../PowerShaderLib/Lib/TextureLib.hlsl"
+// #define _CameraDepthTexture _CameraDepthAttachment
+// #define _CameraOpaqueTexture _CameraColorTexture
+// #define _CameraNormalsTexture _CameraNormalTexture            
             #include "../../../PowerShaderLib/Lib/ScreenTextures.hlsl"
             #include "../../../PowerShaderLib/URPLib/URP_Input.hlsl"
 
@@ -113,18 +118,18 @@ Shader "FX/Box/AO"
 
             CBUFFER_START(UnityPerMaterial)
             half _FullScreenOn;
+            half _InverseAO;
             // half4 _MainTex_ST;
             half4 _ScreenRange;
-            // half _Cutoff;
+            half _OcclusionScale;
 
             float _AORangeMax,_AORangeMin;
             float _StepScale;
             float _DirCount,_StepCount;
             CBUFFER_END
+
             half4 _MainTex_TexelSize;
 
-// #define _CameraDepthTexture _CameraDepthAttachment
-// #define _CameraOpaqueTexture _CameraColorTexture
 
 
 
@@ -144,14 +149,6 @@ Shader "FX/Box/AO"
                 float depthTex = GetScreenDepth(screenUV);
                 half isFar = IsTooFar(depthTex.x);
 
-                // float3 screenCol = GetScreenColor(screenUV);
-                // float3 gray = dot(screenCol,float3(0.2,0.7,0.1));
-
-                // float3 worldPos = ScreenToWorldPos(screenUV,depthTex,UNITY_MATRIX_I_VP);
-                // float3 worldNormal = GetScreenNormal(screenUV);
-                // float3 worldNormal = CalcWorldNormal(worldPos);
-                // return worldNormal.xyzx;
-
                 float3 worldPos = ScreenToWorld(screenUV);
                 float3 viewPos = WorldToViewPos(worldPos);
                 float4 screenCol = GetScreenColor(screenUV);
@@ -163,7 +160,9 @@ Shader "FX/Box/AO"
                 #endif
                 float3 viewNormal = normalize(WorldToViewNormal(worldNormal));
 
-                float occlusion = CalcHBAO(screenUV,viewNormal,viewPos,_DirCount,_StepCount,_StepScale,_AORangeMin,_AORangeMax);
+                half3 occlusion = CalcHBAO(screenUV,viewNormal,viewPos,_DirCount,_StepCount,_StepScale,_AORangeMin,_AORangeMax);
+                occlusion *= _OcclusionScale;
+                
                 // return occlusion ;
                 return half4(screenCol.xyz * occlusion,1);
             }
