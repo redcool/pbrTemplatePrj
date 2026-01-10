@@ -125,7 +125,7 @@ Shader "FX/Box/BoxDecal"
             #pragma vertex vert
             #pragma fragment frag
             // make fog work
-            #pragma multi_compile_fog
+            // #pragma multi_compile_fog
             // #pragma shader_feature ALPHA_TEST
             #pragma shader_feature _NOISE_ON
 

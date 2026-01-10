@@ -1,4 +1,4 @@
-Shader "Hidden/FX/Box/Template"
+Shader "Hidden/FX/Box/BoxLight"
 {
     Properties
     {
@@ -6,9 +6,16 @@ Shader "Hidden/FX/Box/Template"
         [Group(Base)]
         [GroupToggle(Base)]_FullScreenOn("_FullScreenOn",int) = 1
         [GroupVectorSlider(Base,minX minY maxX maxY,0_1 0_1 0_1 0_1,limit screen range,float)]_ScreenRange("ScreenRange",vector) = (0,0,1,1)
-
         [GroupItem(Base)] _MainTex("_MainTex",2d)=""{}
-
+// ================================================== Light
+        [Group(Light)]
+        [GroupItem(Light)] [hdr]_LightColor("_LightColor",color) = (1,1,1,1)
+        [GroupToggle(Light)] _IsPosLight("_IsPosLight",int) = 1
+        [GroupItem(Light)] _Radius("_Radius",float) = 10.0
+        [GroupItem(Light)] _Intensity("_Intensity",float) = 10.0
+        [GroupItem(Light)] _Falloff("_Falloff",float) = 10.0
+        
+        [GroupToggle(Light,_ALPHA_TEST)] _AlphaTestOn("_AlphaTestOn",int) = 0
 // ================================================== alpha      
         [Group(Alpha)]
         [GroupHeader(Alpha,BlendMode)]
@@ -73,6 +80,7 @@ Shader "Hidden/FX/Box/Template"
             HLSLPROGRAM
             #pragma vertex vert
             #pragma fragment frag
+            #pragma shader_feature _ALPHA_TEST
 
             #include "../../../PowerShaderLib/Lib/UnityLib.hlsl"
             #include "../../../PowerShaderLib/Lib/PowerUtils.hlsl"
@@ -81,6 +89,8 @@ Shader "Hidden/FX/Box/Template"
             #include "../../../PowerShaderLib/Lib/MathLib.hlsl"
             #include "../../../PowerShaderLib/Lib/FullscreenLib.hlsl"
             #include "../../../PowerShaderLib/URPLib/URP_Input.hlsl"
+            #include "../../../PowerShaderLib/URPLib/Lighting.hlsl"
+            #include "../../../PowerShaderLib/Lib/ScreenTextures.hlsl"
 
             struct appdata
             {
@@ -95,15 +105,32 @@ Shader "Hidden/FX/Box/Template"
             };
 
             sampler2D _MainTex;
-            sampler2D _CameraOpaqueTexture;
-            sampler2D _CameraDepthTexture;
+            // sampler2D _CameraOpaqueTexture;
+            // sampler2D _CameraDepthTexture;
+            // sampler2D _CameraNormalTexture;
 
             CBUFFER_START(UnityPerMaterial)
             half _FullScreenOn;
             half4 _MainTex_ST;
             half4 _ScreenRange;
 
+            half4 _LightColor;
+            half _IsPosLight;
+            half _Radius;
+            half _Intensity;
+            half _Falloff;
+
             CBUFFER_END
+// light 
+float4 _LightAttenuation;
+float4 _LightDirection;
+float2 _SpotLightAngle; //{outer:dot range[1,0],innerSpotAngle:dot range[1,0]}
+
+// float4 _LightRadiusIntensityFalloff;
+// #define _Radius _LightRadiusIntensityFalloff.x
+// #define _Intensity _LightRadiusIntensityFalloff.y
+// #define _Falloff _LightRadiusIntensityFalloff.z
+// #define _IsSpot _LightRadiusIntensityFalloff.w
 
 // #define _CameraDepthTexture _CameraDepthAttachment
 // #define _CameraOpaqueTexture _CameraColorTexture
@@ -121,12 +148,53 @@ Shader "Hidden/FX/Box/Template"
             float4 frag (v2f i) : SV_Target
             {
                 float2 screenUV = i.vertex.xy / _ScaledScreenParams.xy;
-
+                half4 screenColor = GetScreenColor(screenUV);
+                
 //============ world pos
-                float depthTex = tex2D(_CameraDepthTexture,screenUV).x;
+                float depthTex = GetScreenDepth(screenUV);
                 half isFar = IsTooFar(depthTex.x);
-                float3 worldPos = ScreenToWorldPos(screenUV,depthTex,UNITY_MATRIX_I_VP);
-                return worldPos.xyzx;
+                float3 worldPos = ScreenToWorld(screenUV);
+
+                float3 worldNormal = CalcWorldNormal(worldPos);
+//============ light                
+                // float3 lightDir = lightPos - worldPos * (1-lightPos.w);
+                // float distSqr = max(dot(lightDir,lightDir),HALF_MIN);
+                // float radius2 = _Radius * _Radius;
+                // lightDir = lightDir * rsqrt(distSqr);
+                // float atten = 1;
+                // atten *=  DistanceAtten(distSqr,radius2,_Intensity,_Falloff);
+
+                // #if defined(_ALPHA_TEST)
+                // clip(atten-0.01);
+                // #endif
+
+                // half4 lightColor = _LightColor * atten * nl;
+                // return lightColor;
+                // return (lightColor + screenColor);
+
+                #define shadowAtten 1
+                half _IsSpot= 0;
+                half2 _SpotLightAngle=0;
+
+                float3 lightDir = normalize(unity_ObjectToWorld._13_23_33);
+                float4 lightPos = float4(_IsPosLight ? unity_ObjectToWorld._14_24_34 : lightDir,_IsPosLight);
+
+                Light light = GetLight(lightPos,
+                _LightColor.xyz,
+                shadowAtten,
+                worldPos,
+                _LightAttenuation,
+                _LightDirection,
+                _Radius,
+                _Intensity,
+                _Falloff,
+                _IsSpot,
+                _SpotLightAngle);
+
+                float nl = saturate(dot(worldNormal, light.direction));
+                // return light.distanceAttenuation * light.color.xyzx * nl;
+                float3 radiance = light.color * (light.distanceAttenuation  * max(0.1,light.shadowAttenuation) * nl);
+                return float4(radiance, 1.0);
             }
             ENDHLSL
         }
