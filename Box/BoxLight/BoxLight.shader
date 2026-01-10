@@ -193,8 +193,9 @@ float2 _SpotLightAngle; //{outer:dot range[1,0],innerSpotAngle:dot range[1,0]}
 
                 float nl = saturate(dot(worldNormal, light.direction));
                 // return light.distanceAttenuation * light.color.xyzx * nl;
-                float3 radiance = light.color * (light.distanceAttenuation  * max(0.1,light.shadowAttenuation) * nl);
-                return float4(radiance, 1.0);
+                float atten = (light.distanceAttenuation  * max(0.1,light.shadowAttenuation) * nl);
+                float3 radiance = light.color * atten;
+                return float4(radiance, atten);
             }
             ENDHLSL
         }

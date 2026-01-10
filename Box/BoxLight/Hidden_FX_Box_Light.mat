@@ -67,11 +67,12 @@ Material:
     - _FogHeightRange: 1
     - _FogNoiseOn: 0
     - _FogOn: 1
-    - _FullScreenOn: 1
+    - _FullScreenOn: 0
     - _HeightFogOn: 1
     - _HeightNoiseScale: 0.2
     - _InnerDistanceOn: 0
     - _Intensity: 10
+    - _IsPosLight: 1
     - _MainTex2OffsetStop: 0
     - _MainTexArrayId: 0
     - _MainTexOffsetStop: 0
@@ -79,7 +80,7 @@ Material:
     - _NoiseTexOffsetStop: 0
     - _NormalUnifiedOn: 0
     - _PresetBlendMode: 0
-    - _Radius: 10
+    - _Radius: 32.15
     - _ReverseTextureOn: 0
     - _SceneFogOn: 0
     - _SimpleFog: 0
