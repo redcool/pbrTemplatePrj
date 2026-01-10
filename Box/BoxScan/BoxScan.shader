@@ -5,6 +5,7 @@ Shader "FX/Box/BoxScan"
         [GroupHeader(v0.0.6)]
         [Group(Base)]
         [GroupToggle(Base)]_FullScreenOn("_FullScreenOn",int) = 1
+        [GroupVectorSlider(Base,minX minY maxX maxY,0_1 0_1 0_1 0_1,limit screen range,float)]_ScreenRange("ScreenRange",vector) = (0,0,1,1)
 //=================================
         [Group(Color)]
         [GroupHeader(Color,Edge Textures)]
@@ -132,6 +133,7 @@ Shader "FX/Box/BoxScan"
             #include "../../../PowerShaderLib/Lib/SDF.hlsl"
             #include "../../../PowerShaderLib/Lib/NoiseLib.hlsl"
             #include "../../../PowerShaderLib/Lib/MathLib.hlsl"
+            #include "../../../PowerShaderLib/Lib/FullscreenLib.hlsl"
             #include "../../../PowerShaderLib/URPLib/URP_Input.hlsl"
 
             struct appdata
@@ -154,6 +156,7 @@ Shader "FX/Box/BoxScan"
 
             CBUFFER_START(UnityPerMaterial)
             half _FullScreenOn;
+            half4 _ScreenRange;
             half4 _MainTex_ST,_MainTex2_ST,_NoiseTex_ST;
             half _MainTexOffsetStop,_MainTex2OffsetStop,_NoiseTexOffsetStop;
             float3 _Center;
@@ -182,7 +185,7 @@ Shader "FX/Box/BoxScan"
             v2f vert (appdata v)
             {
                 v2f o;
-                o.vertex = _FullScreenOn ? float4(v.vertex.xy * 2,UNITY_NEAR_CLIP_VALUE,1) : TransformObjectToHClip(v.vertex.xyz);
+                o.vertex = TransformObjectToNdcHClip(v.vertex,_FullScreenOn,_ScreenRange);
                 o.uv = v.uv;
                 return o;
             }
@@ -213,16 +216,11 @@ Shader "FX/Box/BoxScan"
             {
                 float2 screenUV = i.vertex.xy / _ScaledScreenParams.xy;
 
-// float d = distance(screenUV ,0.5) - _Radius;
-// d = abs(d);
-// return smoothstep(_Range.x,_Range.y,d);
 //============ world pos
                 float depthTex = tex2D(_CameraDepthTexture,screenUV).x;
                 half isFar = IsTooFar(depthTex.x);
-                
                 float3 worldPos = ScreenToWorldPos(screenUV,depthTex,UNITY_MATRIX_I_VP);
 //============ Noise
-
                 float borderNoise = 0,textureNoise = 0;
 #if defined(_NOISE_ON)
                 // half noise = N21(floor((worldPos.xz+worldPos.xy+worldPos.xz )))*2-1;
