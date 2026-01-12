@@ -10,10 +10,12 @@ Shader "Hidden/FX/Box/BoxLight"
 // ================================================== Light
         [Group(Light)]
         [GroupItem(Light)] [hdr]_LightColor("_LightColor",color) = (1,1,1,1)
-        [GroupToggle(Light)] _IsPosLight("_IsPosLight",int) = 1
+        [GroupEnum(Light,dir 0 point 1 spot 2)] _LightType("_LightType",int) = 1
+        // [GroupToggle(Light)] _IsPosLight("_IsPosLight",int) = 1
         [GroupItem(Light)] _Radius("_Radius",float) = 10.0
         [GroupItem(Light)] _Intensity("_Intensity",float) = 10.0
         [GroupItem(Light)] _Falloff("_Falloff",float) = 10.0
+        [GroupVectorSlider(Light,spotAngle spotInnerAngle,0_360 0_360,spot light angle,float)] _SpotLightAngle("_SpotLightAngle",Vector) = (45,45,0,0)
         
         [GroupToggle(Light,_ALPHA_TEST)] _AlphaTestOn("_AlphaTestOn",int) = 0
 // ================================================== alpha      
@@ -115,25 +117,13 @@ Shader "Hidden/FX/Box/BoxLight"
             half4 _ScreenRange;
 
             half4 _LightColor;
-            half _IsPosLight;
+            half _LightType; //dir :0, point :1 ,spot :2
             half _Radius;
             half _Intensity;
             half _Falloff;
 
+            float2 _SpotLightAngle; //{outer:dot range[1,0],innerSpotAngle:dot range[1,0]}
             CBUFFER_END
-// light 
-float4 _LightAttenuation;
-float4 _LightDirection;
-float2 _SpotLightAngle; //{outer:dot range[1,0],innerSpotAngle:dot range[1,0]}
-
-// float4 _LightRadiusIntensityFalloff;
-// #define _Radius _LightRadiusIntensityFalloff.x
-// #define _Intensity _LightRadiusIntensityFalloff.y
-// #define _Falloff _LightRadiusIntensityFalloff.z
-// #define _IsSpot _LightRadiusIntensityFalloff.w
-
-// #define _CameraDepthTexture _CameraDepthAttachment
-// #define _CameraOpaqueTexture _CameraColorTexture
 
             v2f vert (appdata v)
             {
@@ -142,8 +132,6 @@ float2 _SpotLightAngle; //{outer:dot range[1,0],innerSpotAngle:dot range[1,0]}
                 o.uv = v.uv;
                 return o;
             }
-
-
 
             float4 frag (v2f i) : SV_Target
             {
@@ -154,46 +142,37 @@ float2 _SpotLightAngle; //{outer:dot range[1,0],innerSpotAngle:dot range[1,0]}
                 float depthTex = GetScreenDepth(screenUV);
                 half isFar = IsTooFar(depthTex.x);
                 float3 worldPos = ScreenToWorld(screenUV);
-
+// return worldPos.xyzx;
                 float3 worldNormal = CalcWorldNormal(worldPos);
 //============ light                
-                // float3 lightDir = lightPos - worldPos * (1-lightPos.w);
-                // float distSqr = max(dot(lightDir,lightDir),HALF_MIN);
-                // float radius2 = _Radius * _Radius;
-                // lightDir = lightDir * rsqrt(distSqr);
-                // float atten = 1;
-                // atten *=  DistanceAtten(distSqr,radius2,_Intensity,_Falloff);
-
-                // #if defined(_ALPHA_TEST)
-                // clip(atten-0.01);
-                // #endif
-
-                // half4 lightColor = _LightColor * atten * nl;
-                // return lightColor;
-                // return (lightColor + screenColor);
 
                 #define shadowAtten 1
-                half _IsSpot= 0;
-                half2 _SpotLightAngle=0;
+                #define distanceAndSpotAttenuation 0
 
-                float3 lightDir = normalize(unity_ObjectToWorld._13_23_33);
-                float4 lightPos = float4(_IsPosLight ? unity_ObjectToWorld._14_24_34 : lightDir,_IsPosLight);
+                half isPoint = _LightType >=1;
+                half isSpot= _LightType >= 2;
+                float2 spotLightAngle = 1-radians(_SpotLightAngle.xy)*0.5;
 
-                Light light = GetLight(lightPos,
+                float3 lightDir = - normalize(unity_ObjectToWorld._13_23_33);
+                float4 lightPos = float4(isPoint ? unity_ObjectToWorld._14_24_34 : lightDir,isPoint);
+
+                Light light = GetLight(
+                lightPos,
                 _LightColor.xyz,
                 shadowAtten,
                 worldPos,
-                _LightAttenuation,
-                _LightDirection,
+                distanceAndSpotAttenuation, // unity atten only
+                lightDir,
                 _Radius,
                 _Intensity,
                 _Falloff,
-                _IsSpot,
-                _SpotLightAngle);
-
+                isSpot,
+                spotLightAngle);
+//============  calc lighting
                 float nl = saturate(dot(worldNormal, light.direction));
                 // return light.distanceAttenuation * light.color.xyzx * nl;
                 float atten = (light.distanceAttenuation  * max(0.1,light.shadowAttenuation) * nl);
+                atten *= 1- isFar; // filter out far distance
                 float3 radiance = light.color * atten;
                 return float4(radiance, atten);
             }
