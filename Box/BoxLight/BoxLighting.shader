@@ -1,4 +1,4 @@
-Shader "Hidden/FX/Box/BoxLight"
+Shader "Hidden/FX/Box/BoxLighting"
 {
     Properties
     {
@@ -6,7 +6,7 @@ Shader "Hidden/FX/Box/BoxLight"
         [Group(Base)]
         [GroupToggle(Base)]_FullScreenOn("_FullScreenOn",int) = 1
         [GroupVectorSlider(Base,minX minY maxX maxY,0_1 0_1 0_1 0_1,limit screen range,float)]_ScreenRange("ScreenRange",vector) = (0,0,1,1)
-        [GroupItem(Base)] _MainTex("_MainTex",2d)=""{}
+        [GroupItem(Base)] _MainTex("_MainTex",2d)="white"{}
 // ================================================== Light
         [Group(Light)]
         [GroupItem(Light)] [hdr]_LightColor("_LightColor",color) = (1,1,1,1)
@@ -15,7 +15,7 @@ Shader "Hidden/FX/Box/BoxLight"
         [GroupItem(Light)] _Radius("_Radius",float) = 10.0
         [GroupItem(Light)] _Intensity("_Intensity",float) = 10.0
         [GroupItem(Light)] _Falloff("_Falloff",float) = 10.0
-        [GroupVectorSlider(Light,spotAngle spotInnerAngle,0_360 0_360,spot light angle,float)] _SpotLightAngle("_SpotLightAngle",Vector) = (45,45,0,0)
+        [GroupVectorSlider(Light,spotAngle spotInnerAngle,0_180 0_180,spot light angle,float)] _SpotLightAngle("_SpotLightAngle",Vector) = (45,45,0,0)
         
         [GroupToggle(Light,_ALPHA_TEST)] _AlphaTestOn("_AlphaTestOn",int) = 0
 // ================================================== alpha      
@@ -129,7 +129,7 @@ Shader "Hidden/FX/Box/BoxLight"
             {
                 v2f o;
                 o.vertex = TransformObjectToNdcHClip(v.vertex,_FullScreenOn,_ScreenRange);
-                o.uv = v.uv;
+                o.uv = TRANSFORM_TEX(v.uv,_MainTex);
                 return o;
             }
 
@@ -137,7 +137,7 @@ Shader "Hidden/FX/Box/BoxLight"
             {
                 float2 screenUV = i.vertex.xy / _ScaledScreenParams.xy;
                 half4 screenColor = GetScreenColor(screenUV);
-                
+
 //============ world pos
                 float depthTex = GetScreenDepth(screenUV);
                 half isFar = IsTooFar(depthTex.x);
@@ -174,6 +174,13 @@ Shader "Hidden/FX/Box/BoxLight"
                 float atten = (light.distanceAttenuation  * max(0.1,light.shadowAttenuation) * nl);
                 atten *= 1- isFar; // filter out far distance
                 float3 radiance = light.color * atten;
+
+//============  mainTex as light cookie
+                float2 mainTexUV = i.uv; // screenUV * _MainTex_ST.xy + _MainTex_ST.zw
+                half4 mainTex = tex2D(_MainTex, mainTexUV);
+                
+                radiance *= mainTex.xyz;
+                atten *=  mainTex.w;
                 return float4(radiance, atten);
             }
             ENDHLSL

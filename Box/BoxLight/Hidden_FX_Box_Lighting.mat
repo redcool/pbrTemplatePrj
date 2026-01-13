@@ -7,7 +7,7 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: Hidden_FX_Box_Light
+  m_Name: Hidden_FX_Box_Lighting
   m_Shader: {fileID: 4800000, guid: 0b27d6cf258be4047a1a0a2ea91e8b6e, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
@@ -33,7 +33,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MainTex:
-        m_Texture: {fileID: 2800000, guid: 56dc1f3a5605bd942aabb5e0a765836f, type: 3}
+        m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MainTex2:
@@ -61,7 +61,7 @@ Material:
     - _DepthFogOn: 1
     - _DirLight: 0
     - _DstMode: 0
-    - _Falloff: 10
+    - _Falloff: 16.93
     - _FogDensity: 1
     - _FogHeight: 10
     - _FogHeightRange: 1
@@ -71,8 +71,9 @@ Material:
     - _HeightFogOn: 1
     - _HeightNoiseScale: 0.2
     - _InnerDistanceOn: 0
-    - _Intensity: 10
+    - _Intensity: 1.6
     - _IsPosLight: 1
+    - _LightType: 1
     - _MainTex2OffsetStop: 0
     - _MainTexArrayId: 0
     - _MainTexOffsetStop: 0
@@ -80,7 +81,7 @@ Material:
     - _NoiseTexOffsetStop: 0
     - _NormalUnifiedOn: 0
     - _PresetBlendMode: 0
-    - _Radius: 32.15
+    - _Radius: 51.2
     - _ReverseTextureOn: 0
     - _SceneFogOn: 0
     - _SimpleFog: 0
@@ -104,7 +105,8 @@ Material:
     - _Color2: {r: 0, g: 1, b: 0, a: 0}
     - _FogColor: {r: 1, g: 1, b: 1, a: 1}
     - _InnerRange: {r: -10, g: -3, b: 0, a: 0}
-    - _LightColor: {r: 1, g: 0, b: 0, a: 1}
+    - _LightColor: {r: 4.594794, g: 0, b: 0, a: 1}
     - _Range: {r: 0, g: 1, b: 1, a: 5}
     - _ScreenRange: {r: 0, g: 0, b: 1, a: 1}
+    - _SpotLightAngle: {r: 39, g: 14, b: 0, a: 0}
   m_BuildTextureStacks: []
