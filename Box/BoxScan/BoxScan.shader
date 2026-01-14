@@ -134,6 +134,7 @@ Shader "FX/Box/BoxScan"
             #include "../../../PowerShaderLib/Lib/NoiseLib.hlsl"
             #include "../../../PowerShaderLib/Lib/MathLib.hlsl"
             #include "../../../PowerShaderLib/Lib/FullscreenLib.hlsl"
+            #include "../../../PowerShaderLib/Lib/ScreenTextures.hlsl"
             #include "../../../PowerShaderLib/URPLib/URP_Input.hlsl"
 
             struct appdata
@@ -149,8 +150,8 @@ Shader "FX/Box/BoxScan"
             };
 
             sampler2D _MainTex,_MainTex2,_NoiseTex;
-            sampler2D _CameraOpaqueTexture,_CameraColorTexture;
-            sampler2D _CameraDepthTexture,_CameraDepthAttachment;
+            // sampler2D _CameraOpaqueTexture,_CameraColorTexture;
+            // sampler2D _CameraDepthTexture,_CameraDepthAttachment;
 
             sampler2D _FogDetailTex,_FogMainTex;
 
@@ -217,7 +218,7 @@ Shader "FX/Box/BoxScan"
                 float2 screenUV = i.vertex.xy / _ScaledScreenParams.xy;
 
 //============ world pos
-                float depthTex = tex2D(_CameraDepthTexture,screenUV).x;
+                float depthTex = GetScreenDepth(screenUV);
                 half isFar = IsTooFar(depthTex.x);
                 float3 worldPos = ScreenToWorldPos(screenUV,depthTex,UNITY_MATRIX_I_VP);
 //============ Noise
@@ -237,7 +238,7 @@ Shader "FX/Box/BoxScan"
                 float3 center = _UseTransformPos ? UNITY_MATRIX_M._14_24_34 : _Center;
                 float d = CalcWorldDistance(dist,distSign/**/,bandDist/**/,worldPos,center,_Radius+borderNoise,_Range.xy,_Range.zw);
                 float d2 = _InnerDistanceOn ? (smoothstep(_InnerRange.x,_InnerRange.y,dist)) : 1;
-// return d;
+
                 // float d = distance(worldPos,_Center) - _Radius;
                 // distSign = smoothstep(-1,1,(d));
                 // d = 1 - abs(d);
