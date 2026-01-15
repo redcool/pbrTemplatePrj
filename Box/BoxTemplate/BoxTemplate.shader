@@ -1,4 +1,4 @@
-Shader "Hidden/FX/Box/Template"
+Shader "FX/Box/Template"
 {
     Properties
     {
@@ -81,6 +81,7 @@ Shader "Hidden/FX/Box/Template"
             #include "../../../PowerShaderLib/Lib/MathLib.hlsl"
             #include "../../../PowerShaderLib/Lib/FullscreenLib.hlsl"
             #include "../../../PowerShaderLib/URPLib/URP_Input.hlsl"
+            #include "../../../PowerShaderLib/Lib/ScreenTextures.hlsl"
 
             struct appdata
             {
@@ -95,18 +96,12 @@ Shader "Hidden/FX/Box/Template"
             };
 
             sampler2D _MainTex;
-            sampler2D _CameraOpaqueTexture;
-            sampler2D _CameraDepthTexture;
 
             CBUFFER_START(UnityPerMaterial)
             half _FullScreenOn;
             half4 _MainTex_ST;
             half4 _ScreenRange;
-
             CBUFFER_END
-
-// #define _CameraDepthTexture _CameraDepthAttachment
-// #define _CameraOpaqueTexture _CameraColorTexture
 
             v2f vert (appdata v)
             {
@@ -116,14 +111,12 @@ Shader "Hidden/FX/Box/Template"
                 return o;
             }
 
-
-
             float4 frag (v2f i) : SV_Target
             {
                 float2 screenUV = i.vertex.xy / _ScaledScreenParams.xy;
 
 //============ world pos
-                float depthTex = tex2D(_CameraDepthTexture,screenUV).x;
+                float depthTex = GetScreenDepth(screenUV);
                 half isFar = IsTooFar(depthTex.x);
                 float3 worldPos = ScreenToWorldPos(screenUV,depthTex,UNITY_MATRIX_I_VP);
                 return worldPos.xyzx;
