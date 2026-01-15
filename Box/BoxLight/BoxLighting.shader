@@ -133,6 +133,7 @@ Shader "Hidden/FX/Box/BoxLighting"
                 return o;
             }
 
+
             float4 frag (v2f i) : SV_Target
             {
                 float2 screenUV = i.vertex.xy / _ScaledScreenParams.xy;
@@ -151,8 +152,8 @@ Shader "Hidden/FX/Box/BoxLighting"
 
                 half isPoint = _LightType >=1;
                 half isSpot= _LightType >= 2;
-                float2 spotLightAngle = 1-radians(_SpotLightAngle.xy)*0.5;
-
+                float2 spotLightAngle = CalcSpotLightAngle(_SpotLightAngle);
+// return spotLightAngle.x;
                 float3 lightDir = - normalize(unity_ObjectToWorld._13_23_33);
                 float4 lightPos = float4(isPoint ? unity_ObjectToWorld._14_24_34 : lightDir,isPoint);
 
@@ -168,6 +169,7 @@ Shader "Hidden/FX/Box/BoxLighting"
                 _Falloff,
                 isSpot,
                 spotLightAngle);
+
 //============  calc lighting
                 float nl = saturate(dot(worldNormal, light.direction));
                 // return light.distanceAttenuation * light.color.xyzx * nl;
