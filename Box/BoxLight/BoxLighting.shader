@@ -152,7 +152,7 @@ Shader "Hidden/FX/Box/BoxLighting"
 
                 half isPoint = _LightType >=1;
                 half isSpot= _LightType >= 2;
-                float2 spotLightAngle = CalcSpotLightAngle(_SpotLightAngle);
+                float2 spotLightAngleCos = CalcSpotLightAngleAtten(_SpotLightAngle);
 // return spotLightAngle.x;
                 float3 lightDir = - normalize(unity_ObjectToWorld._13_23_33);
                 float4 lightPos = float4(isPoint ? unity_ObjectToWorld._14_24_34 : lightDir,isPoint);
@@ -168,7 +168,7 @@ Shader "Hidden/FX/Box/BoxLighting"
                 _Intensity,
                 _Falloff,
                 isSpot,
-                spotLightAngle);
+                spotLightAngleCos);
 
 //============  calc lighting
                 float nl = saturate(dot(worldNormal, light.direction));
