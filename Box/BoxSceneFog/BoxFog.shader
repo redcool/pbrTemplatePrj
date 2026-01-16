@@ -1,0 +1,278 @@
+Shader "FX/Box/Nature/BoxFog"
+{
+    Properties
+    {
+        [GroupHeader(v0.0.2)]
+// ================================================== base        
+        [Group(Base)]
+        [GroupToggle(Base)]_FullScreenOn("_FullScreenOn",int) = 1
+        [GroupVectorSlider(Base,minX minY maxX maxY,0_1 0_1 0_1 0_1,limit screen range,float)]_ScreenRange("ScreenRange",vector) = (0,0,1,1)
+
+        [GroupHeader(Base,Fog Mask)]
+        [GroupItem(Base)] _MaskTex("_MaskTex(R)",2d) = "white"{}
+        [GroupItem(Base)] _MaskScale("_MaskScale",range(0,1)) = 0
+// ================================================== scene fog
+        [Group(SceneFog)]
+        // [GroupItem(SceneFog)] _SceneFogMap("_SceneFogMap",2d)=""{}
+
+        [GroupHeader(SceneFog,Main NoiseMap)]
+        [GroupItem(SceneFog)] [NoScaleOffset] _FogMainNoiseMap("_FogMainNoiseMap",2d)=""{}
+
+        [GroupVectorSlider(SceneFog,TilingX TilingZ OffsetX OffsetZ,0_1 0_1 0_1 0_1 , fog noise tiling and offset,field)] _FogNoiseTilingOffset("_FogNoiseTilingOffset",vector) = (3,3,1,1)
+
+        [GroupHeader(SceneFog,Detial NoiseMap)]
+        [GroupItem(SceneFog)] [NoScaleOffset] _FogDetailNoiseMap("_FogDetailNoiseMap",2d)=""{}
+        [GroupVectorSlider(SceneFog,layer1X layer1Y layer2X layer2Y,0_1 0_1 0_1 0_1 , Detail Noise Tiling,field)] _DetailFogTiling("_DetailFogTiling",vector) = (5,5,5,5)
+        [GroupVectorSlider(SceneFog,layer1X layer1Y layer2X layer2Y,0_1 0_1 0_1 0_1 , Detail Noise Offset,field)] _DetailFogOffset("_DetailFogOffset",vector) = (1,1,1,1)
+        
+        
+        // [GroupVectorSlider(HeightFog,rangeMin rangeMax,0_1 0_1)] _FogAreaScale("_FogAreaScale",vector) = (0,1,0,0)
+        [GroupHeader(SceneFog,Others)]
+        [GroupItem(SceneFog,w is fog intensity )] _SceneFogColor("_SceneFogColor",color) = (.5,.5,.5,.5)
+        [GroupItem(SceneFog,fog )] _WorldPosScale("_WorldPosScale",float) = 0.001
+        [GroupItem(SceneFog,fog show noise attenuation)] _FogNoiseAtten("_FogNoiseAtten",range(0,1)) = 0
+// ================================================== height fog
+        [Group(HeightFog)]
+        [GroupToggle(HeightFog)] _SceneHeightFogOn("_SceneHeightFogOn",float) = 1
+        [GroupVectorSlider(HeightFog,min max,0_1 0_1,height fog range,field)] _HeightFogRange("_HeightFogRange",Vector) = (0,100,0,0)
+        
+        // [GroupItem(HeightFog)]  _CameraFadeDist("_CameraFadeDist",float) = 10
+        [Group(ExpFog)]
+        [GroupItem(ExpFog,exp fog density)]  _FogDensity("_FogDensity",range(0,.5)) = 0.01
+        
+// ================================================== scene fog map(warfog)
+        [Group(SceneFogMap)]
+        [GroupToggle(SceneFogMap,SCENE_FOG_MAP)] _SceneFogMapOn("_SceneFogMapOn",float) = 1
+        [GroupItem(SceneFogMap)] [NoScaleOffset]_SceneFogMap("_SceneFogMap",2d) = "white"{}
+        [GroupEnum(SceneFogMap,R 0 G 1 B 2 A 3)] _SceneFogMapAttenChannel("_SceneFogMapAttenChannel",float) = 1
+        [GroupVectorSlider(SceneFogMap,min max,0_1 0_1,scebe fog range)] _FogAreaScale("_FogAreaScale",vector) = (0,1,0,0)
+        [GroupItem(SceneFogMap)] _MinWorldPos("_MinWorldPos",vector) = (0,0,0,0)
+        [GroupItem(SceneFogMap)] _MaxWorldPos("_MaxWorldPos",vector) = (100,100,100,0)
+// ================================================== alpha      
+        [Group(Alpha)]
+        [GroupHeader(Alpha,BlendMode)]
+        [GroupPresetBlendMode(Alpha,,_SrcMode,_DstMode)]_PresetBlendMode("_PresetBlendMode",int)=0
+        [HideInInspector]_SrcMode("_SrcMode",int) = 1
+        [HideInInspector]_DstMode("_DstMode",int) = 0
+
+        // [GroupHeader(Alpha,Premultiply)]
+        // [GroupToggle(Alpha)]_AlphaPremultiply("_AlphaPremultiply",int) = 0
+
+        // [GroupHeader(Alpha,AlphaTest)]
+        // [GroupToggle(Alpha,ALPHA_TEST)]_AlphaTestOn("_AlphaTestOn",int) = 0
+        // [GroupSlider(Alpha)]_Cutoff("_Cutoff",range(0,1)) = 0.5
+// ================================================== Settings
+        [Group(Settings)]
+        [GroupEnum(Settings,UnityEngine.Rendering.CullMode)]_CullMode("_CullMode",int) = 2
+		[GroupToggle(Settings)]_ZWriteMode("ZWriteMode",int) = 0
+
+		/*
+		Disabled,Never,Less,Equal,LessEqual,Greater,NotEqual,GreaterEqual,Always
+		*/
+		[GroupEnum(Settings,UnityEngine.Rendering.CompareFunction)]_ZTestMode("_ZTestMode",float) = 4
+
+        [GroupHeader(Settings,Color Mask)]
+        [GroupEnum(Settings,RGBA 16 RGB 15 RG 12 GB 6 RB 10 R 8 G 4 B 2 A 1 None 0)] _ColorMask("_ColorMask",int) = 15
+// ================================================== stencil settings
+        [Group(Stencil)]
+		[GroupEnum(Stencil,UnityEngine.Rendering.CompareFunction)]_StencilComp ("Stencil Comparison", Float) = 0
+        [GroupStencil(Stencil)] _Stencil ("Stencil ID", int) = 0
+        [GroupEnum(Stencil,UnityEngine.Rendering.StencilOp)]_StencilOp ("Stencil Operation", Float) = 0
+        [HideInInspector] 
+        [GroupItem(Stencil)] _StencilWriteMask ("Stencil Write Mask", Float) = 255
+        [HideInInspector] 
+        [GroupItem(Stencil)] _StencilReadMask ("Stencil Read Mask", Float) = 255
+
+        _3DTex("_3DTex",3d)=""{}
+    }
+
+HLSLINCLUDE
+    #include "../../../PowerShaderLib/Lib/UnityLib.hlsl"
+    #include "../../../PowerShaderLib/Lib/PowerUtils.hlsl"
+    #include "../../../PowerShaderLib/Lib/SDF.hlsl"
+    #include "../../../PowerShaderLib/Lib/NoiseLib.hlsl"
+    #include "../../../PowerShaderLib/Lib/MathLib.hlsl"
+    #include "../../../PowerShaderLib/Lib/FullscreenLib.hlsl"
+    #include "../../../PowerShaderLib/URPLib/URP_Input.hlsl"
+    #include "../../../PowerShaderLib/Lib/SDF.hlsl"
+
+    sampler2D _FogMainNoiseMap,_FogDetailNoiseMap;
+    // 
+    sampler2D _HighlightTex;
+    // float4 _HighlightColor;
+
+    sampler2D _MaskTex;
+    sampler3D _3DTex;
+
+    CBUFFER_START(UnityPerMaterial)
+    half _FullScreenOn;
+
+    half4 _FogNoiseTilingOffset;
+    half4 _DetailFogTiling,_DetailFogOffset;
+
+    half _SceneHeightFogOn;
+    half2 _HeightFogRange;
+    half _FogNoiseAtten;
+
+    // half _CameraFadeDist;
+    half _FogDensity; 
+    
+    half4 _SceneFogColor;
+    half _WorldPosScale;
+    half _MaskScale;
+    half4 _MaskTex_ST;
+    half4 _ScreenRange;
+    // scene war fog 
+    sampler2D _SceneFogMap; // map for fog hole
+    half2 _FogAreaScale; // map for fog hole
+    half3 _MinWorldPos,_MaxWorldPos;
+    half _SceneFogMapAttenChannel;
+    CBUFFER_END
+
+    float4 CalcFogFactor(float3 worldPos){
+        float3 worldUV = worldPos * _WorldPosScale;
+
+        float fogRate = 1; // sceneFog, dont need depth fog
+        // map for fog hole
+        #if defined(SCENE_FOG_MAP)
+            worldUV = (worldPos - _MinWorldPos)/(_MaxWorldPos - _MinWorldPos);
+
+            half4 fogMap = tex2Dlod(_SceneFogMap,half4(worldUV.xz,0,0));
+            half fogAtten = smoothstep(_FogAreaScale.x,_FogAreaScale.y,fogMap[_SceneFogMapAttenChannel]);
+            half isOut = any(worldUV.xz>1)||any(worldUV.xz<0); // over [0,1]
+            fogAtten *= 1-isOut;
+            // return float4(worldUV,saturate(fogAtten));
+            fogRate *= fogAtten;
+        #endif
+
+        float heightFogRate = (_HeightFogRange.x - worldPos.y)/(_HeightFogRange.y-_HeightFogRange.x);
+        fogRate *= _SceneHeightFogOn ? heightFogRate : 1;
+
+
+
+        return float4(worldUV,saturate(fogRate));
+    }
+
+    float3 CalcHighLight(float3 worldPos,float3 highlightColor){
+        // high light
+        float4 highlightTex = tex2D(_HighlightTex,worldPos.xz);
+        float highlight = abs(sin(_Time.y)) * highlightTex.x;
+        return highlight * highlightColor;
+    }
+
+    /**
+        return float4 ,{ xyz : fog color, w : fogNoise}
+    */
+    float4 CalcFogColor(float3 worldUV){
+        float4 noiseUV = worldUV.xzxy * _DetailFogTiling + _DetailFogOffset * _Time.xxxx;
+        float2 noise = tex2D(_FogDetailNoiseMap,noiseUV.xy);
+        noise += tex2D(_FogDetailNoiseMap,noiseUV.zw);
+        noise *= 0.5;
+
+        // xz
+        float2 mainOffset = _Time.xx * _FogNoiseTilingOffset.zw;
+        float4 mainNoiseUV = worldUV.xzyz* _FogNoiseTilingOffset.xyxy + mainOffset.xyxy;
+
+        float4 noiseMap = tex2D(_FogMainNoiseMap,mainNoiseUV.xy + noise *0.05);
+        float4 c = noiseMap * _SceneFogColor;
+        c.w = noise;
+        return c;
+    }
+ENDHLSL
+
+    SubShader
+    {
+        Tags { "RenderType"="Transparent" "Queue"="Transparent"}
+        LOD 100
+        zwrite [_ZWriteMode]
+        ztest [_ZTestMode]
+        cull [_CullMode]
+        Stencil
+        {
+            Ref [_Stencil]
+            Comp [_StencilComp]
+            Pass [_StencilOp]
+            ReadMask [_StencilReadMask]
+            WriteMask [_StencilWriteMask]
+        }
+
+        Pass
+        {
+            HLSLPROGRAM
+            #pragma vertex vert
+            #pragma fragment frag
+            #pragma shader_feature SCENE_FOG_MAP
+            #pragma shader_feature EXP_FOG
+            // ray march count
+            #define COUNT 10
+
+            struct appdata
+            {
+                float4 vertex : POSITION;
+                float2 uv : TEXCOORD0;
+            };
+
+            struct v2f
+            {
+                float4 vertex : SV_POSITION;
+                float2 uv : TEXCOORD0;
+                float3 worldPos :TEXCOORD1;
+            };
+
+            sampler2D _CameraOpaqueTexture;
+            sampler2D _CameraDepthTexture;
+
+            v2f vert (appdata v)
+            {
+                v2f o;
+                o.vertex = TransformObjectToNdcHClip(v.vertex,_FullScreenOn,_ScreenRange);
+                // o.vertex = _FullScreenOn ? float4(v.vertex.xy * 2,0,1) : TransformObjectToHClip(v.vertex.xyz);
+
+                o.uv = TRANSFORM_TEX(v.uv,_MaskTex);
+                // o.uv = lerp(_ScreenRange.xy,_ScreenRange.zw,o.uv);
+                o.worldPos = TransformObjectToWorld(v.vertex.xyz);
+                return o;
+            }
+
+            half3 GetMainLightColor(float3 worldPos){
+                float3 l = _MainLightPosition.xyz;
+                float3 v = normalize(worldPos - _WorldSpaceCameraPos.xyz);
+                float3 lightColor = _MainLightColor;
+                float lv = saturate(dot(l,v));
+                return lightColor * pow(lv,1024);
+            }
+
+            float4 frag (v2f i) : SV_Target
+            {
+                float2 screenUV = i.vertex.xy / _ScaledScreenParams.xy;
+                float4 sceneColor = tex2D(_CameraOpaqueTexture,screenUV);
+
+//============ world pos
+                float depthTex = tex2D(_CameraDepthTexture,screenUV).x;
+                float isFar = IsTooFar(depthTex.x);
+                
+                float3 rayPos = _WorldSpaceCameraPos;
+                float3 viewVec = i.worldPos - rayPos;
+                float viewVecLength = length(viewVec);
+                float3 rayDir = viewVec/viewVecLength;
+//======== border fading
+                float4 maskTex = tex2D(_MaskTex, i.uv);
+
+                float2 boxDst = rayBoxDst(_MinWorldPos,_MaxWorldPos,rayPos,1/rayDir);
+                float3 entryPoint = rayPos + rayDir * boxDst.x;
+//======== scene fog
+                half4 col = 0;
+                for(uint x = 0;x<COUNT;x++){
+                    float3 curPos = entryPoint + rayDir *1*x;
+                    float4 noiseTex = tex3Dlod(_3DTex,float4(curPos*0.01+_Time.x,curPos.x));
+                    col += lerp(sceneColor,noiseTex.x, noiseTex.w);
+                    // col.xyz += GetMainLightColor(worldPos) ;
+                }
+                col *= rcp(COUNT);
+
+                return col;
+            }
+            ENDHLSL
+        }
+    }
+}
