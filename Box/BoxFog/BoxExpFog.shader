@@ -1,4 +1,4 @@
-Shader "FX/Box/BoxFog"
+Shader "FX/Box/BoxExpFog"
 {
     Properties
     {
@@ -136,7 +136,7 @@ Shader "FX/Box/BoxFog"
                 float3 viewPos = _WorldSpaceCameraPos;
                 
                 float fog = ExpFog(worldPos,centerPos,viewPos,_FogStartDist,_FogDensityFalloff);
-                return fog * _FogColor;
+                return fog * _FogColor * (1-isFar);
             }
             ENDHLSL
         }
