@@ -1,4 +1,4 @@
-Shader "Template/Unlit/Instanced"
+Shader "URP/Unlit/Instanced"
 {
     Properties
     {
@@ -7,10 +7,7 @@ Shader "Template/Unlit/Instanced"
 
     HLSLINCLUDE
     #include "../../../PowerShaderLib/Lib/UnityLib.hlsl"
-    // urp's flow
-// #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
-// #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/BRDF.hlsl"
-// #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/GlobalIllumination.hlsl"
+
     ENDHLSL
     SubShader
     {

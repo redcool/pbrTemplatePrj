@@ -1,4 +1,4 @@
-Shader "Template/Unlit/VertexColorId"
+Shader "Template/Unlit/VertexMoveByColorId"
 {
     Properties
     {

@@ -2,14 +2,36 @@ Shader "Template/Unlit/InstancedLightmap"
 {
     Properties
     {
-        _MainTex ("Texture", 2D) = "white" {}
-        _Color("_Color",color) = (1,1,1,1)
+        [Group(Main)]
+        [GroupItem(Main)] _MainTex ("Texture", 2D) = "white" {}
+        [GroupItem(Main)] [hdr] _Color("_Color",color) = (1,1,1,1)
+        // ================================================== stencil settings
+        [Group(Stencil)]
+        [GroupEnum(Stencil,UnityEngine.Rendering.CompareFunction)]_StencilComp ("Stencil Comparison", Float) = 0
+        [GroupStencil(Stencil)] _Stencil ("Stencil ID", int) = 0
+        [GroupEnum(Stencil,UnityEngine.Rendering.StencilOp)]_StencilOp ("Stencil Operation", Float) = 0
+        [HideInInspector] _StencilWriteMask ("Stencil Write Mask", Float) = 255
+        [HideInInspector] _StencilReadMask ("Stencil Read Mask", Float) = 255
 
-        [Header(Alpha)]
-        [Enum(UnityEngine.Rendering.BlendMode)]_SrcMode("_SrcMode",int) = 1
-        [Enum(UnityEngine.Rendering.BlendMode)]_DstMode("_DstMode",int) = 0        
-        [GroupToggle(,_ALPHA_TEST_ON)]_ClipOn("_ClipOn",int) = 0
-        _Cutoff("_Cutoff",range(0,1)) = 0.5
+        [Group(Alpha)]
+        [GroupHeader(Alpha,AlphaTest)]
+        [GroupToggle(Alpha,ALPHA_TEST)]_ClipOn("_AlphaTestOn",int) = 0
+        [GroupSlider(Alpha)]_Cutoff("_Cutoff",range(0,1)) = 0.5
+        
+        [GroupHeader(Alpha,BlendMode)]
+        [GroupPresetBlendMode(Alpha,,_SrcMode,_DstMode)]_PresetBlendMode("_PresetBlendMode",int)=0
+        // [GroupEnum(Alpha,UnityEngine.Rendering.BlendMode)]
+        [HideInInspector]_SrcMode("_SrcMode",int) = 1
+        [HideInInspector]_DstMode("_DstMode",int) = 0
+
+//================================================= settings
+        [Group(Settings)]
+		[GroupToggle(Settings)]_ZWriteMode("ZWriteMode",int) = 1
+		/*
+		Disabled,Never,Less,Equal,LessEqual,Greater,NotEqual,GreaterEqual,Always
+		*/
+		[GroupEnum(Settings,UnityEngine.Rendering.CompareFunction)]_ZTestMode("_ZTestMode",float) = 4
+        [GroupEnum(Settings,UnityEngine.Rendering.CullMode)]_CullMode("_CullMode",int) = 2
     }
 
     HLSLINCLUDE
@@ -24,12 +46,24 @@ Shader "Template/Unlit/InstancedLightmap"
 
         Pass
         {
-            blend[_SrcMode][_DstMode]
+            blend [_SrcMode][_DstMode]
+            zwrite[_ZWriteMode]
+            ztest[_ZTestMode]
+            cull [_CullMode]
+
+            Stencil
+            {
+                Ref [_Stencil]
+                Comp [_StencilComp]
+                Pass [_StencilOp]
+                ReadMask [_StencilReadMask]
+                WriteMask [_StencilWriteMask]
+            }
             HLSLPROGRAM
             #pragma vertex vert
             #pragma fragment frag
             #pragma multi_compile_instancing
-            #pragma shader_feature _ALPHA_TEST_ON
+            #pragma shader_feature ALPHA_TEST
 
             // nothing
             // #if defined(INSTANCING_ON)

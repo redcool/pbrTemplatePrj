@@ -1,4 +1,4 @@
-Shader "Template/Unlit/Template"
+Shader "Template/Unlit/DepthOnly"
 {
     Properties
     {

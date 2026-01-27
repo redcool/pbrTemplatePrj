@@ -1,4 +1,4 @@
-Shader "Template/Unlit/ScreenColor"
+Shader "URP/Unlit/ScreenColor"
 {
     Properties
     {

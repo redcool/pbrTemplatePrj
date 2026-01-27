@@ -1,4 +1,4 @@
-Shader "Template/Unlit/Color_MRT"
+Shader "URP/Unlit/Color_MRT"
 {
     Properties
     {
