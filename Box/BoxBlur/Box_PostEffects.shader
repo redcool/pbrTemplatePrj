@@ -23,7 +23,7 @@ Shader "FX/Box/Blur/Box_PostEffects"
 // ================================================== blur
         [Group(Blur)]
         [GroupToggle(Blur,_BLUR,use blur)]_BlurOn("_BlurOn",float) = 0
-        [GroupItem(Blur)] _BlurSize("_BlurSize",range(0,3)) = 1
+        [GroupItem(Blur)] _BlurSize("_BlurSize",range(0,10)) = 1
         [GroupItem(Blur)] _StepCount("_StepCount",range(1,10)) = 4
 
 // ================================================== chromatic aberration
@@ -192,11 +192,11 @@ Shader "FX/Box/Blur/Box_PostEffects"
             }
 
             float4 SampleTextureApplyBoxBlur(TEXTURE2D_PARAM(tex,samperTex),float2 uv,float4 texelSize){
-                float rate = texelSize.z/texelSize.w;
-                // uv += texelSize.xy * 0.5;
+                // float rate = texelSize.z/texelSize.w;
+                uv += texelSize.xy * 0.5;
                 float4 c = 0;
                 c += BoxBlur(tex,samperTex,uv,texelSize.xy * _BlurSize* float2(1,0),_StepCount);
-                c += BoxBlur(tex,samperTex,uv,texelSize.xy * _BlurSize* float2(0,rate),_StepCount);
+                c += BoxBlur(tex,samperTex,uv,texelSize.xy * _BlurSize* float2(0,1),_StepCount);
                 return c * 0.5;
             }
 
