@@ -116,7 +116,7 @@ Shader "URP/Unlit/Color_MRT"
             half _UseUV1,_UV1ReverseY;
             half _MainTexArrayId;
             CBUFFER_END
-            
+            float _FrameCount;
             #include "../../../PowerShaderLib/Lib/FogLib.hlsl"
 
 
@@ -146,14 +146,16 @@ Shader "URP/Unlit/Color_MRT"
                 return tex;
             }
 
-            float4 frag (v2f i,out float4 outputNormal:SV_TARGET1,out float4 outputMotionVectors:SV_TARGET2) : SV_Target
+            float4 frag (v2f i
+            ,out float4 outputNormal:SV_TARGET1
+            ,out float4 outputMotionVectors:SV_TARGET2
+            ) : SV_Target
             {
                 float2 uv = _UseUV1? i.uv.zw : i.uv.xy;
-
+                float2 suv = i.vertex.xy * rcp(_ScaledScreenParams.xy);
                 // sample the texture
                 half4 mainTex = SampleMainTex(uv);
                 float4 col = mainTex * _Color * i.color;
-
 
                 #if defined(ALPHA_TEST)
                     clip(col.w - _Cutoff);
