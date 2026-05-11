@@ -1,10 +1,11 @@
+﻿using PowerUtilities.RenderFeatures;
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
 
 public class TestCloud : ScriptableRendererFeature
 {
-    class CustomRenderPass : ScriptableRenderPass
+    class CustomRenderPass : SRPPass
     {
         static bool isInited;
 
