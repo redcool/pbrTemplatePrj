@@ -12,7 +12,7 @@ Material:
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords:
-  - _ALPHA_TEST
+  - _BOX_VOLUME_ON
   m_InvalidKeywords: []
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
@@ -48,10 +48,15 @@ Material:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
+    - _VolumeTex:
+        m_Texture: {fileID: 11700000, guid: 306ac4071293c3c4699ccd1247821382, type: 2}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
     - MAIN_TEX_ARRAY: 0
-    - _AlphaTestOn: 1
+    - _AlphaTestOn: 0
+    - _BigShadowOff: 1
     - _BorderNoiseScale: 0.2
     - _ClipOn: 0
     - _ColorMask: 15
@@ -60,8 +65,8 @@ Material:
     - _Cutoff: 0.5
     - _DepthFogOn: 1
     - _DirLight: 0
-    - _DstMode: 0
-    - _Falloff: 16.93
+    - _DstMode: 10
+    - _Falloff: 77.7
     - _FogDensity: 1
     - _FogHeight: 10
     - _FogHeightRange: 1
@@ -71,9 +76,10 @@ Material:
     - _HeightFogOn: 1
     - _HeightNoiseScale: 0.2
     - _InnerDistanceOn: 0
-    - _Intensity: 1.6
+    - _Intensity: 12.41
     - _IsPosLight: 1
     - _LightType: 1
+    - _MainLightShadowSoftScale: 0.1
     - _MainTex2OffsetStop: 0
     - _MainTexArrayId: 0
     - _MainTexOffsetStop: 0
@@ -81,11 +87,12 @@ Material:
     - _NoiseTexOffsetStop: 0
     - _NormalUnifiedOn: 0
     - _PresetBlendMode: 0
-    - _Radius: 51.2
+    - _Radius: 10.74
+    - _ReceiveShadowOff: 0
     - _ReverseTextureOn: 0
     - _SceneFogOn: 0
     - _SimpleFog: 0
-    - _SrcMode: 1
+    - _SrcMode: 5
     - _Stencil: 0
     - _StencilComp: 0
     - _StencilFailOp: 0
@@ -97,6 +104,14 @@ Material:
     - _UV1ReverseY: 0
     - _UseTransformPos: 0
     - _UseUV1: 0
+    - _VolumeDensity: 0.594
+    - _VolumeDensityHeightAtten: 0.24
+    - _VolumeExtinction: 0.23
+    - _VolumeNoiseScale: 9.04
+    - _VolumeNoiseSpeed: 1
+    - _VolumeOn: 1
+    - _VolumeTexScale: 0.2
+    - _VolumeTexSpeed: 0.394
     - _ZTestMode: 4
     - _ZWriteMode: 0
     m_Colors:
@@ -105,8 +120,8 @@ Material:
     - _Color2: {r: 0, g: 1, b: 0, a: 0}
     - _FogColor: {r: 1, g: 1, b: 1, a: 1}
     - _InnerRange: {r: -10, g: -3, b: 0, a: 0}
-    - _LightColor: {r: 4.594794, g: 0, b: 0, a: 1}
+    - _LightColor: {r: 0.81020516, g: 0.81020516, b: 0.81020516, a: 1}
     - _Range: {r: 0, g: 1, b: 1, a: 5}
     - _ScreenRange: {r: 0, g: 0, b: 1, a: 1}
-    - _SpotLightAngle: {r: 39, g: 14, b: 0, a: 0}
+    - _SpotLightAngle: {r: 50.5, g: 10.3, b: 0, a: 0}
   m_BuildTextureStacks: []

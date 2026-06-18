@@ -17,9 +17,25 @@ Shader "Hidden/FX/Box/BoxLighting"
         [GroupItem(Light)] _Falloff("_Falloff",float) = 10.0
         [GroupVectorSlider(Light,spotAngle spotInnerAngle,0_180 0_180,spot light angle,float)] _SpotLightAngle("_SpotLightAngle",Vector) = (45,45,0,0)
         
-        [GroupToggle(Light,_ALPHA_TEST)] _AlphaTestOn("_AlphaTestOn",int) = 0
+
+        [GroupHeader(Light,MainLight Shadow)]
+        [GroupToggle(Light,_RECEIVE_SHADOWS_OFF)]_ReceiveShadowOff("_ReceiveShadowOff",int) = 0
+        [GroupItem(Light)]_MainLightShadowSoftScale("_MainLightShadowSoftScale",range(0,1)) = 0.1
+
+        [GroupHeader(Light,BigShadow)]
+        [GroupToggle(Light)]_BigShadowOff("_BigShadowOff",int) = 0
+// ================================================== Volume Smoke
+        [Group(Volume)]
+        [GroupToggle(Volume,_BOX_VOLUME_ON)]_VolumeOn("Volume Fog",int) = 0
+        [GroupItem(Volume)] _VolumeTex("Volume Noise 3D", 3D) = "white" {}
+        [GroupItem(Volume)]_VolumeDensity("Density",range(0,2)) = 0.5
+        [GroupItem(Volume)]_VolumeDensityHeightAtten("_VolumeDensityHeightAtten",range(0,2)) = 0.5
+        [GroupItem(Volume)]_VolumeExtinction("Extinction",range(0,5)) = 1.0
+        [GroupItem(Volume)]_VolumeTexScale("Volume Texture Scale",float) = 2.0
+        [GroupItem(Volume)]_VolumeTexSpeed("Volume Texture Speed",range(0,1)) = 0.1
 // ================================================== alpha      
         [Group(Alpha)]
+        [GroupToggle(Alpha,_ALPHA_TEST)] _AlphaTestOn("_AlphaTestOn",int) = 0
         [GroupHeader(Alpha,BlendMode)]
         [GroupPresetBlendMode(Alpha,,_SrcMode,_DstMode)]_PresetBlendMode("_PresetBlendMode",int)=0
         [HideInInspector]_SrcMode("_SrcMode",int) = 1
@@ -83,6 +99,8 @@ Shader "Hidden/FX/Box/BoxLighting"
             #pragma vertex vert
             #pragma fragment frag
             #pragma shader_feature _ALPHA_TEST
+            #pragma shader_feature _RECEIVE_SHADOWS_OFF
+            #pragma shader_feature _BOX_VOLUME_ON
 
             #include "../../../PowerShaderLib/Lib/UnityLib.hlsl"
             #include "../../../PowerShaderLib/Lib/PowerUtils.hlsl"
@@ -94,16 +112,20 @@ Shader "Hidden/FX/Box/BoxLighting"
             #include "../../../PowerShaderLib/URPLib/Lighting.hlsl"
             #include "../../../PowerShaderLib/Lib/ScreenTextures.hlsl"
 
+            #include "../../../PowerShaderLib/Lib/BigShadows.hlsl"
+            #include "../../../PowerShaderLib/Lib/BoxVolumeLib.hlsl"
+
             struct appdata
             {
                 float4 vertex : POSITION;
                 float2 uv : TEXCOORD0;
+                float2 uv1 : TEXCOORD1;
             };
 
             struct v2f
             {
-                float2 uv : TEXCOORD0;
                 float4 vertex : SV_POSITION;
+                float4 uv : TEXCOORD0;
             };
 
             sampler2D _MainTex;
@@ -123,14 +145,40 @@ Shader "Hidden/FX/Box/BoxLighting"
             half _Falloff;
 
             float2 _SpotLightAngle; //{outer:dot range[1,0],innerSpotAngle:dot range[1,0]}
+
+            float _BigShadowOff;
+
+            half _VolumeDensity;
+            half _VolumeDensityHeightAtten;
+            half _VolumeExtinction;
+            half _VolumeTexScale;
+            half _VolumeTexSpeed;
             CBUFFER_END
 
             v2f vert (appdata v)
             {
                 v2f o;
                 o.vertex = TransformObjectToNdcHClip(v.vertex,_FullScreenOn,_ScreenRange);
-                o.uv = TRANSFORM_TEX(v.uv,_MainTex);
+                o.uv.xy = TRANSFORM_TEX(v.uv,_MainTex);
+
+                float2 lightmapUV = v.uv1 * unity_LightmapST.xy + unity_LightmapST.zw;
+                o.uv.zw = lightmapUV;
+
                 return o;
+            }
+
+            float GetShadowAtten(float3 worldPos){
+                float4 shadowCoord = TransformWorldToShadowCoord(worldPos);
+                float shadowAttenuation = CalcShadow(shadowCoord,worldPos,1);
+
+                branch_if(!_BigShadowOff)
+                {
+                    float3 bigShadowCoord = TransformWorldToBigShadow(worldPos);
+                    // i.bigShadowCoord.z += 0.001;
+                    float atten = CalcBigShadowAtten(bigShadowCoord.xyz,1);
+                    shadowAttenuation = min(shadowAttenuation,atten);
+                }
+                return shadowAttenuation;
             }
 
 
@@ -147,7 +195,8 @@ Shader "Hidden/FX/Box/BoxLighting"
                 float3 worldNormal = CalcWorldNormal(worldPos);
 //============ light                
 
-                #define shadowAtten 1
+                #define shadowAtten GetShadowAtten(worldPos)
+                // #define shadowAtten 1
                 #define distanceAndSpotAttenuation 0
 
                 half isPoint = _LightType >=1;
@@ -183,6 +232,32 @@ Shader "Hidden/FX/Box/BoxLighting"
                 
                 radiance *= mainTex.xyz;
                 atten *=  mainTex.w;
+
+//============  volume scattering (dust/smoke within the box)
+#if defined(_BOX_VOLUME_ON)
+                float3 right   = UNITY_MATRIX_M._11_21_31;
+                float3 up      = UNITY_MATRIX_M._12_22_32;
+                float3 forward = UNITY_MATRIX_M._13_23_33;
+                float3 center  = UNITY_MATRIX_M._14_24_34;
+                float3 halfExt = (abs(right) + abs(up) + abs(forward)) * 0.5;
+
+                float3 boundsMin = center - halfExt;
+                float3 boundsMax = center + halfExt;
+
+                float3 viewDir = normalize(worldPos - _WorldSpaceCameraPos);
+                half4 vol = BoxVolumeScattering_3DTex(
+                    boundsMin, boundsMax,
+                    worldPos, viewDir,
+                    light.color, light.distanceAttenuation,
+                    _VolumeDensity, _VolumeExtinction,
+                    _VolumeTexScale, _VolumeTexSpeed);
+
+                // 体积雾: 表面光 × 透过率 + 散射光 (雾既遮挡又发光)
+                radiance = radiance * vol.a + vol.rgb;
+                // 雾的可见度提升 alpha，避免表面暗处雾被裁剪
+                atten += (1-vol.a) * light.distanceAttenuation;
+#endif
+
                 return float4(radiance, atten);
             }
             ENDHLSL
