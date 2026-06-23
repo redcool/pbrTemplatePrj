@@ -6,7 +6,7 @@ Shader "Hidden/FX/Box/BoxLighting"
         [Group(Base)]
         [GroupToggle(Base)]_FullScreenOn("_FullScreenOn",int) = 1
         [GroupVectorSlider(Base,minX minY maxX maxY,0_1 0_1 0_1 0_1,limit screen range,float)]_ScreenRange("ScreenRange",vector) = (0,0,1,1)
-        [GroupItem(Base)] _MainTex("_MainTex",2d)="white"{}
+        [GroupItem(Base)] _MainTex("_MainTex(lightMask)",2d)="white"{}
 // ================================================== Light
         [Group(Light)]
         [GroupItem(Light)] [hdr]_LightColor("_LightColor",color) = (1,1,1,1)
@@ -17,19 +17,21 @@ Shader "Hidden/FX/Box/BoxLighting"
         [GroupItem(Light)] _Falloff("_Falloff",float) = 10.0
         [GroupVectorSlider(Light,spotAngle spotInnerAngle,0_180 0_180,spot light angle,float)] _SpotLightAngle("_SpotLightAngle",Vector) = (45,45,0,0)
         
+        [Group(DirLightShadow)]
+        [GroupHeader(DirLightShadow,MainLight Shadow)]
+        [GroupToggle(DirLightShadow,_RECEIVE_SHADOWS_OFF)]_ReceiveShadowOff("_ReceiveShadowOff",int) = 0
+        // [GroupItem(Light)]_MainLightShadowSoftScale("_MainLightShadowSoftScale",range(0,1)) = 0.1
 
-        [GroupHeader(Light,MainLight Shadow)]
-        [GroupToggle(Light,_RECEIVE_SHADOWS_OFF)]_ReceiveShadowOff("_ReceiveShadowOff",int) = 0
-        [GroupItem(Light)]_MainLightShadowSoftScale("_MainLightShadowSoftScale",range(0,1)) = 0.1
-
-        [GroupHeader(Light,BigShadow)]
-        [GroupToggle(Light)]_BigShadowOff("_BigShadowOff",int) = 0
+        [GroupHeader(DirLightShadow,BigShadow)]
+        [GroupToggle(DirLightShadow)] _BigShadowOff("_BigShadowOff",int) = 0
+        [GroupItem(DirLightShadow)] _DirShadowIntensityAdditive("_DirShadowIntensityAdditive",range(0,1)) = 0.5
 // ================================================== Volume Smoke
         [Group(Volume)]
         [GroupToggle(Volume,_BOX_VOLUME_ON)]_VolumeOn("Volume Fog",int) = 0
         [GroupItem(Volume)] _VolumeTex("Volume Noise 3D", 3D) = "white" {}
+        [GroupItem(Volume)]_VolumeColor("Volume Color(additive)",color) = (0,0,0,0)
         [GroupItem(Volume)]_VolumeDensity("Density",range(0,2)) = 0.5
-        [GroupItem(Volume)]_VolumeDensityHeightAtten("_VolumeDensityHeightAtten",range(0,2)) = 0.5
+        [GroupItem(Volume)]_WholeVolumeAtten("_WholeVolumeAtten",range(0,2)) = 0
         [GroupItem(Volume)]_VolumeExtinction("Extinction",range(0,5)) = 1.0
         [GroupItem(Volume)]_VolumeTexScale("Volume Texture Scale",float) = 2.0
         [GroupItem(Volume)]_VolumeTexSpeed("Volume Texture Speed",range(0,1)) = 0.1
@@ -144,15 +146,17 @@ Shader "Hidden/FX/Box/BoxLighting"
             half _Intensity;
             half _Falloff;
 
-            float2 _SpotLightAngle; //{outer:dot range[1,0],innerSpotAngle:dot range[1,0]}
+            half2 _SpotLightAngle; //{outer:dot range[1,0],innerSpotAngle:dot range[1,0]}
 
-            float _BigShadowOff;
+            half _BigShadowOff;
+            half _DirShadowIntensityAdditive;
 
             half _VolumeDensity;
-            half _VolumeDensityHeightAtten;
+            half _WholeVolumeAtten;
             half _VolumeExtinction;
             half _VolumeTexScale;
             half _VolumeTexSpeed;
+            half4 _VolumeColor;
             CBUFFER_END
 
             v2f vert (appdata v)
@@ -167,7 +171,11 @@ Shader "Hidden/FX/Box/BoxLighting"
                 return o;
             }
 
-            float GetShadowAtten(float3 worldPos){
+            float GetDirShadowAtten(float3 worldPos){
+                #if defined(_RECEIVE_SHADOWS_OFF)
+                    return 1;
+                #endif
+
                 float4 shadowCoord = TransformWorldToShadowCoord(worldPos);
                 float shadowAttenuation = CalcShadow(shadowCoord,worldPos,1);
 
@@ -178,7 +186,7 @@ Shader "Hidden/FX/Box/BoxLighting"
                     float atten = CalcBigShadowAtten(bigShadowCoord.xyz,1);
                     shadowAttenuation = min(shadowAttenuation,atten);
                 }
-                return shadowAttenuation;
+                return shadowAttenuation + _DirShadowIntensityAdditive;
             }
 
 
@@ -195,16 +203,16 @@ Shader "Hidden/FX/Box/BoxLighting"
                 float3 worldNormal = CalcWorldNormal(worldPos);
 //============ light                
 
-                #define shadowAtten GetShadowAtten(worldPos)
+                half shadowAtten = GetDirShadowAtten(worldPos);
                 // #define shadowAtten 1
                 #define distanceAndSpotAttenuation 0
 
-                half isPoint = _LightType >=1;
-                half isSpot= _LightType >= 2;
-                float2 spotLightAngleCos = CalcSpotLightAngleAtten(_SpotLightAngle);
-// return spotLightAngle.x;
-                float3 lightDir = - normalize(unity_ObjectToWorld._13_23_33);
-                float4 lightPos = float4(isPoint ? unity_ObjectToWorld._14_24_34 : lightDir,isPoint);
+                bool isPoint;
+                bool isSpot;
+                float3 lightDir;
+                float4 lightPos;
+                float2 spotLightAngleCos;
+                CalcLightInfo(_LightType, _SpotLightAngle, isPoint/**/, isSpot/**/, lightDir/**/, lightPos/**/, spotLightAngleCos/**/);
 
                 Light light = GetLight(
                 lightPos,
@@ -248,16 +256,18 @@ Shader "Hidden/FX/Box/BoxLighting"
                 half4 vol = BoxVolumeScattering_3DTex(
                     boundsMin, boundsMax,
                     worldPos, viewDir,
-                    light.color, light.distanceAttenuation,
+                    light.color + _VolumeColor.xyz, 1,
                     _VolumeDensity, _VolumeExtinction,
                     _VolumeTexScale, _VolumeTexSpeed);
 
                 // 体积雾: 表面光 × 透过率 + 散射光 (雾既遮挡又发光)
                 radiance = radiance * vol.a + vol.rgb;
-                // 雾的可见度提升 alpha，避免表面暗处雾被裁剪
-                atten += (1-vol.a) * light.distanceAttenuation;
-#endif
 
+                // light atten + whole volume atten, 体积雾的衰减也会影响表面光
+                half densityAtten = light.distanceAttenuation + _WholeVolumeAtten;
+                // 雾的可见度提升 alpha，避免表面暗处雾被裁剪
+                atten += (1-vol.a) * densityAtten;
+#endif
                 return float4(radiance, atten);
             }
             ENDHLSL

@@ -13,6 +13,7 @@ Material:
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords:
   - _BOX_VOLUME_ON
+  - _RECEIVE_SHADOWS_OFF
   m_InvalidKeywords: []
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
@@ -56,7 +57,7 @@ Material:
     m_Floats:
     - MAIN_TEX_ARRAY: 0
     - _AlphaTestOn: 0
-    - _BigShadowOff: 1
+    - _BigShadowOff: 0
     - _BorderNoiseScale: 0.2
     - _ClipOn: 0
     - _ColorMask: 15
@@ -65,6 +66,8 @@ Material:
     - _Cutoff: 0.5
     - _DepthFogOn: 1
     - _DirLight: 0
+    - _DirShadowIntensity: 0.698
+    - _DirShadowIntensityAdditive: 0.493
     - _DstMode: 10
     - _Falloff: 77.7
     - _FogDensity: 1
@@ -76,10 +79,10 @@ Material:
     - _HeightFogOn: 1
     - _HeightNoiseScale: 0.2
     - _InnerDistanceOn: 0
-    - _Intensity: 12.41
+    - _Intensity: 25.5
     - _IsPosLight: 1
     - _LightType: 1
-    - _MainLightShadowSoftScale: 0.1
+    - _MainLightShadowSoftScale: 0.177
     - _MainTex2OffsetStop: 0
     - _MainTexArrayId: 0
     - _MainTexOffsetStop: 0
@@ -87,8 +90,8 @@ Material:
     - _NoiseTexOffsetStop: 0
     - _NormalUnifiedOn: 0
     - _PresetBlendMode: 0
-    - _Radius: 10.74
-    - _ReceiveShadowOff: 0
+    - _Radius: 6.45
+    - _ReceiveShadowOff: 1
     - _ReverseTextureOn: 0
     - _SceneFogOn: 0
     - _SimpleFog: 0
@@ -104,14 +107,15 @@ Material:
     - _UV1ReverseY: 0
     - _UseTransformPos: 0
     - _UseUV1: 0
-    - _VolumeDensity: 0.594
-    - _VolumeDensityHeightAtten: 0.24
-    - _VolumeExtinction: 0.23
+    - _VolumeDensity: 1.872
+    - _VolumeDensityHeightAtten: 0
+    - _VolumeExtinction: 0.12
     - _VolumeNoiseScale: 9.04
     - _VolumeNoiseSpeed: 1
     - _VolumeOn: 1
     - _VolumeTexScale: 0.2
     - _VolumeTexSpeed: 0.394
+    - _WholeVolumeAtten: 0.048
     - _ZTestMode: 4
     - _ZWriteMode: 0
     m_Colors:
@@ -120,8 +124,9 @@ Material:
     - _Color2: {r: 0, g: 1, b: 0, a: 0}
     - _FogColor: {r: 1, g: 1, b: 1, a: 1}
     - _InnerRange: {r: -10, g: -3, b: 0, a: 0}
-    - _LightColor: {r: 0.81020516, g: 0.81020516, b: 0.81020516, a: 1}
+    - _LightColor: {r: 1, g: 1, b: 1, a: 1}
     - _Range: {r: 0, g: 1, b: 1, a: 5}
     - _ScreenRange: {r: 0, g: 0, b: 1, a: 1}
     - _SpotLightAngle: {r: 50.5, g: 10.3, b: 0, a: 0}
+    - _VolumeColor: {r: 0, g: 0, b: 0, a: 1}
   m_BuildTextureStacks: []
