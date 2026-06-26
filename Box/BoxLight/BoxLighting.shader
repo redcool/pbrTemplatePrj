@@ -128,6 +128,10 @@ Shader "Hidden/FX/Box/BoxLighting"
             {
                 float4 vertex : SV_POSITION;
                 float4 uv : TEXCOORD0;
+
+                // box volume bounds
+                float4 boundsMin : TEXCOORD1;
+                float4 boundsMax : TEXCOORD2;
             };
 
             sampler2D _MainTex;
@@ -161,12 +165,23 @@ Shader "Hidden/FX/Box/BoxLighting"
 
             v2f vert (appdata v)
             {
-                v2f o;
+                v2f o = (v2f)0;
                 o.vertex = TransformObjectToNdcHClip(v.vertex,_FullScreenOn,_ScreenRange);
                 o.uv.xy = TRANSFORM_TEX(v.uv,_MainTex);
 
                 float2 lightmapUV = v.uv1 * unity_LightmapST.xy + unity_LightmapST.zw;
                 o.uv.zw = lightmapUV;
+
+                #if defined(_BOX_VOLUME_ON)
+                    float3 right   = UNITY_MATRIX_M._11_21_31;
+                    float3 up      = UNITY_MATRIX_M._12_22_32;
+                    float3 forward = UNITY_MATRIX_M._13_23_33;
+                    float3 center  = UNITY_MATRIX_M._14_24_34;
+                    float3 halfExt = (abs(right) + abs(up) + abs(forward)) * 0.5;
+
+                    o.boundsMin.xyz = center - halfExt;
+                    o.boundsMax.xyz = center + halfExt;
+                #endif
 
                 return o;
             }
@@ -243,14 +258,8 @@ Shader "Hidden/FX/Box/BoxLighting"
 
 //============  volume scattering (dust/smoke within the box)
 #if defined(_BOX_VOLUME_ON)
-                float3 right   = UNITY_MATRIX_M._11_21_31;
-                float3 up      = UNITY_MATRIX_M._12_22_32;
-                float3 forward = UNITY_MATRIX_M._13_23_33;
-                float3 center  = UNITY_MATRIX_M._14_24_34;
-                float3 halfExt = (abs(right) + abs(up) + abs(forward)) * 0.5;
-
-                float3 boundsMin = center - halfExt;
-                float3 boundsMax = center + halfExt;
+                float3 boundsMin = i.boundsMin.xyz;
+                float3 boundsMax = i.boundsMax.xyz;
 
                 float3 viewDir = normalize(worldPos - _WorldSpaceCameraPos);
                 half4 vol = BoxVolumeScattering_3DTex(
